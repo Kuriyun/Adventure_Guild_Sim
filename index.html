@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Fantasy RPG - Hub</title>
+    <link rel="stylesheet" href="game-style.css">
+    <style>
+        .hub-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .hub-header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .hub-header h1 {
+            font-size: 56px;
+            color: #d4af37;
+            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.6);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .hub-header p {
+            font-size: 18px;
+            color: #b0b0b0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .hub-subtitle {
+            font-size: 14px;
+            color: #8b8b8b;
+            margin-top: 8px;
+        }
+
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .location-card {
+            background: linear-gradient(135deg, #1a1f3a 0%, #242b3d 100%);
+            border: 2px solid #3d4452;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease backwards;
+        }
+
+        .location-card:nth-child(1) { animation-delay: 0.1s; }
+        .location-card:nth-child(2) { animation-delay: 0.2s; }
+        .location-card:nth-child(3) { animation-delay: 0.3s; }
+        .location-card:nth-child(4) { animation-delay: 0.4s; }
+        .location-card:nth-child(5) { animation-delay: 0.5s; }
+        .location-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .location-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .location-card:hover::before {
+            left: 100%;
+        }
+
+        .location-card:hover {
+            border-color: #d4af37;
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
+        }
+
+        .location-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+        }
+
+        .location-name {
+            font-size: 22px;
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .location-desc {
+            font-size: 13px;
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .location-status {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #2d3142;
+            border: 1px solid #3d4452;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #8b8b8b;
+            margin-bottom: 15px;
+        }
+
+        .location-status.available {
+            background: #1a3a1a;
+            border-color: #00aa00;
+            color: #00dd00;
+        }
+
+        .enter-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #d4af37 0%, #f0d968 100%);
+            border: none;
+            color: #000;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .enter-btn:hover {
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.6);
+            transform: scale(1.05);
+        }
+
+        .enter-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer-info {
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 40px;
+            animation: fadeIn 1.2s ease;
+        }
+
+        .character-preview {
+            background: linear-gradient(135deg, #1a1f3a 0%, #242b3d 100%);
+            border: 2px solid #3d4452;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .preview-avatar {
+            font-size: 48px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #2d3142 0%, #0f1219 100%);
+            border: 2px solid #d4af37;
+            border-radius: 50%;
+        }
+
+        .preview-info h3 {
+            color: #d4af37;
+            margin-bottom: 5px;
+        }
+
+        .preview-info p {
+            font-size: 12px;
+            color: #b0b0b0;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hub-header h1 {
+                font-size: 36px;
+            }
+
+            .locations-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hub-container">
+        <div class="hub-header">
+            <h1>⚔️ Dark Fantasy RPG ⚔️</h1>
+            <p>Welcome, Adventurer</p>
+            <p class="hub-subtitle">Choose your destination and begin your journey...</p>
+        </div>
+
+        <!-- Character Preview -->
+        <div class="character-preview">
+            <div class="preview-avatar">⚔️</div>
+            <div class="preview-info">
+                <h3>Shadow Knight</h3>
+                <p>Level 5 | Strength Warrior</p>
+                <p style="margin-top: 5px; color: #d4af37;">💰 2,450 Gold</p>
+            </div>
+        </div>
+
+        <!-- Locations Grid -->
+        <div class="locations-grid">
+
+            <!-- Character Page -->
+            <div class="location-card">
+                <div class="location-icon">👤</div>
+                <div class="location-name">Character</div>
+                <div class="location-desc">View your stats, equipment, inventory, and progression.</div>
+                <div class="location-status available">✓ Ready</div>
+                <a href="character.html" style="text-decoration: none;">
+                    <button class="enter-btn">Enter</button>
+                </a>
+            </div>
+
+            <!-- Quests -->
+            <div class="location-card">
+                <div class="location-icon">📜</div>
+                <div class="location-name">Quests</div>
+                <div class="location-desc">Accept quests and complete them to earn rewards and experience.</div>
+                <div class="location-status available">✓ Ready</div>
+                <button class="enter-btn" onclick="navigateTo('quests')">Enter</button>
+            </div>
+
+            <!-- Shop -->
+            <div class="location-card">
+                <div class="location-icon">🏪</div>
+                <div class="location-name">Shop</div>
+                <div class="location-desc">Buy weapons, armor, potions, and rare items from merchants.</div>
+                <div class="location-status available">✓ Ready</div>
+                <button class="enter-btn" onclick="navigateTo('shop')">Enter</button>
+            </div>
+
+            <!-- Dungeon -->
+            <div class="location-card">
+                <div class="location-icon">🏰</div>
+                <div class="location-name">Dungeon</div>
+                <div class="location-desc">Venture into dark dungeons and battle fierce enemies.</div>
+                <div class="location-status">🔒 Locked (Level 8+)</div>
+                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>Locked</button>
+            </div>
+
+            <!-- Skills & Spells -->
+            <div class="location-card">
+                <div class="location-icon">✨</div>
+                <div class="location-name">Skills</div>
+                <div class="location-desc">Learn and master powerful skills and magical spells.</div>
+                <div class="location-status available">✓ Ready</div>
+                <button class="enter-btn" onclick="navigateTo('skills')">Enter</button>
+            </div>
+
+            <!-- Achievements -->
+            <div class="location-card">
+                <div class="location-icon">🏆</div>
+                <div class="location-name">Achievements</div>
+                <div class="location-desc">Track your accomplishments and unlock special rewards.</div>
+                <div class="location-status available">✓ Ready</div>
+                <button class="enter-btn" onclick="navigateTo('achievements')">Enter</button>
+            </div>
+
+        </div>
+
+        <div class="footer-info">
+            <p>🌙 Welcome to the Realm of Shadows 🌙</p>
+            <p>May your adventure be legendary...</p>
+        </div>
+
+    </div>
+
+    <script>
+        function navigateTo(location) {
+            if (location === 'quests') {
+                window.location.href = 'character.html?tab=quests';
+            } else if (location === 'shop') {
+                window.location.href = 'character.html?tab=shop';
+            } else if (location === 'skills') {
+                window.location.href = 'character.html?tab=skills';
+            } else if (location === 'achievements') {
+                window.location.href = 'character.html?tab=achievements';
+            }
+        }
+
+        document.querySelectorAll('.location-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.zIndex = '10';
+            });
+        });
+    </script>
+
+</body>
+
+</html>
