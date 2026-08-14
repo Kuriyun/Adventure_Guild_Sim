@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Moonlit Bounty",
+    "level": 5,
+    "description": "Defeat 10 wolves near the moonlit pass.",
+    "goldReward": 150,
+    "itemReward": "Wolf Fang Charm",
+    "expReward": 300,
+    "location": "Moonlit Pass"
+  },
+  {
+    "title": "Ruins of the Fallen",
+    "level": 6,
+    "description": "Recover a lost relic from the ruined fortress.",
+    "goldReward": 400,
+    "itemReward": "E",
+    "expReward": 600,
+    "location": "Fallen Fortress"
+  },
+  {
+    "title": "Order of the Dawn",
+    "level": 7,
+    "description": "Protect the town from a siege at dawn.",
+    "goldReward": 650,
+    "itemReward": "Sunforged Shield",
+    "expReward": 900,
+    "location": "Dawnwatch Town"
+  },
+  {
+    "title": "Whispers in the Woods",
+    "level": 4,
+    "description": "Investigate strange noises coming from the forest edge.",
+    "goldReward": 120,
+    "itemReward": "Forest Sigil",
+    "expReward": 250,
+    "location": "Elderwood"
+  }
+]

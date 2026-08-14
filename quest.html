@@ -30,6 +30,43 @@
             gap: 20px;
         }
 
+        .quest-only-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3142 100%);
+            border: 2px solid #d4af37;
+            border-radius: 10px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .quest-only-title {
+            color: #d4af37;
+            font-size: 26px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            margin-left: 180px;
+        }
+
+        .hub-back-button {
+            position: fixed;
+            left: 18px;
+            top: 18px;
+            z-index: 100;
+            width: auto;
+            min-width: 160px;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, #3d4452 0%, #4d5562 100%);
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.35);
+        }
+
         .quest-highlight {
             background: linear-gradient(135deg, #1a1f3a 0%, #2d3142 100%);
             border: 2px solid #d4af37;
@@ -69,13 +106,25 @@
             margin-bottom: 15px;
         }
 
+        .empty-quest-message {
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px dashed #d4af37;
+            color: #f0e2a3;
+            border-radius: 8px;
+            padding: 18px 16px;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
         .quest-action-row {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
         }
 
-        .quest-cta {
+        .quest-cta,
+        .accept-btn {
             flex: 1;
             min-width: 160px;
             padding: 12px 14px;
@@ -167,137 +216,110 @@
 </head>
 
 <body>
+    <button class="hub-back-button" onclick="window.location.href='index.html'">← Back to Hub</button>
+
     <div class="quest-page-layout">
         <div class="quest-panel">
-            <div class="character-header">
-                <div class="character-avatar">⚔️</div>
-                <div class="character-info">
-                    <h1>Shadow Knight</h1>
-                    <p class="level">Level 5</p>
-                </div>
+            <div class="quest-only-header">
+                <div class="quest-only-title">Quest Board</div>
             </div>
 
-            <div class="card quest-highlight">
+            <div class="card quest-highlight" id="currentObjective">
                 <h2>Current Objective</h2>
-                <div class="quest-main-title">Defeat the Shadow Beast</div>
-                <div class="quest-meta">
-                    <span>📍 Dark Forest</span>
-                    <span>Lvl 5</span>
-                </div>
-                <div class="quest-callout">
-                    The beast has been terrorizing the eastern trail. Hunt it down before it reaches the villages.
-                </div>
-                <div class="quest-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
-                    </div>
-                    <span class="progress-text">3 / 5 defeated</span>
-                </div>
-                <div class="quest-reward">
-                    <span>Reward: 500 XP + 250 Gold</span>
-                </div>
-                <div class="quest-action-row" style="margin-top: 16px;">
-                    <button class="quest-cta">Accept Quest</button>
-                    <button class="secondary-btn" onclick="window.location.href='index.html'">Back to Hub</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Quest Log</h2>
-                <div class="quest-list">
-                    <div class="quest-item active">
-                        <div class="quest-item-header">
-                            <h3>Defeat the Shadow Beast</h3>
-                            <span class="quest-badge">Main</span>
-                        </div>
-                        <p>Hunt the Shadow Beast lurking in the Dark Forest.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
-                            </div>
-                            <span class="progress-text">3 / 5 defeated</span>
-                        </div>
-                        <div class="reward">Reward: 500 XP + 250 Gold</div>
-                    </div>
-
-                    <div class="quest-item">
-                        <div class="quest-item-header">
-                            <h3>Collect Ancient Artifacts</h3>
-                            <span class="quest-badge">Side</span>
-                        </div>
-                        <p>Find 5 ancient artifacts hidden throughout the realm.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 40%"></div>
-                            </div>
-                            <span class="progress-text">2 / 5 found</span>
-                        </div>
-                        <div class="reward">Reward: 750 XP + 500 Gold</div>
-                    </div>
-
-                    <div class="quest-item">
-                        <div class="quest-item-header">
-                            <h3>Visit the Ancient Temple</h3>
-                            <span class="quest-badge">Complete</span>
-                        </div>
-                        <p>Explore the ruins of the ancient temple.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                            <span class="progress-text">Completed!</span>
-                        </div>
-                        <button class="claim-btn">Claim Reward</button>
-                    </div>
-                </div>
+                <div id="objectiveContent" class="empty-quest-message">You currently don't have any Quests.</div>
             </div>
         </div>
 
         <div class="quest-board">
             <div class="card">
                 <h2>Quest Board</h2>
-                <div class="quest-list">
-                    <div class="quest-item active">
-                        <div class="quest-item-header">
-                            <h3>Moonlit Bounty</h3>
-                            <span class="quest-badge">Lvl 5</span>
-                        </div>
-                        <p>Defeat 10 wolves near the moonlit pass.</p>
-                        <div class="reward">Reward: 300 XP + 150 Gold</div>
-                        <button class="claim-btn">Track</button>
-                    </div>
-
-                    <div class="quest-item">
-                        <div class="quest-item-header">
-                            <h3>Ruins of the Fallen</h3>
-                            <span class="quest-badge">Lvl 6</span>
-                        </div>
-                        <p>Recover a lost relic from the ruined fortress.</p>
-                        <div class="reward">Reward: 600 XP + 400 Gold</div>
-                        <button class="claim-btn">Track</button>
-                    </div>
-
-                    <div class="quest-item">
-                        <div class="quest-item-header">
-                            <h3>Order of the Dawn</h3>
-                            <span class="quest-badge">Lvl 7</span>
-                        </div>
-                        <p>Protect the town from a siege at dawn.</p>
-                        <div class="reward">Reward: 900 XP + 650 Gold</div>
-                        <button class="claim-btn">Track</button>
-                    </div>
-                </div>
+                <div id="questList" class="quest-list"></div>
             </div>
         </div>
     </div>
 
     <script>
-        document.querySelectorAll('.claim-btn, .quest-cta').forEach(button => {
-            button.addEventListener('click', () => {
-                const action = button.textContent.trim();
-                alert(action + ' selected successfully!');
+        const currentObjective = document.getElementById('currentObjective');
+        const objectiveContent = document.getElementById('objectiveContent');
+        const questList = document.getElementById('questList');
+
+        function renderCurrentObjective() {
+            const hasQuestContent = currentObjective.querySelector('.quest-main-title, .quest-meta, .quest-callout, .quest-progress, .quest-reward, .quest-cta');
+
+            if (!hasQuestContent) {
+                objectiveContent.textContent = "You currently don't have any Quests.";
+                objectiveContent.style.display = 'block';
+            }
+        }
+
+        function formatQuestReward(quest) {
+            return `Gold: ${quest.goldReward} | Item: ${quest.itemReward} | EXP: ${quest.expReward}`;
+        }
+
+        function renderQuestBoard(quests) {
+            questList.innerHTML = '';
+
+            quests.forEach((quest) => {
+                const questItem = document.createElement('div');
+                questItem.className = 'quest-item';
+                questItem.innerHTML = `
+                    <div class="quest-item-header">
+                        <h3>${quest.title}</h3>
+                        <span class="quest-badge">Lvl ${quest.level}</span>
+                    </div>
+                    <p>${quest.description}</p>
+                    <div class="reward">${formatQuestReward(quest)}</div>
+                    <button class="accept-btn">Accept Quest</button>
+                `;
+
+                questItem.querySelector('.accept-btn').addEventListener('click', () => acceptQuest(questItem, quest));
+                questList.appendChild(questItem);
             });
-        });
+        }
+
+        function acceptQuest(questCard, quest) {
+            currentObjective.innerHTML = `
+                <h2>Current Objective</h2>
+                <div class="quest-main-title">${quest.title}</div>
+                <div class="quest-meta">
+                    <span>📍 ${quest.location}</span>
+                    <span>Lvl ${quest.level}</span>
+                </div>
+                <div class="quest-callout">${quest.description}</div>
+                <div class="quest-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <span class="progress-text">0 / 1 started</span>
+                </div>
+                <div class="quest-reward">
+                    <span>${formatQuestReward(quest)}</span>
+                </div>
+                <div class="quest-action-row" style="margin-top: 16px;">
+                    <button class="quest-cta">Quest Accepted</button>
+                </div>
+            `;
+
+            questCard.remove();
+        }
+
+        async function loadQuests() {
+            try {
+                const response = await fetch('quests.json', { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('Quest file request failed');
+                }
+
+                const quests = await response.json();
+                renderQuestBoard(quests);
+            } catch (error) {
+                console.error('Could not load quests from quests.json', error);
+                questList.innerHTML = '<div class="empty-quest-message">Unable to load quests from quests.json.</div>';
+            }
+        }
+
+        loadQuests();
+        renderCurrentObjective();
     </script>
 </body>
 
