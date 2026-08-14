@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character - Dark Fantasy RPG</title>
+    <link rel="stylesheet" href="game-style.css">
+</head>
+
+<body>
+    <div class="game-container">
+        
+        <!-- Left Panel: Character Info -->
+        <div class="left-panel">
+            
+            <!-- Character Header -->
+            <div class="character-header">
+                <div class="character-avatar">
+                    ⚔️
+                </div>
+                <div class="character-info">
+                    <h1>Shadow Knight</h1>
+                    <p class="level">Level 5</p>
+                </div>
+            </div>
+
+            <!-- Character Stats -->
+            <div class="card stats-card">
+                <h2>⚡ Stats</h2>
+                <div class="stat-row">
+                    <span class="stat-label">Strength</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 75%"></div>
+                    </div>
+                    <span class="stat-value">15</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Dexterity</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 85%"></div>
+                    </div>
+                    <span class="stat-value">17</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Constitution</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 70%"></div>
+                    </div>
+                    <span class="stat-value">14</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Intelligence</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 60%"></div>
+                    </div>
+                    <span class="stat-value">12</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Wisdom</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 65%"></div>
+                    </div>
+                    <span class="stat-value">13</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Charisma</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 55%"></div>
+                    </div>
+                    <span class="stat-value">11</span>
+                </div>
+            </div>
+
+            <!-- Experience & Leveling -->
+            <div class="card">
+                <h2>📈 Experience</h2>
+                <div class="exp-info">
+                    <div class="exp-row">
+                        <span>Current XP</span>
+                        <span>3,450 / 5,000</span>
+                    </div>
+                    <div class="exp-bar">
+                        <div class="exp-fill" style="width: 69%"></div>
+                    </div>
+                    <div class="exp-row">
+                        <span>XP to Next Level</span>
+                        <span>1,550 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health & Mana -->
+            <div class="card">
+                <h2>❤️ Vitals</h2>
+                <div class="vital-row">
+                    <span class="vital-label">Health</span>
+                    <div class="vital-bar health-bar">
+                        <div class="vital-fill" style="width: 85%"></div>
+                    </div>
+                    <span class="vital-value">85 / 100</span>
+                </div>
+                <div class="vital-row">
+                    <span class="vital-label">Mana</span>
+                    <div class="vital-bar mana-bar">
+                        <div class="vital-fill" style="width: 60%"></div>
+                    </div>
+                    <span class="vital-value">60 / 100</span>
+                </div>
+            </div>
+
+            <!-- Equipment -->
+            <div class="card">
+                <h2>🛡️ Equipment</h2>
+                <div class="equipment-grid">
+                    <div class="equipment-slot">
+                        <div class="slot-icon">⚔️</div>
+                        <p>Iron Sword</p>
+                        <span class="rarity rare">Rare</span>
+                    </div>
+                    <div class="equipment-slot">
+                        <div class="slot-icon">🛡️</div>
+                        <p>Steel Shield</p>
+                        <span class="rarity common">Common</span>
+                    </div>
+                    <div class="equipment-slot">
+                        <div class="slot-icon">🧥</div>
+                        <p>Leather Armor</p>
+                        <span class="rarity uncommon">Uncommon</span>
+                    </div>
+                    <div class="equipment-slot">
+                        <div class="slot-icon">👑</div>
+                        <p>Silver Crown</p>
+                        <span class="rarity legendary">Legendary</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="card">
+                <h2>🎒 Inventory</h2>
+                <div class="inventory-grid">
+                    <div class="inventory-item">
+                        <div class="item-icon">🧪</div>
+                        <p>Health Potion</p>
+                        <span class="item-count">x5</span>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-icon">🌙</div>
+                        <p>Mana Potion</p>
+                        <span class="item-count">x3</span>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-icon">🔑</div>
+                        <p>Ancient Key</p>
+                        <span class="item-count">x1</span>
+                    </div>
+                    <div class="inventory-item">
+                        <div class="item-icon">💎</div>
+                        <p>Ruby Gem</p>
+                        <span class="item-count">x2</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gold -->
+            <div class="card gold-card">
+                <h2>💰 Gold</h2>
+                <div class="gold-amount">2,450 Gold</div>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: Tabs & Actions -->
+        <div class="right-panel">
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="quests">📜 Quests</button>
+                <button class="tab-btn" data-tab="shop">🏪 Shop</button>
+                <button class="tab-btn" data-tab="skills">✨ Skills</button>
+                <button class="tab-btn" data-tab="achievements">🏆 Achievements</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                
+                <!-- Quests Tab -->
+                <div id="quests" class="tab-pane active">
+                    <h2>Active Quests</h2>
+                    <div class="quest">
+                        <div class="quest-header">
+                            <h3>Defeat the Shadow Beast</h3>
+                            <span class="quest-level">Lvl 5</span>
+                        </div>
+                        <p class="quest-desc">Hunt the Shadow Beast lurking in the Dark Forest.</p>
+                        <div class="quest-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <span class="progress-text">3 / 5 defeated</span>
+                        </div>
+                        <div class="quest-reward">
+                            <span>Reward: 500 XP + 250 Gold</span>
+                        </div>
+                    </div>
+
+                    <div class="quest">
+                        <div class="quest-header">
+                            <h3>Collect Ancient Artifacts</h3>
+                            <span class="quest-level">Lvl 6</span>
+                        </div>
+                        <p class="quest-desc">Find 5 ancient artifacts hidden throughout the realm.</p>
+                        <div class="quest-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 40%"></div>
+                            </div>
+                            <span class="progress-text">2 / 5 found</span>
+                        </div>
+                        <div class="quest-reward">
+                            <span>Reward: 750 XP + 500 Gold</span>
+                        </div>
+                    </div>
+
+                    <div class="quest">
+                        <div class="quest-header">
+                            <h3>Visit the Ancient Temple</h3>
+                            <span class="quest-level">Lvl 4</span>
+                        </div>
+                        <p class="quest-desc">Explore the ruins of the ancient temple.</p>
+                        <div class="quest-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-text">Completed!</span>
+                        </div>
+                        <button class="claim-btn">Claim Reward</button>
+                    </div>
+                </div>
+
+                <!-- Shop Tab -->
+                <div id="shop" class="tab-pane">
+                    <h2>Merchant's Shop</h2>
+                    <div class="shop-item">
+                        <div class="shop-item-header">
+                            <span class="shop-item-name">🗡️ Enchanted Sword</span>
+                            <span class="shop-price">750 Gold</span>
+                        </div>
+                        <p class="shop-item-desc">A sword infused with dark magic.</p>
+                        <button class="buy-btn">Buy</button>
+                    </div>
+
+                    <div class="shop-item">
+                        <div class="shop-item-header">
+                            <span class="shop-item-name">🛡️ Diamond Shield</span>
+                            <span class="shop-price">1,200 Gold</span>
+                        </div>
+                        <p class="shop-item-desc">An unbreakable shield of diamonds.</p>
+                        <button class="buy-btn">Buy</button>
+                    </div>
+
+                    <div class="shop-item">
+                        <div class="shop-item-header">
+                            <span class="shop-item-name">🧪 Elixir of Strength</span>
+                            <span class="shop-price">300 Gold</span>
+                        </div>
+                        <p class="shop-item-desc">Increases strength by 3 points for 1 hour.</p>
+                        <button class="buy-btn">Buy</button>
+                    </div>
+                </div>
+
+                <!-- Skills Tab -->
+                <div id="skills" class="tab-pane">
+                    <h2>Skills</h2>
+                    <div class="skill">
+                        <h3>Shadow Strike</h3>
+                        <p class="skill-level">Level 3</p>
+                        <p class="skill-desc">Deal damage and gain invisibility for 2 seconds.</p>
+                        <div class="skill-cooldown">Cooldown: 8s</div>
+                    </div>
+
+                    <div class="skill">
+                        <h3>Dark Armor</h3>
+                        <p class="skill-level">Level 2</p>
+                        <p class="skill-desc">Increase defense by 30% for 10 seconds.</p>
+                        <div class="skill-cooldown">Cooldown: 15s</div>
+                    </div>
+
+                    <div class="skill">
+                        <h3>Demon's Wrath</h3>
+                        <p class="skill-level">Level 1</p>
+                        <p class="skill-desc">Ultimate ability - Deal massive damage to all enemies.</p>
+                        <div class="skill-cooldown">Cooldown: 60s</div>
+                    </div>
+                </div>
+
+                <!-- Achievements Tab -->
+                <div id="achievements" class="tab-pane">
+                    <h2>Achievements</h2>
+                    <div class="achievement unlocked">
+                        <span class="achievement-icon">🏆</span>
+                        <div class="achievement-info">
+                            <h3>First Blood</h3>
+                            <p>Defeated your first enemy.</p>
+                        </div>
+                    </div>
+
+                    <div class="achievement unlocked">
+                        <span class="achievement-icon">⚡</span>
+                        <div class="achievement-info">
+                            <h3>Level 5 Warrior</h3>
+                            <p>Reached level 5.</p>
+                        </div>
+                    </div>
+
+                    <div class="achievement locked">
+                        <span class="achievement-icon">👑</span>
+                        <div class="achievement-info">
+                            <h3>Legendary Hero</h3>
+                            <p>Reach level 20.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="game-script.js"></script>
+</body>
+
+</html>
