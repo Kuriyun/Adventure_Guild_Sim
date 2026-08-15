@@ -225,6 +225,9 @@
             transform: translateY(-8px);
             transition: opacity 0.25s ease, transform 0.25s ease;
             pointer-events: none;
+
+            /* Add this */
+            white-space: pre-line;
         }
 
         .quest-notification.show {
@@ -305,7 +308,9 @@
         <div class="quest-board">
             <div class="card">
                 <h2>Quest Board</h2>
-                <div id="questList" class="quest-list"></div>
+                <div id="questList" class="quest-list">
+                    <div class="empty-quest-message">Loading quests...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -329,7 +334,8 @@
                 level: Number(rawQuest.level_requirement ?? 0),
                 goldReward: Number(rawQuest.gold_reward ?? 0),
                 expReward: Number(rawQuest.experience_reward ?? 0),
-                itemReward: 'N/A'
+                itemReward: 'N/A',
+                objective_count: Number(rawQuest.objective_count ?? 1),
             };
         }
 
@@ -367,13 +373,15 @@
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: 0%"></div>
                         </div>
-                        <span class="progress-text">0 / 1 started</span>
+                        <span class="progress-text">${quest.current_objective_count} / ${quest.objective_count}</span>
                     </div>
                     <div class="quest-reward">
                         <span>Gold: ${quest.goldReward} | EXP: ${quest.expReward}</span>
                     </div>
                     <div class="quest-action-row" style="margin-top: 12px;">
-                        <button class="secondary-btn abandon-btn" data-quest-title="${quest.title}">Abandon Quest</button>
+                        <button class="secondary-btn abandon-btn" data-quest-id="${quest.id}">
+                            Abandon Quest
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -383,26 +391,72 @@
                 <div class="active-quest-list">${activeQuestMarkup}</div>
             `;
 
-            currentObjective.querySelectorAll('.abandon-btn').forEach((button) => {
-                button.addEventListener('click', () => abandonQuest(button.dataset.questTitle));
+        currentObjective.querySelectorAll('.abandon-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                abandonQuest(button.dataset.questId);
             });
+        });
         }
 
         function formatQuestReward(quest) {
             return `Gold: ${quest.goldReward} | EXP: ${quest.expReward}`;
         }
 
-        function abandonQuest(questTitle) {
-            const questIndex = activeQuests.findIndex((quest) => quest.title === questTitle);
+        async function abandonQuest(questId) {
 
-            if (questIndex === -1) {
+            const quest = activeQuests.find((quest) => quest.id === Number(questId));
+
+            if (!quest) {
+                console.error('Quest not found in activeQuests:', questId, activeQuests);
                 return;
             }
 
-            const [abandonedQuest] = activeQuests.splice(questIndex, 1);
-            renderCurrentObjective();
-            renderQuestBoard(allQuests.filter((quest) => !activeQuests.some((activeQuest) => activeQuest.title === quest.title)));
-            showQuestNotification(`${abandonedQuest.title} has been abandoned.`);
+            if (!quest) {
+                return;
+            }
+
+            const { data, error } = await supabaseClient.functions.invoke(
+                'abandon_quest',
+                {
+                    body: {
+                        quest_id: quest.id
+                    }
+                }
+            );
+
+            if (error) {
+                console.error('Could not abandon quest:', error);
+
+                let errorMessage = 'Could not abandon quest.';
+
+                if (error.context) {
+                    try {
+                        const response = await error.context.clone().json();
+
+                        if (response?.error) {
+                            errorMessage = response.error;
+                        }
+                    } catch (e) {
+                        console.error('Could not parse Edge Function error:', e);
+                    }
+                }
+
+                showQuestNotification(errorMessage, true);
+                return;
+            }
+
+            if (!data?.success) {
+                showQuestNotification(
+                    data?.error || 'Could not abandon quest.',
+                    true
+                );
+                return;
+            }
+
+            // Database is the source of truth.
+            await loadActiveQuests();
+
+            showQuestNotification(`${quest.title} has been abandoned.`);
         }
 
         function renderQuestBoard(quests) {
@@ -433,7 +487,12 @@
                 questCard.classList.remove('flash');
                 void questCard.offsetWidth;
                 questCard.classList.add('flash');
-                showQuestNotification('You can only have up to 3 active quests at a time.', true);
+
+                showQuestNotification(
+                    'You can only have up to 3 active quests at a time.',
+                    true
+                );
+
                 return;
             }
 
@@ -441,11 +500,15 @@
                 questCard.classList.remove('flash');
                 void questCard.offsetWidth;
                 questCard.classList.add('flash');
-                showQuestNotification('This quest is already active.', true);
+
+                showQuestNotification(
+                    'This quest is already active.',
+                    true
+                );
+
                 return;
             }
 
-            // Ask the server to accept the quest
             const { data, error } = await supabaseClient.functions.invoke(
                 'accept_quest',
                 {
@@ -456,49 +519,30 @@
             );
 
             if (error) {
-                console.error('Could not accept quest:', error);
 
-                let errorMessage = error.message;
+                let errorMessage = 'Could not accept quest.';
 
-                // Try to get the actual error returned by the Edge Function
                 if (error.context) {
                     try {
-                        const responseBody = await error.context.json();
+                        const response = await error.context.clone().json();
 
-                        if (responseBody?.error) {
-                            errorMessage = responseBody.error;
+                        if (response?.error) {
+                            errorMessage += '\n\n' + response.error;
                         }
                     } catch (e) {
-                        console.error('Could not parse function error:', e);
+                        console.error('Could not parse Edge Function error:', e);
                     }
                 }
 
-                showQuestNotification(`Could not accept quest: ${errorMessage}`, true);
+                showQuestNotification(errorMessage, true);
                 return;
             }
 
-            if (!data?.success) {
-                showQuestNotification(
-                    data?.error || 'Could not accept quest.',
-                    true
-                );
-                return;
-            }
+            // The database is now the source of truth.
+            // Reload the active quests from the server.
+            await loadActiveQuests();
 
-            // Only update the UI after the database insert succeeded
-            activeQuests.push(quest);
-
-            renderCurrentObjective();
-            renderQuestBoard(
-                allQuests.filter(
-                    (availableQuest) =>
-                        !activeQuests.some(
-                            (activeQuest) => activeQuest.id === availableQuest.id
-                        )
-                )
-            );
-
-            questCard.remove();
+            renderQuestBoard(allQuests);
 
             showQuestNotification(`${quest.title} accepted!`);
         }
@@ -520,7 +564,6 @@
                 }
 
                 allQuests = data.map(normalizeQuest);
-                renderQuestBoard(allQuests);
             } catch (error) {
                 console.error('Could not load quests from database', error);
                 const detail = error?.message || 'Unknown database error';
@@ -529,8 +572,65 @@
             }
         }
 
-        loadQuests();
-        renderCurrentObjective();
+        async function loadActiveQuests() {
+            try {
+                const { data, error } = await supabaseClient.functions.invoke(
+                    'get_active_quests'
+                );
+
+                if (error) {
+                    console.error('Could not load active quests:', error);
+                    showQuestNotification(
+                        `Could not load active quests: ${error.message}`,
+                        true
+                    );
+                    return;
+                }
+
+                if (!data?.success) {
+                    showQuestNotification(
+                        data?.error || 'Could not load active quests.',
+                        true
+                    );
+                    return;
+                }
+
+                activeQuests = data.quests
+                    .filter(characterQuest => characterQuest.quests)
+                    .map(characterQuest => ({
+                        ...normalizeQuest(characterQuest.quests),
+                        current_objective_count: Number(
+                            characterQuest.current_objective_count ?? 0
+                        )
+                    }));
+
+                renderCurrentObjective();
+
+                renderQuestBoard(
+                    allQuests.filter(
+                        quest =>
+                            !activeQuests.some(
+                                activeQuest => activeQuest.id === quest.id
+                            )
+                    )
+                );
+
+            } catch (error) {
+                console.error('Unexpected error loading active quests:', error);
+
+                showQuestNotification(
+                    'Could not load active quests.',
+                    true
+                );
+            }
+        }
+
+        async function initializeQuestPage() {
+            await loadQuests();
+            await loadActiveQuests();
+        }
+
+        initializeQuestPage();
     </script>
 </body>
 
