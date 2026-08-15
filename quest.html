@@ -286,7 +286,7 @@
 </head>
 
 <body>
-    <button class="hub-back-button" onclick="window.location.href='index.html'">← Back to Hub</button>
+    <button class="hub-back-button" onclick="window.location.href='hub.html'">← Back to Hub</button>
 
     <div id="questNotification" class="quest-notification" aria-live="polite"></div>
 
@@ -331,20 +331,6 @@
                 expReward: Number(rawQuest.experience_reward ?? 0),
                 itemReward: 'N/A'
             };
-        }
-
-        async function testAcceptQuestFunction() {
-            const { data, error } = await supabaseClient.functions.invoke(
-                'accept_quest',
-                {
-                    body: {
-                        quest_id: 2
-                    }
-                }
-            );
-
-            console.log('Function response:', data);
-            console.log('Function error:', error);
         }
 
         function showQuestNotification(message, isError = false) {
@@ -471,7 +457,23 @@
 
             if (error) {
                 console.error('Could not accept quest:', error);
-                showQuestNotification(`Could not accept quest: ${error.message}`, true);
+
+                let errorMessage = error.message;
+
+                // Try to get the actual error returned by the Edge Function
+                if (error.context) {
+                    try {
+                        const responseBody = await error.context.json();
+
+                        if (responseBody?.error) {
+                            errorMessage = responseBody.error;
+                        }
+                    } catch (e) {
+                        console.error('Could not parse function error:', e);
+                    }
+                }
+
+                showQuestNotification(`Could not accept quest: ${errorMessage}`, true);
                 return;
             }
 
