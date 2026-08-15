@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Character - Dark Fantasy RPG</title>
+    <link rel="stylesheet" href="game-style.css">
+</head>
+
+<body>
+    <div id="creationPanel" class="creation-panel">
+        <div class="creation-card">
+            <div class="creation-badge">Realm Forge</div>
+            <h1>Forge Your Hero</h1>
+            <p>Choose the name you want to be known by in this realm. You can change it later from this page.</p>
+
+            <form id="createCharacterForm" class="creation-form">
+                <div class="field creation-field">
+                    <label for="characterNameInput">Character Name</label>
+                    <input id="characterNameInput" class="name-input" type="text" maxlength="20" placeholder="Enter your character name" required>
+                </div>
+
+                <div class="field creation-field">
+                    <label for="classSelect">Choose Your Class</label>
+                    <div id="classesContainer" class="classes-container"></div>
+                </div>
+
+                <button type="submit" class="primary-btn save-name-btn">Create Character</button>
+                <div id="creationMessage" class="form-message" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script>
+        const createCharacterForm = document.getElementById('createCharacterForm');
+        const creationMessage = document.getElementById('creationMessage');
+        const classesContainer = document.getElementById('classesContainer');
+        let selectedClassId = null;
+        let availableClasses = [];
+
+        function showMessage(element, text, isError = true) {
+            element.textContent = text;
+            element.classList.toggle('show', Boolean(text));
+            element.style.color = isError ? '#ff8c6b' : '#7ce08a';
+        }
+
+        async function loadClasses() {
+            try {
+                // First, let's check all classes without filter
+                const { data: allClasses, error: allError } = await supabaseClient
+                    .from('classes')
+                    .select('*');
+
+                console.log('All classes:', allClasses);
+                console.log('All classes error:', allError);
+
+                if (allError) {
+                    throw allError;
+                }
+
+                // Now get filtered classes
+                const { data, error } = await supabaseClient
+                    .from('classes')
+                    .select('id, name, description')
+                    .eq('minimum_level', 1);
+
+                if (error) {
+                    throw error;
+                }
+
+                console.log('Filtered classes (minimum_level = 1):', data);
+                availableClasses = data || [];
+                displayClasses();
+            } catch (error) {
+                console.error('Error loading classes:', error);
+                showMessage(creationMessage, 'Could not load character classes. Please refresh the page.', true);
+            }
+        }
+
+        function displayClasses() {
+            classesContainer.innerHTML = '';
+
+            if (availableClasses.length === 0) {
+                classesContainer.innerHTML = '<p>No classes available</p>';
+                return;
+            }
+
+            availableClasses.forEach(classItem => {
+                const classBox = document.createElement('div');
+                classBox.className = 'class-option';
+                classBox.innerHTML = `
+                    <input type="radio" id="class-${classItem.id}" name="classSelect" value="${classItem.id}" required>
+                    <label for="class-${classItem.id}" class="class-label">
+                        <div class="class-name">${classItem.name}</div>
+                        <div class="class-description">${classItem.description}</div>
+                    </label>
+                `;
+
+                classBox.querySelector(`#class-${classItem.id}`).addEventListener('change', () => {
+                    selectedClassId = classItem.id;
+                });
+
+                classesContainer.appendChild(classBox);
+            });
+        }
+
+        async function createCharacter(name, classId) {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            // Fetch the selected class to get base stats
+            const { data: classData, error: classError } = await supabaseClient
+                .from('classes')
+                .select('base_health, base_mana, base_strength, base_intelligence, base_dexterity, base_defense, base_critical_chance')
+                .eq('id', classId)
+                .single();
+
+            if (classError) {
+                throw classError;
+            }
+
+            const maxHealth = classData?.base_health || 100;
+            const maxMana = classData?.base_mana || 100;
+            const baseStrength = classData?.base_strength || 10;
+            const baseIntelligence = classData?.base_intelligence || 10;
+            const baseDexterity = classData?.base_dexterity || 10;
+            const baseDefense = classData?.base_defense || 10;
+            const baseCriticalChance = classData?.base_critical_chance || 0.1;
+
+            const { data, error } = await supabaseClient
+                .from('characters')
+                .insert({
+                    user_id: user.id,
+                    name: name,
+                    class_id: classId,
+                    level: 1,
+                    experience: 0,
+                    gold: 100,
+                    health: maxHealth,
+                    max_health: maxHealth,
+                    mana: maxMana,
+                    max_mana: maxMana,
+                    strength: baseStrength,
+                    intelligence: baseIntelligence,
+                    dexterity: baseDexterity,
+                    defense: baseDefense,
+                    critical_chance: baseCriticalChance
+                });
+
+            if (error) {
+                console.error('Create character error details:', error);
+                throw error;
+            }
+
+            // Now fetch the created character
+            const { data: createdCharacter, error: fetchError } = await supabaseClient
+                .from('characters')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (fetchError) {
+                console.error('Fetch error:', fetchError);
+                throw fetchError;
+            }
+
+            return createdCharacter;
+        }
+
+        async function checkExistingCharacter() {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const {
+                data: character,
+                error: characterError
+            } = await supabaseClient
+                .from('characters')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (characterError) {
+                console.error('Error checking character:', characterError);
+                return;
+            }
+
+            if (character) {
+                // Character already exists, redirect to character page
+                window.location.href = 'character.html';
+                return;
+            }
+        }
+
+        createCharacterForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = document.getElementById('characterNameInput').value.trim();
+
+            if (!name || name.length < 2) {
+                showMessage(creationMessage, 'Your character name must be at least 2 characters long.', true);
+                return;
+            }
+
+            if (!selectedClassId) {
+                showMessage(creationMessage, 'Please select a class.', true);
+                return;
+            }
+
+            try {
+                const newCharacter = await createCharacter(name, selectedClassId);
+                if (!newCharacter) {
+                    return;
+                }
+
+                showMessage(creationMessage, 'Character created successfully.', false);
+                // Redirect to character page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'character.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Create character error:', error);
+                showMessage(creationMessage, 'Could not create your character. Please try again.', true);
+            }
+        });
+
+        // Check if user already has a character and load classes
+        checkExistingCharacter();
+        loadClasses();
+    </script>
+</body>
+
+</html>

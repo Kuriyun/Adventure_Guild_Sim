@@ -9,23 +9,6 @@
 </head>
 
 <body>
-    <div id="creationPanel" class="creation-panel hidden">
-        <div class="creation-card">
-            <div class="creation-badge">Realm Forge</div>
-            <h1>Forge Your Hero</h1>
-            <p>Choose the name you want to be known by in this realm. You can change it later from this page.</p>
-
-            <form id="createCharacterForm" class="creation-form">
-                <div class="field creation-field">
-                    <label for="characterNameInput">Character Name</label>
-                    <input id="characterNameInput" class="name-input" type="text" maxlength="20" placeholder="Enter your character name" required>
-                </div>
-                <button type="submit" class="primary-btn save-name-btn">Create Character</button>
-                <div id="creationMessage" class="form-message" aria-live="polite"></div>
-            </form>
-        </div>
-    </div>
-
     <div id="mainCharacterView" class="game-container hidden">
         
         <!-- Left Panel: Character Info -->
@@ -34,11 +17,11 @@
             <!-- Character Header -->
             <div class="character-header">
                 <div class="character-avatar">
-                    ⚔️
+                    <img id="classIcon" src="" alt="Class Icon" class="avatar-image">
                 </div>
                 <div class="character-info">
-                    <h1 id="characterName">Shadow Knight</h1>
-                    <p class="level" id="characterLevel">Level 5</p>
+                    <h1 id="characterName"></h1>
+                    <p class="level" id="characterLevel"></p>
                 </div>
             </div>
 
@@ -62,8 +45,8 @@
                             <span id="intelligenceValue" class="stat-value">0</span>
                         </div>
                         <div class="stat-row simple-stat-row">
-                            <span class="stat-label">Resistance</span>
-                            <span id="resistanceValue" class="stat-value">0</span>
+                            <span class="stat-label">Defense</span>
+                            <span id="defenseValue" class="stat-value">0</span>
                         </div>
                     </div>
                 </div>
@@ -250,61 +233,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script>
-        const creationPanel = document.getElementById('creationPanel');
-        const mainCharacterView = document.getElementById('mainCharacterView');
-        const createCharacterForm = document.getElementById('createCharacterForm');
-        const creationMessage = document.getElementById('creationMessage');
-
-        function showMessage(element, text, isError = true) {
-            element.textContent = text;
-            element.classList.toggle('show', Boolean(text));
-            element.style.color = isError ? '#ff8c6b' : '#7ce08a';
-        }
-
-        function showCreationState() {
-            creationPanel.classList.remove('hidden');
-            mainCharacterView.classList.add('hidden');
-        }
-
-        function showMainCharacterState() {
-            creationPanel.classList.add('hidden');
-            mainCharacterView.classList.remove('hidden');
-        }
-
-        async function createCharacter(name) {
-            const {
-                data: { user },
-                error: userError
-            } = await supabaseClient.auth.getUser();
-
-            if (userError || !user) {
-                window.location.href = 'login.html';
-                return null;
-            }
-
-            const { data, error } = await supabaseClient
-                .from('characters')
-                .insert({
-                    user_id: user.id,
-                    name: name,
-                    level: 1,
-                    experience: 0,
-                    gold: 100,
-                    health: 100,
-                    max_health: 100,
-                    mana: 100,
-                    max_mana: 100
-                })
-                .select()
-                .single();
-
-            if (error) {
-                throw error;
-            }
-
-            return data;
-        }
-
         async function loadCharacter() {
             const {
                 data: { user },
@@ -331,15 +259,15 @@
             }
 
             if (!character) {
-                showCreationState();
+                // No character exists, redirect to creation page
+                window.location.href = 'character-creation.html';
                 return;
             }
 
-            showMainCharacterState();
             updateCharacterDisplay(character);
         }
 
-        function updateCharacterDisplay(character) {
+        async function updateCharacterDisplay(character) {
             const name = character.name || 'Adventurer';
             const level = Number(character.level || 1);
             const currentExperience = Number(character.experience || 0);
@@ -351,7 +279,22 @@
             const strength = Number(character.strength || 0);
             const dexterity = Number(character.dexterity || 0);
             const intelligence = Number(character.intelligence || 0);
-            const resistance = Number(character.resistance || 0);
+            const defense = Number(character.defense || 0);
+            
+            // Fetch the class name to load the appropriate icon
+            if (character.class_id) {
+                const { data: classData, error: classError } = await supabaseClient
+                    .from('classes')
+                    .select('name')
+                    .eq('id', character.class_id)
+                    .single();
+
+                if (!classError && classData) {
+                    const classIcon = document.getElementById('classIcon');
+                    classIcon.src = `classes/${classData.name}/ClassIcon/${classData.name}.png`;
+                }
+            }
+            
             const xpForNextLevel = Math.max(100, (level + 1) * 100);
             const xpProgress = Math.min(100, Math.max(0, (currentExperience / xpForNextLevel) * 100));
             const healthProgress = Math.min(100, Math.max(0, (currentHealth / maxHealth) * 100));
@@ -361,7 +304,7 @@
                 { fill: 'strengthFill', value: 'strengthValue', amount: strength },
                 { fill: 'dexterityFill', value: 'dexterityValue', amount: dexterity },
                 { fill: 'intelligenceFill', value: 'intelligenceValue', amount: intelligence },
-                { fill: 'resistanceFill', value: 'resistanceValue', amount: resistance }
+                { fill: 'defenseFill', value: 'defenseValue', amount: defense }
             ];
 
             statMap.forEach(({ value, amount }) => {
@@ -379,31 +322,10 @@
             document.getElementById('manaFill').style.width = `${manaProgress}%`;
             document.getElementById('manaText').textContent = `${currentMana} / ${maxMana}`;
             document.getElementById('goldAmount').textContent = `${gold} Gold`;
+            
+            // Show the character view now that data is loaded
+            document.getElementById('mainCharacterView').classList.remove('hidden');
         }
-
-        createCharacterForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const name = document.getElementById('characterNameInput').value.trim();
-
-            if (!name || name.length < 2) {
-                showMessage(creationMessage, 'Your character name must be at least 2 characters long.', true);
-                return;
-            }
-
-            try {
-                const newCharacter = await createCharacter(name);
-                if (!newCharacter) {
-                    return;
-                }
-
-                showMainCharacterState();
-                updateCharacterDisplay(newCharacter);
-                showMessage(creationMessage, 'Character created successfully.', false);
-            } catch (error) {
-                console.error('Create character error:', error);
-                showMessage(creationMessage, 'Could not create your character. Please try again.', true);
-            }
-        });
 
         loadCharacter();
     </script>
