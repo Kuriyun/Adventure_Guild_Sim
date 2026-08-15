@@ -317,7 +317,6 @@
         const objectiveContent = document.getElementById('objectiveContent');
         const questList = document.getElementById('questList');
         const questNotification = document.getElementById('questNotification');
-        const currentCharacterId = 1; // TODO: Replace with actual character ID from session or context
         const maxActiveQuests = 3;
         let allQuests = [];
         let activeQuests = [];
@@ -336,10 +335,10 @@
 
         async function testAcceptQuestFunction() {
             const { data, error } = await supabaseClient.functions.invoke(
-                'accept-quest',
+                'accept_quest',
                 {
                     body: {
-                        quest_id: 1
+                        quest_id: 2
                     }
                 }
             );
@@ -347,8 +346,6 @@
             console.log('Function response:', data);
             console.log('Function error:', error);
         }
-
-        testAcceptQuestFunction();
 
         function showQuestNotification(message, isError = false) {
             questNotification.textContent = message;
@@ -462,17 +459,27 @@
                 return;
             }
 
-            // Insert quest into character_quests
-            const { error } = await supabaseClient
-                .from('character_quests')
-                .insert({
-                    quest_id: quest.id,
-                    character_id: currentCharacterId
-                });
+            // Ask the server to accept the quest
+            const { data, error } = await supabaseClient.functions.invoke(
+                'accept_quest',
+                {
+                    body: {
+                        quest_id: quest.id
+                    }
+                }
+            );
 
             if (error) {
                 console.error('Could not accept quest:', error);
                 showQuestNotification(`Could not accept quest: ${error.message}`, true);
+                return;
+            }
+
+            if (!data?.success) {
+                showQuestNotification(
+                    data?.error || 'Could not accept quest.',
+                    true
+                );
                 return;
             }
 
