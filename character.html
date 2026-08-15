@@ -162,22 +162,11 @@
             <div class="card">
                 <h2>🎒 Inventory</h2>
                 <div class="inventory-grid">
-                    <div class="inventory-item" data-tooltip="Restores 30 health. A basic potion brewed by village apothecaries.">
-                        <div class="item-icon">🧪</div>
-                        <span class="item-count">x5</span>
-                    </div>
-                    <div class="inventory-item" data-tooltip="Restores 25 mana. Refreshes the mind and focus during long battles.">
-                        <div class="item-icon">🌙</div>
-                        <span class="item-count">x3</span>
-                    </div>
-                    <div class="inventory-item" data-tooltip="A rusted key from an ancient ruin. It may unlock forgotten doors.">
-                        <div class="item-icon">🔑</div>
-                        <span class="item-count">x1</span>
-                    </div>
-                    <div class="inventory-item" data-tooltip="A rare gem cut from the heart of a fallen moon. Valuable to merchants and mages alike.">
-                        <div class="item-icon">💎</div>
-                        <span class="item-count">x2</span>
-                    </div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
                     <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
                     <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
                     <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
@@ -232,138 +221,25 @@
                 <!-- Quests Tab -->
                 <div id="quests" class="tab-pane active">
                     <h2>Active Quests</h2>
-                    <div class="quest">
-                        <div class="quest-header">
-                            <h3>Defeat the Shadow Beast</h3>
-                            <span class="quest-level">Lvl 5</span>
-                        </div>
-                        <p class="quest-desc">Hunt the Shadow Beast lurking in the Dark Forest.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
-                            </div>
-                            <span class="progress-text">3 / 5 defeated</span>
-                        </div>
-                        <div class="quest-reward">
-                            <span>Reward: 500 XP + 250 Gold</span>
-                        </div>
-                    </div>
-
-                    <div class="quest">
-                        <div class="quest-header">
-                            <h3>Collect Ancient Artifacts</h3>
-                            <span class="quest-level">Lvl 6</span>
-                        </div>
-                        <p class="quest-desc">Find 5 ancient artifacts hidden throughout the realm.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 40%"></div>
-                            </div>
-                            <span class="progress-text">2 / 5 found</span>
-                        </div>
-                        <div class="quest-reward">
-                            <span>Reward: 750 XP + 500 Gold</span>
-                        </div>
-                    </div>
-
-                    <div class="quest">
-                        <div class="quest-header">
-                            <h3>Visit the Ancient Temple</h3>
-                            <span class="quest-level">Lvl 4</span>
-                        </div>
-                        <p class="quest-desc">Explore the ruins of the ancient temple.</p>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                            <span class="progress-text">Completed!</span>
-                        </div>
-                        <button class="claim-btn">Claim Reward</button>
-                    </div>
+                    <div class="empty-quest-message" style="margin-top: 12px;">No Active Quests</div>
                 </div>
 
                 <!-- Shop Tab -->
                 <div id="shop" class="tab-pane">
                     <h2>Merchant's Shop</h2>
-                    <div class="shop-item">
-                        <div class="shop-item-header">
-                            <span class="shop-item-name">🗡️ Enchanted Sword</span>
-                            <span class="shop-price">750 Gold</span>
-                        </div>
-                        <p class="shop-item-desc">A sword infused with dark magic.</p>
-                        <button class="buy-btn">Buy</button>
-                    </div>
-
-                    <div class="shop-item">
-                        <div class="shop-item-header">
-                            <span class="shop-item-name">🛡️ Diamond Shield</span>
-                            <span class="shop-price">1,200 Gold</span>
-                        </div>
-                        <p class="shop-item-desc">An unbreakable shield of diamonds.</p>
-                        <button class="buy-btn">Buy</button>
-                    </div>
-
-                    <div class="shop-item">
-                        <div class="shop-item-header">
-                            <span class="shop-item-name">🧪 Elixir of Strength</span>
-                            <span class="shop-price">300 Gold</span>
-                        </div>
-                        <p class="shop-item-desc">Increases strength by 3 points for 1 hour.</p>
-                        <button class="buy-btn">Buy</button>
-                    </div>
+                    <div class="empty-quest-message" style="margin-top: 12px;">No Shop Items</div>
                 </div>
 
                 <!-- Skills Tab -->
                 <div id="skills" class="tab-pane">
                     <h2>Skills</h2>
-                    <div class="skill">
-                        <h3>Shadow Strike</h3>
-                        <p class="skill-level">Level 3</p>
-                        <p class="skill-desc">Deal damage and gain invisibility for 2 seconds.</p>
-                        <div class="skill-cooldown">Cooldown: 8s</div>
-                    </div>
-
-                    <div class="skill">
-                        <h3>Dark Armor</h3>
-                        <p class="skill-level">Level 2</p>
-                        <p class="skill-desc">Increase defense by 30% for 10 seconds.</p>
-                        <div class="skill-cooldown">Cooldown: 15s</div>
-                    </div>
-
-                    <div class="skill">
-                        <h3>Demon's Wrath</h3>
-                        <p class="skill-level">Level 1</p>
-                        <p class="skill-desc">Ultimate ability - Deal massive damage to all enemies.</p>
-                        <div class="skill-cooldown">Cooldown: 60s</div>
-                    </div>
+                    <div class="empty-quest-message" style="margin-top: 12px;">No Skills Available</div>
                 </div>
 
                 <!-- Achievements Tab -->
                 <div id="achievements" class="tab-pane">
                     <h2>Achievements</h2>
-                    <div class="achievement unlocked">
-                        <span class="achievement-icon">🏆</span>
-                        <div class="achievement-info">
-                            <h3>First Blood</h3>
-                            <p>Defeated your first enemy.</p>
-                        </div>
-                    </div>
-
-                    <div class="achievement unlocked">
-                        <span class="achievement-icon">⚡</span>
-                        <div class="achievement-info">
-                            <h3>Level 5 Warrior</h3>
-                            <p>Reached level 5.</p>
-                        </div>
-                    </div>
-
-                    <div class="achievement locked">
-                        <span class="achievement-icon">👑</span>
-                        <div class="achievement-info">
-                            <h3>Legendary Hero</h3>
-                            <p>Reach level 20.</p>
-                        </div>
-                    </div>
+                    <div class="empty-quest-message" style="margin-top: 12px;">No Achievements</div>
                 </div>
 
             </div>
