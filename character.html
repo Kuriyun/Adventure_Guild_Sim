@@ -9,7 +9,24 @@
 </head>
 
 <body>
-    <div class="game-container">
+    <div id="creationPanel" class="creation-panel hidden">
+        <div class="creation-card">
+            <div class="creation-badge">Realm Forge</div>
+            <h1>Forge Your Hero</h1>
+            <p>Choose the name you want to be known by in this realm. You can change it later from this page.</p>
+
+            <form id="createCharacterForm" class="creation-form">
+                <div class="field creation-field">
+                    <label for="characterNameInput">Character Name</label>
+                    <input id="characterNameInput" class="name-input" type="text" maxlength="20" placeholder="Enter your character name" required>
+                </div>
+                <button type="submit" class="primary-btn save-name-btn">Create Character</button>
+                <div id="creationMessage" class="form-message" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainCharacterView" class="game-container hidden">
         
         <!-- Left Panel: Character Info -->
         <div class="left-panel">
@@ -20,55 +37,35 @@
                     ⚔️
                 </div>
                 <div class="character-info">
-                    <h1>Shadow Knight</h1>
-                    <p class="level">Level 5</p>
+                    <h1 id="characterName">Shadow Knight</h1>
+                    <p class="level" id="characterLevel">Level 5</p>
                 </div>
             </div>
 
             <!-- Character Stats -->
             <div class="card stats-card">
                 <h2>⚡ Stats</h2>
-                <div class="stat-row">
-                    <span class="stat-label">Strength</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 75%"></div>
+                <div class="stats-grid">
+                    <div class="stat-column">
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">Strength</span>
+                            <span id="strengthValue" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">Dexterity</span>
+                            <span id="dexterityValue" class="stat-value">0</span>
+                        </div>
                     </div>
-                    <span class="stat-value">15</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Dexterity</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 85%"></div>
+                    <div class="stat-column">
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">Intelligence</span>
+                            <span id="intelligenceValue" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">Resistance</span>
+                            <span id="resistanceValue" class="stat-value">0</span>
+                        </div>
                     </div>
-                    <span class="stat-value">17</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Constitution</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 70%"></div>
-                    </div>
-                    <span class="stat-value">14</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Intelligence</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 60%"></div>
-                    </div>
-                    <span class="stat-value">12</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Wisdom</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 65%"></div>
-                    </div>
-                    <span class="stat-value">13</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Charisma</span>
-                    <div class="stat-bar">
-                        <div class="stat-fill" style="width: 55%"></div>
-                    </div>
-                    <span class="stat-value">11</span>
                 </div>
             </div>
 
@@ -78,14 +75,14 @@
                 <div class="exp-info">
                     <div class="exp-row">
                         <span>Current XP</span>
-                        <span>3,450 / 5,000</span>
+                        <span id="currentExperienceText">0 / 100</span>
                     </div>
                     <div class="exp-bar">
-                        <div class="exp-fill" style="width: 69%"></div>
+                        <div id="expFill" class="exp-fill" style="width: 0%"></div>
                     </div>
                     <div class="exp-row">
                         <span>XP to Next Level</span>
-                        <span>1,550 XP</span>
+                        <span id="xpToNextText">100 XP</span>
                     </div>
                 </div>
             </div>
@@ -96,42 +93,67 @@
                 <div class="vital-row">
                     <span class="vital-label">Health</span>
                     <div class="vital-bar health-bar">
-                        <div class="vital-fill" style="width: 85%"></div>
+                        <div id="healthFill" class="vital-fill" style="width: 0%"></div>
                     </div>
-                    <span class="vital-value">85 / 100</span>
+                    <span id="healthText" class="vital-value">0 / 100</span>
                 </div>
                 <div class="vital-row">
                     <span class="vital-label">Mana</span>
                     <div class="vital-bar mana-bar">
-                        <div class="vital-fill" style="width: 60%"></div>
+                        <div id="manaFill" class="vital-fill" style="width: 0%"></div>
                     </div>
-                    <span class="vital-value">60 / 100</span>
+                    <span id="manaText" class="vital-value">0 / 100</span>
                 </div>
             </div>
 
             <!-- Equipment -->
             <div class="card">
                 <h2>🛡️ Equipment</h2>
-                <div class="equipment-grid">
-                    <div class="equipment-slot">
-                        <div class="slot-icon">⚔️</div>
-                        <p>Iron Sword</p>
-                        <span class="rarity rare">Rare</span>
+                <div class="equipment-layout">
+                    <div class="equipment-column">
+                        <div class="equipment-slot" data-slot="Helmet">
+                            <div class="slot-icon">🪖</div>
+                            <p>Helmet</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot" data-slot="Chestplate">
+                            <div class="slot-icon">🧥</div>
+                            <p>Chestplate</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot" data-slot="Legs">
+                            <div class="slot-icon">👖</div>
+                            <p>Legs</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot" data-slot="Shoes">
+                            <div class="slot-icon">🥾</div>
+                            <p>Shoes</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
                     </div>
-                    <div class="equipment-slot">
-                        <div class="slot-icon">🛡️</div>
-                        <p>Steel Shield</p>
-                        <span class="rarity common">Common</span>
-                    </div>
-                    <div class="equipment-slot">
-                        <div class="slot-icon">🧥</div>
-                        <p>Leather Armor</p>
-                        <span class="rarity uncommon">Uncommon</span>
-                    </div>
-                    <div class="equipment-slot">
-                        <div class="slot-icon">👑</div>
-                        <p>Silver Crown</p>
-                        <span class="rarity legendary">Legendary</span>
+
+                    <div class="equipment-column">
+                        <div class="equipment-slot" data-slot="Ring 1">
+                            <div class="slot-icon">💍</div>
+                            <p>Ring</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot" data-slot="Ring 2">
+                            <div class="slot-icon">💍</div>
+                            <p>Ring</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot main-weapon-slot" data-slot="Main Weapon">
+                            <div class="slot-icon">⚔️</div>
+                            <p>Main Weapon</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
+                        <div class="equipment-slot offhand-slot" data-slot="Offhand">
+                            <div class="slot-icon">🛡️</div>
+                            <p>Offhand</p>
+                            <span class="slot-empty">Empty</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,33 +162,48 @@
             <div class="card">
                 <h2>🎒 Inventory</h2>
                 <div class="inventory-grid">
-                    <div class="inventory-item">
+                    <div class="inventory-item" data-tooltip="Restores 30 health. A basic potion brewed by village apothecaries.">
                         <div class="item-icon">🧪</div>
-                        <p>Health Potion</p>
                         <span class="item-count">x5</span>
                     </div>
-                    <div class="inventory-item">
+                    <div class="inventory-item" data-tooltip="Restores 25 mana. Refreshes the mind and focus during long battles.">
                         <div class="item-icon">🌙</div>
-                        <p>Mana Potion</p>
                         <span class="item-count">x3</span>
                     </div>
-                    <div class="inventory-item">
+                    <div class="inventory-item" data-tooltip="A rusted key from an ancient ruin. It may unlock forgotten doors.">
                         <div class="item-icon">🔑</div>
-                        <p>Ancient Key</p>
                         <span class="item-count">x1</span>
                     </div>
-                    <div class="inventory-item">
+                    <div class="inventory-item" data-tooltip="A rare gem cut from the heart of a fallen moon. Valuable to merchants and mages alike.">
                         <div class="item-icon">💎</div>
-                        <p>Ruby Gem</p>
                         <span class="item-count">x2</span>
                     </div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
+                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
                 </div>
             </div>
 
             <!-- Gold -->
             <div class="card gold-card">
                 <h2>💰 Gold</h2>
-                <div class="gold-amount">2,450 Gold</div>
+                <div id="goldAmount" class="gold-amount">0 Gold</div>
             </div>
 
         </div>
@@ -334,6 +371,166 @@
         </div>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script>
+        const creationPanel = document.getElementById('creationPanel');
+        const mainCharacterView = document.getElementById('mainCharacterView');
+        const createCharacterForm = document.getElementById('createCharacterForm');
+        const creationMessage = document.getElementById('creationMessage');
+
+        function showMessage(element, text, isError = true) {
+            element.textContent = text;
+            element.classList.toggle('show', Boolean(text));
+            element.style.color = isError ? '#ff8c6b' : '#7ce08a';
+        }
+
+        function showCreationState() {
+            creationPanel.classList.remove('hidden');
+            mainCharacterView.classList.add('hidden');
+        }
+
+        function showMainCharacterState() {
+            creationPanel.classList.add('hidden');
+            mainCharacterView.classList.remove('hidden');
+        }
+
+        async function createCharacter(name) {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('characters')
+                .insert({
+                    user_id: user.id,
+                    name: name,
+                    level: 1,
+                    experience: 0,
+                    gold: 100,
+                    health: 100,
+                    max_health: 100,
+                    mana: 100,
+                    max_mana: 100
+                })
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            return data;
+        }
+
+        async function loadCharacter() {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const {
+                data: character,
+                error: characterError
+            } = await supabaseClient
+                .from('characters')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (characterError) {
+                console.error('Error loading character:', characterError);
+                return;
+            }
+
+            if (!character) {
+                showCreationState();
+                return;
+            }
+
+            showMainCharacterState();
+            updateCharacterDisplay(character);
+        }
+
+        function updateCharacterDisplay(character) {
+            const name = character.name || 'Adventurer';
+            const level = Number(character.level || 1);
+            const currentExperience = Number(character.experience || 0);
+            const currentHealth = Number(character.health || 0);
+            const maxHealth = Number(character.max_health || currentHealth || 100);
+            const currentMana = Number(character.mana || 0);
+            const maxMana = Number(character.max_mana || currentMana || 100);
+            const gold = Number(character.gold || 0);
+            const strength = Number(character.strength || 0);
+            const dexterity = Number(character.dexterity || 0);
+            const intelligence = Number(character.intelligence || 0);
+            const resistance = Number(character.resistance || 0);
+            const xpForNextLevel = Math.max(100, (level + 1) * 100);
+            const xpProgress = Math.min(100, Math.max(0, (currentExperience / xpForNextLevel) * 100));
+            const healthProgress = Math.min(100, Math.max(0, (currentHealth / maxHealth) * 100));
+            const manaProgress = Math.min(100, Math.max(0, (currentMana / maxMana) * 100));
+
+            const statMap = [
+                { fill: 'strengthFill', value: 'strengthValue', amount: strength },
+                { fill: 'dexterityFill', value: 'dexterityValue', amount: dexterity },
+                { fill: 'intelligenceFill', value: 'intelligenceValue', amount: intelligence },
+                { fill: 'resistanceFill', value: 'resistanceValue', amount: resistance }
+            ];
+
+            statMap.forEach(({ value, amount }) => {
+                const valueElement = document.getElementById(value);
+                if (valueElement) valueElement.textContent = amount;
+            });
+
+            document.getElementById('characterName').textContent = name;
+            document.getElementById('characterLevel').textContent = `Level ${level}`;
+            document.getElementById('currentExperienceText').textContent = `${currentExperience} / ${xpForNextLevel}`;
+            document.getElementById('expFill').style.width = `${xpProgress}%`;
+            document.getElementById('xpToNextText').textContent = `${Math.max(0, xpForNextLevel - currentExperience)} XP`;
+            document.getElementById('healthFill').style.width = `${healthProgress}%`;
+            document.getElementById('healthText').textContent = `${currentHealth} / ${maxHealth}`;
+            document.getElementById('manaFill').style.width = `${manaProgress}%`;
+            document.getElementById('manaText').textContent = `${currentMana} / ${maxMana}`;
+            document.getElementById('goldAmount').textContent = `${gold} Gold`;
+        }
+
+        createCharacterForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = document.getElementById('characterNameInput').value.trim();
+
+            if (!name || name.length < 2) {
+                showMessage(creationMessage, 'Your character name must be at least 2 characters long.', true);
+                return;
+            }
+
+            try {
+                const newCharacter = await createCharacter(name);
+                if (!newCharacter) {
+                    return;
+                }
+
+                showMainCharacterState();
+                updateCharacterDisplay(newCharacter);
+                showMessage(creationMessage, 'Character created successfully.', false);
+            } catch (error) {
+                console.error('Create character error:', error);
+                showMessage(creationMessage, 'Could not create your character. Please try again.', true);
+            }
+        });
+
+        loadCharacter();
+    </script>
 
     <script src="game-script.js"></script>
 </body>

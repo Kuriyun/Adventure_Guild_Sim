@@ -46,7 +46,14 @@
             color: #d4af37;
             font-size: 26px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-            margin-left: 180px;
+            margin-left: 0;
+            text-align: left;
+            line-height: 1.4;
+            font-weight: 400;
+        }
+
+        .quest-only-title .highlight-title {
+            font-weight: 700;
         }
 
         .hub-back-button {
@@ -156,16 +163,79 @@
             gap: 15px;
         }
 
+        .active-quest-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .active-quest-item {
+            background: linear-gradient(135deg, #0f1219 0%, #1a1f3a 100%);
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
+        }
+
         .quest-item {
             background: linear-gradient(135deg, #0f1219 0%, #1a1f3a 100%);
             border: 2px solid #3d4452;
             border-radius: 8px;
             padding: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .quest-item.active {
             border-color: #d4af37;
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .quest-item.flash {
+            animation: questPulse 0.6s ease;
+            border-color: #d4af37;
+            box-shadow: 0 0 18px rgba(212, 175, 55, 0.5);
+        }
+
+        @keyframes questPulse {
+            0% { transform: translateX(0); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+            100% { transform: translateX(0); box-shadow: 0 0 18px rgba(212, 175, 55, 0.5); }
+        }
+
+        .quest-notification {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            z-index: 200;
+            min-width: 220px;
+            max-width: 300px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+            border: 1px solid #d4af37;
+            background: rgba(20, 24, 33, 0.92);
+            color: #f0e2a3;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+        }
+
+        .quest-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quest-notification.error {
+            border-color: #ff8c6b;
+            background: rgba(47, 22, 18, 0.95);
+            color: #ffd1c4;
         }
 
         .quest-item-header {
@@ -218,10 +288,12 @@
 <body>
     <button class="hub-back-button" onclick="window.location.href='index.html'">← Back to Hub</button>
 
+    <div id="questNotification" class="quest-notification" aria-live="polite"></div>
+
     <div class="quest-page-layout">
         <div class="quest-panel">
             <div class="quest-only-header">
-                <div class="quest-only-title">Quest Board</div>
+                <div class="quest-only-title"><span class="highlight-title">Quest Board</span> - Here you can accept quests from the Adventueres Guild</div>
             </div>
 
             <div class="card quest-highlight" id="currentObjective">
@@ -238,28 +310,106 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
     <script>
         const currentObjective = document.getElementById('currentObjective');
         const objectiveContent = document.getElementById('objectiveContent');
         const questList = document.getElementById('questList');
+        const questNotification = document.getElementById('questNotification');
+        const maxActiveQuests = 3;
+        let allQuests = [];
+        let activeQuests = [];
+
+        function normalizeQuest(rawQuest) {
+            return {
+                title: rawQuest.name,
+                description: rawQuest.description,
+                level: Number(rawQuest.level_requirement ?? 0),
+                goldReward: Number(rawQuest.gold_reward ?? 0),
+                expReward: Number(rawQuest.experience_reward ?? 0),
+                itemReward: 'N/A'
+            };
+        }
+
+        function showQuestNotification(message, isError = false) {
+            questNotification.textContent = message;
+            questNotification.classList.toggle('error', isError);
+            questNotification.classList.add('show');
+
+            window.clearTimeout(showQuestNotification.timeoutId);
+            showQuestNotification.timeoutId = window.setTimeout(() => {
+                questNotification.classList.remove('show');
+            }, 1800);
+        }
 
         function renderCurrentObjective() {
-            const hasQuestContent = currentObjective.querySelector('.quest-main-title, .quest-meta, .quest-callout, .quest-progress, .quest-reward, .quest-cta');
-
-            if (!hasQuestContent) {
-                objectiveContent.textContent = "You currently don't have any Quests.";
-                objectiveContent.style.display = 'block';
+            if (activeQuests.length === 0) {
+                currentObjective.innerHTML = `
+                    <h2>Current Objective</h2>
+                    <div id="objectiveContent" class="empty-quest-message">You currently don't have any Quests.</div>
+                `;
+                return;
             }
+
+            const activeQuestMarkup = activeQuests.map((quest) => `
+                <div class="active-quest-item">
+                    <div class="quest-item-header">
+                        <h3>${quest.title}</h3>
+                        <span class="quest-badge">Lvl ${quest.level}</span>
+                    </div>
+                    <div class="quest-meta">
+                        <span>Level ${quest.level}</span>
+                    </div>
+                    <div class="quest-callout">${quest.description}</div>
+                    <div class="quest-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-text">0 / 1 started</span>
+                    </div>
+                    <div class="quest-reward">
+                        <span>Gold: ${quest.goldReward} | EXP: ${quest.expReward}</span>
+                    </div>
+                    <div class="quest-action-row" style="margin-top: 12px;">
+                        <button class="secondary-btn abandon-btn" data-quest-title="${quest.title}">Abandon Quest</button>
+                    </div>
+                </div>
+            `).join('');
+
+            currentObjective.innerHTML = `
+                <h2>Current Objective</h2>
+                <div class="active-quest-list">${activeQuestMarkup}</div>
+            `;
+
+            currentObjective.querySelectorAll('.abandon-btn').forEach((button) => {
+                button.addEventListener('click', () => abandonQuest(button.dataset.questTitle));
+            });
         }
 
         function formatQuestReward(quest) {
-            return `Gold: ${quest.goldReward} | Item: ${quest.itemReward} | EXP: ${quest.expReward}`;
+            return `Gold: ${quest.goldReward} | EXP: ${quest.expReward}`;
+        }
+
+        function abandonQuest(questTitle) {
+            const questIndex = activeQuests.findIndex((quest) => quest.title === questTitle);
+
+            if (questIndex === -1) {
+                return;
+            }
+
+            const [abandonedQuest] = activeQuests.splice(questIndex, 1);
+            renderCurrentObjective();
+            renderQuestBoard(allQuests.filter((quest) => !activeQuests.some((activeQuest) => activeQuest.title === quest.title)));
+            showQuestNotification(`${abandonedQuest.title} has been abandoned.`);
         }
 
         function renderQuestBoard(quests) {
             questList.innerHTML = '';
 
-            quests.forEach((quest) => {
+            const boardQuests = quests.filter((quest) => !activeQuests.some((activeQuest) => activeQuest.title === quest.title));
+
+            boardQuests.forEach((quest) => {
                 const questItem = document.createElement('div');
                 questItem.className = 'quest-item';
                 questItem.innerHTML = `
@@ -278,43 +428,52 @@
         }
 
         function acceptQuest(questCard, quest) {
-            currentObjective.innerHTML = `
-                <h2>Current Objective</h2>
-                <div class="quest-main-title">${quest.title}</div>
-                <div class="quest-meta">
-                    <span>📍 ${quest.location}</span>
-                    <span>Lvl ${quest.level}</span>
-                </div>
-                <div class="quest-callout">${quest.description}</div>
-                <div class="quest-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <span class="progress-text">0 / 1 started</span>
-                </div>
-                <div class="quest-reward">
-                    <span>${formatQuestReward(quest)}</span>
-                </div>
-                <div class="quest-action-row" style="margin-top: 16px;">
-                    <button class="quest-cta">Quest Accepted</button>
-                </div>
-            `;
+            if (activeQuests.length >= maxActiveQuests) {
+                questCard.classList.remove('flash');
+                void questCard.offsetWidth;
+                questCard.classList.add('flash');
+                showQuestNotification('You can only have up to 3 active quests at a time.', true);
+                return;
+            }
 
+            if (activeQuests.some((activeQuest) => activeQuest.title === quest.title)) {
+                questCard.classList.remove('flash');
+                void questCard.offsetWidth;
+                questCard.classList.add('flash');
+                showQuestNotification('This quest is already active.', true);
+                return;
+            }
+
+            activeQuests.push(quest);
+            renderCurrentObjective();
+            renderQuestBoard(allQuests.filter((availableQuest) => !activeQuests.some((activeQuest) => activeQuest.title === availableQuest.title)));
             questCard.remove();
+            showQuestNotification(`${quest.title} accepted!`);
         }
 
         async function loadQuests() {
             try {
-                const response = await fetch('quests.json', { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error('Quest file request failed');
+                const { data, error } = await supabaseClient
+                    .from('quests')
+                    .select('*')
+                    .order('level_requirement', { ascending: true });
+
+                if (error) {
+                    throw error;
                 }
 
-                const quests = await response.json();
-                renderQuestBoard(quests);
+                if (!data || data.length === 0) {
+                    questList.innerHTML = '<div class="empty-quest-message">No quests are available yet.</div>';
+                    return;
+                }
+
+                allQuests = data.map(normalizeQuest);
+                renderQuestBoard(allQuests);
             } catch (error) {
-                console.error('Could not load quests from quests.json', error);
-                questList.innerHTML = '<div class="empty-quest-message">Unable to load quests from quests.json.</div>';
+                console.error('Could not load quests from database', error);
+                const detail = error?.message || 'Unknown database error';
+                questList.innerHTML = `<div class="empty-quest-message">Unable to load quests from the database.<br><small>${detail}</small></div>`;
+                showQuestNotification(`Quest load failed: ${detail}`, true);
             }
         }
 
