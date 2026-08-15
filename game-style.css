@@ -187,10 +187,8 @@ body {
     height: 64px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #d4af37;
-    background: #2f3344;
+    border: 1px solid rgba(212, 175, 55, 0.3);
     flex-shrink: 0;
-    display: block;
 }
 
 .class-info {
