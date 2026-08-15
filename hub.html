@@ -191,6 +191,13 @@
             border-radius: 50%;
         }
 
+        .preview-avatar .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .preview-info h3 {
             color: #d4af37;
             margin-bottom: 5px;
@@ -257,12 +264,14 @@
         </div>
 
         <!-- Character Preview -->
-        <div class="character-preview">
-            <div class="preview-avatar">⚔️</div>
+        <div class="character-preview hidden">
+            <div class="preview-avatar">
+                <img id="previewClassIcon" src="" alt="Class Icon" class="avatar-image">
+            </div>
             <div class="preview-info">
-                <h3>Shadow Knight</h3>
-                <p>Level 5 | Strength Warrior</p>
-                <p style="margin-top: 5px; color: #d4af37;">💰 2,450 Gold</p>
+                <h3 id="previewCharacterName"></h3>
+                <p id="previewCharacterLevel"></p>
+                <p id="previewGold" style="margin-top: 5px; color: #d4af37;"></p>
             </div>
         </div>
 
@@ -274,8 +283,7 @@
                 <div class="location-icon">👤</div>
                 <div class="location-name">Character</div>
                 <div class="location-desc">View your stats, equipment, inventory, and progression.</div>
-                <div class="location-status available">✓ Ready</div>
-                <a href="game.html" style="text-decoration: none;">
+                <a href="character.html" style="text-decoration: none;">
                     <button class="enter-btn">Enter</button>
                 </a>
             </div>
@@ -285,7 +293,6 @@
                 <div class="location-icon">📜</div>
                 <div class="location-name">Quests</div>
                 <div class="location-desc">Accept quests and complete them to earn rewards and experience.</div>
-                <div class="location-status available">✓ Ready</div>
                 <button class="enter-btn" onclick="navigateTo('quests')">Enter</button>
             </div>
 
@@ -294,7 +301,6 @@
                 <div class="location-icon">🏪</div>
                 <div class="location-name">Shop</div>
                 <div class="location-desc">Buy weapons, armor, potions, and rare items from merchants.</div>
-                <div class="location-status available">✓ Ready</div>
                 <button class="enter-btn" onclick="navigateTo('shop')">Enter</button>
             </div>
 
@@ -303,8 +309,8 @@
                 <div class="location-icon">🏰</div>
                 <div class="location-name">Dungeon</div>
                 <div class="location-desc">Venture into dark dungeons and battle fierce enemies.</div>
-                <div class="location-status">🔒 Locked (Level 8+)</div>
-                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>Locked</button>
+                <div class="location-status">in progress...</div>
+                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
             </div>
 
             <!-- Skills & Spells -->
@@ -312,8 +318,8 @@
                 <div class="location-icon">✨</div>
                 <div class="location-name">Skills</div>
                 <div class="location-desc">Learn and master powerful skills and magical spells.</div>
-                <div class="location-status available">✓ Ready</div>
-                <button class="enter-btn" onclick="navigateTo('skills')">Enter</button>
+                <div class="location-status">in progress...</div>
+                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
             </div>
 
             <!-- Achievements -->
@@ -321,8 +327,8 @@
                 <div class="location-icon">🏆</div>
                 <div class="location-name">Achievements</div>
                 <div class="location-desc">Track your accomplishments and unlock special rewards.</div>
-                <div class="location-status available">✓ Ready</div>
-                <button class="enter-btn" onclick="navigateTo('achievements')">Enter</button>
+                <div class="location-status">in progress...</div>
+                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
             </div>
 
         </div>
@@ -334,7 +340,74 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
     <script>
+        async function loadCharacterPreview() {
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const {
+                data: character,
+                error: characterError
+            } = await supabaseClient
+                .from('characters')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (characterError) {
+                console.error('Error loading character:', characterError);
+                return;
+            }
+
+            if (!character) {
+                window.location.href = 'character-creation.html';
+                return;
+            }
+
+            // Update character preview
+            const name = character.name || 'Adventurer';
+            const level = Number(character.level || 1);
+            const gold = Number(character.gold || 0);
+
+            console.log('Character loaded:', { name, level, gold, class_id: character.class_id });
+
+            document.getElementById('previewCharacterName').textContent = name;
+            document.getElementById('previewCharacterLevel').textContent = `Level ${level}`;
+            document.getElementById('previewGold').textContent = `💰 ${gold} Gold`;
+
+            // Fetch and display class icon
+            if (character.class_id) {
+                const { data: classData, error: classError } = await supabaseClient
+                    .from('classes')
+                    .select('name')
+                    .eq('id', character.class_id)
+                    .single();
+
+                console.log('Class data:', { classData, classError });
+
+                if (!classError && classData) {
+                    const classIcon = document.getElementById('previewClassIcon');
+                    const iconPath = `classes/${classData.name}/ClassIcon/${classData.name}.png`;
+                    console.log('Setting icon path:', iconPath);
+                    classIcon.src = iconPath;
+                } else {
+                    console.error('Error loading class:', classError);
+                }
+            }
+
+            // Show the character preview now that data is loaded
+            document.querySelector('.character-preview').classList.remove('hidden');
+        }
+
         function navigateTo(location) {
             if (location === 'quests') {
                 window.location.href = 'quest.html';
@@ -353,6 +426,9 @@
                 card.style.zIndex = '10';
             });
         });
+
+        // Load character preview on page load
+        loadCharacterPreview();
     </script>
 
 </body>

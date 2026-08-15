@@ -317,12 +317,14 @@
         const objectiveContent = document.getElementById('objectiveContent');
         const questList = document.getElementById('questList');
         const questNotification = document.getElementById('questNotification');
+        const currentCharacterId = 1; // TODO: Replace with actual character ID from session or context
         const maxActiveQuests = 3;
         let allQuests = [];
         let activeQuests = [];
 
         function normalizeQuest(rawQuest) {
             return {
+                id: rawQuest.id,
                 title: rawQuest.name,
                 description: rawQuest.description,
                 level: Number(rawQuest.level_requirement ?? 0),
@@ -331,6 +333,22 @@
                 itemReward: 'N/A'
             };
         }
+
+        async function testAcceptQuestFunction() {
+            const { data, error } = await supabaseClient.functions.invoke(
+                'accept-quest',
+                {
+                    body: {
+                        quest_id: 1
+                    }
+                }
+            );
+
+            console.log('Function response:', data);
+            console.log('Function error:', error);
+        }
+
+        testAcceptQuestFunction();
 
         function showQuestNotification(message, isError = false) {
             questNotification.textContent = message;
@@ -427,7 +445,7 @@
             });
         }
 
-        function acceptQuest(questCard, quest) {
+        async function acceptQuest(questCard, quest) {
             if (activeQuests.length >= maxActiveQuests) {
                 questCard.classList.remove('flash');
                 void questCard.offsetWidth;
@@ -436,7 +454,7 @@
                 return;
             }
 
-            if (activeQuests.some((activeQuest) => activeQuest.title === quest.title)) {
+            if (activeQuests.some((activeQuest) => activeQuest.id === quest.id)) {
                 questCard.classList.remove('flash');
                 void questCard.offsetWidth;
                 questCard.classList.add('flash');
@@ -444,10 +462,35 @@
                 return;
             }
 
+            // Insert quest into character_quests
+            const { error } = await supabaseClient
+                .from('character_quests')
+                .insert({
+                    quest_id: quest.id,
+                    character_id: currentCharacterId
+                });
+
+            if (error) {
+                console.error('Could not accept quest:', error);
+                showQuestNotification(`Could not accept quest: ${error.message}`, true);
+                return;
+            }
+
+            // Only update the UI after the database insert succeeded
             activeQuests.push(quest);
+
             renderCurrentObjective();
-            renderQuestBoard(allQuests.filter((availableQuest) => !activeQuests.some((activeQuest) => activeQuest.title === availableQuest.title)));
+            renderQuestBoard(
+                allQuests.filter(
+                    (availableQuest) =>
+                        !activeQuests.some(
+                            (activeQuest) => activeQuest.id === availableQuest.id
+                        )
+                )
+            );
+
             questCard.remove();
+
             showQuestNotification(`${quest.title} accepted!`);
         }
 
