@@ -152,7 +152,7 @@
     <div class="auth-shell">
         <div class="auth-card">
             <div class="auth-badge">Realm Gateway</div>
-            <h1 id="authTitle">Welcome Back</h1>
+            <h1 id="authTitle">Login</h1>
             <p id="authSubtitle">Enter your credentials to continue your journey.</p>
 
             <form id="authForm">
@@ -168,7 +168,6 @@
 
                 <button id="submitBtn" type="submit" class="primary-btn">Login</button>
                 <button id="secondaryActionBtn" type="button" class="secondary-btn">Create Account</button>
-                <button id="modeToggleBtn" type="button" class="ghost-btn">Need an account? Sign Up</button>
 
                 <div id="formMessage" class="form-message" aria-live="polite"></div>
             </form>
@@ -184,7 +183,6 @@
         const authSubtitle = document.getElementById('authSubtitle');
         const submitBtn = document.getElementById('submitBtn');
         const secondaryActionBtn = document.getElementById('secondaryActionBtn');
-        const modeToggleBtn = document.getElementById('modeToggleBtn');
         const formMessage = document.getElementById('formMessage');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -200,13 +198,12 @@
             authMode = mode;
             const isLogin = mode === 'login';
 
-            authTitle.textContent = isLogin ? 'Welcome Back' : 'Create Your Character';
+            authTitle.textContent = isLogin ? 'Login' : 'Create Account';
             authSubtitle.textContent = isLogin
-                ? 'Enter your credentials to continue your journey.'
-                : 'Create an account to begin your adventure.';
+                ? 'Enter your credentials to login to your account.'
+                : 'Create an account to begin your journey.';
             submitBtn.textContent = isLogin ? 'Login' : 'Create Account';
             secondaryActionBtn.textContent = isLogin ? 'Create Account' : 'Back to Login';
-            modeToggleBtn.textContent = isLogin ? 'Need an account? Sign Up' : 'Already have an account? Login';
             setMessage('', 'error');
             emailInput.value = '';
             passwordInput.value = '';
@@ -304,10 +301,6 @@
             }
 
             updateAuthMode('login');
-        });
-
-        modeToggleBtn.addEventListener('click', () => {
-            updateAuthMode(authMode === 'login' ? 'signup' : 'login');
         });
 
         updateAuthMode('login');
