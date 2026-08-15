@@ -94,8 +94,11 @@
                 classBox.innerHTML = `
                     <input type="radio" id="class-${classItem.id}" name="classSelect" value="${classItem.id}" required>
                     <label for="class-${classItem.id}" class="class-label">
-                        <div class="class-name">${classItem.name}</div>
-                        <div class="class-description">${classItem.description}</div>
+                        <img src="classes/${classItem.name}/ClassIcon/${classItem.name}.png" alt="${classItem.name}" class="class-icon">
+                        <div class="class-info">
+                            <div class="class-name">${classItem.name}</div>
+                            <div class="class-description">${classItem.description}</div>
+                        </div>
                     </label>
                 `;
 
