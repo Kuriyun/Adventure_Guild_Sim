@@ -36,6 +36,14 @@
                     <form id="createCharacterForm" class="creation-form">
 
                         <div class="field creation-field">
+                            <label for="classSelect">
+                                Choose Your Class
+                            </label>
+
+                            <div id="classesContainer" class="classes-container"></div>
+                        </div>
+
+                        <div class="field creation-field">
                             <label for="characterNameInput">
                                 Character Name
                             </label>
@@ -48,14 +56,6 @@
                                 placeholder="Enter your character name"
                                 required
                             >
-                        </div>
-
-                        <div class="field creation-field">
-                            <label for="classSelect">
-                                Choose Your Class
-                            </label>
-
-                            <div id="classesContainer" class="classes-container"></div>
                         </div>
 
                         <button
@@ -187,7 +187,6 @@
 
                         <div class="class-info">
                             <div class="class-name">${classItem.name}</div>
-                            <div class="class-description">${classItem.description}</div>
                         </div>
                     </label>
                 `;
