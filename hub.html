@@ -313,13 +313,12 @@
                 <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
             </div>
 
-            <!-- Skills & Spells -->
+            <!-- World -->
             <div class="location-card">
-                <div class="location-icon">✨</div>
-                <div class="location-name">Skills</div>
-                <div class="location-desc">Learn and master powerful skills and magical spells.</div>
-                <div class="location-status">in progress...</div>
-                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
+                <div class="location-icon">🗺️</div>
+                <div class="location-name">World</div>
+                <div class="location-desc">Explore the world and discover the lands.</div>
+                <button class="enter-btn" onclick="navigateTo('world')">Enter</button>
             </div>
 
             <!-- Achievements -->
@@ -413,8 +412,8 @@
                 window.location.href = 'quest.html';
             } else if (location === 'shop') {
                 window.location.href = 'game.html?tab=shop';
-            } else if (location === 'skills') {
-                window.location.href = 'game.html?tab=skills';
+            } else if (location === 'world') {
+                window.location.href = 'world.html';
             } else if (location === 'achievements') {
                 window.location.href = 'game.html?tab=achievements';
             }

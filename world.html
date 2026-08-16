@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>World - Dark Fantasy RPG</title>
+
+    <link rel="stylesheet" href="world.css">
+</head>
+
+<body>
+
+    <div class="world-container">
+
+        <!-- Header -->
+        <header class="world-header">
+            <div>
+                <h1>🌍 World</h1>
+                <p>Explore the lands and discover what awaits you.</p>
+            </div>
+
+            <a href="hub.html" class="back-button">
+                ← Back to Hub
+            </a>
+        </header>
+
+
+        <!-- Main World Interface -->
+        <main class="world-interface">
+
+            <!-- Location List -->
+            <aside class="location-sidebar">
+
+                <div class="sidebar-header">
+                    <h2>Locations</h2>
+                    <p>Select a location to explore.</p>
+                </div>
+
+                <div id="locationList" class="location-list">
+                    <!-- Locations will be inserted here -->
+                </div>
+
+            </aside>
+
+
+            <!-- Map Area -->
+            <section class="map-section">
+
+                <!-- Location information -->
+                <div id="locationHeader" class="map-header">
+                    <h2 id="selectedLocationName">
+                        Select a Location
+                    </h2>
+
+                    <p id="selectedLocationDescription">
+                        Choose a location from the list to begin exploring.
+                    </p>
+                </div>
+
+
+                <!-- Map -->
+                <div id="mapContainer" class="map-container hidden">
+
+                    <img
+                        id="worldMap"
+                        class="world-map"
+                        src=""
+                        alt="Location Map"
+                    >
+
+                    <!-- Area markers will be inserted here -->
+                    <div id="areaMarkers"></div>
+
+                    <!-- Area tooltip -->
+                    <div id="areaTooltip" class="area-tooltip hidden">
+                        <h3 id="tooltipName"></h3>
+
+                        <p id="tooltipDescription"></p>
+
+                        <div class="tooltip-level">
+                            Level
+                            <span id="tooltipLevel"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+
+
+    <script>
+
+        let currentCharacter = null;
+        let currentLocation = null;
+
+
+        /*
+         * Load the current character
+         */
+        async function loadCharacter() {
+
+            const {
+                data: { user },
+                error: userError
+            } = await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+
+            const {
+                data: character,
+                error: characterError
+            } = await supabaseClient
+                .from('characters')
+                .select('level')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+
+            if (characterError) {
+                console.error(
+                    'Error loading character:',
+                    characterError
+                );
+                return;
+            }
+
+
+            if (!character) {
+                window.location.href = 'character-creation.html';
+                return;
+            }
+
+
+            currentCharacter = character;
+
+            await loadLocations();
+        }
+
+
+        /*
+         * Load all world locations
+         */
+        async function loadLocations() {
+
+            const {
+                data: locations,
+                error
+            } = await supabaseClient
+                .from('world-locations')
+                .select('*')
+                .order('id');
+
+            if (error) {
+                console.error(
+                    'Error loading locations:',
+                    error
+                );
+                return;
+            }
+
+
+            const locationList =
+                document.getElementById('locationList');
+
+            locationList.innerHTML = '';
+
+
+            locations.forEach(location => {
+
+                const levelTooLow =
+                    currentCharacter.level <
+                    Number(location.level_requirement || 0);
+
+                const locked =
+                    !location.is_unlocked ||
+                    levelTooLow;
+
+
+                const locationButton =
+                    document.createElement('button');
+
+                locationButton.className =
+                    'location-item';
+
+
+                if (locked) {
+                    locationButton.classList.add('locked');
+                }
+
+
+                if (!locked) {
+
+                    locationButton.addEventListener(
+                        'click',
+                        () => selectLocation(location)
+                    );
+
+                }
+
+
+                const lockIcon =
+                    locked ? '🔒' : '📍';
+
+
+                let levelText = '';
+
+                if (
+                    location.level_requirement &&
+                    Number(location.level_requirement) > 1
+                ) {
+
+                    levelText =
+                        `Level ${location.level_requirement} required`;
+
+                }
+
+
+                locationButton.innerHTML = `
+
+                    <div class="location-item-icon">
+                        ${lockIcon}
+                    </div>
+
+                    <div class="location-item-content">
+
+                        <div class="location-item-name">
+                            ${escapeHtml(location.name)}
+                        </div>
+
+                        ${
+                            levelText
+                                ? `<div class="location-item-level">
+                                    ${levelText}
+                                   </div>`
+                                : ''
+                        }
+
+                    </div>
+
+                `;
+
+
+                locationList.appendChild(
+                    locationButton
+                );
+
+            });
+
+
+            /*
+             * Automatically select the first
+             * available location.
+             */
+            const firstAvailable =
+                locations.find(location => {
+
+                    const levelTooLow =
+                        currentCharacter.level <
+                        Number(location.level_requirement || 0);
+
+                    return (
+                        location.is_unlocked &&
+                        !levelTooLow
+                    );
+
+                });
+
+
+            if (firstAvailable) {
+                selectLocation(firstAvailable);
+            }
+
+        }
+
+
+        /*
+         * Select a location
+         */
+        async function selectLocation(location) {
+
+            currentLocation = location;
+
+
+            /*
+             * Highlight selected location
+             */
+            document
+                .querySelectorAll('.location-item')
+                .forEach(button => {
+
+                    button.classList.remove('selected');
+
+                    const nameElement =
+                        button.querySelector(
+                            '.location-item-name'
+                        );
+
+                    if (
+                        nameElement &&
+                        nameElement.textContent ===
+                        location.name
+                    ) {
+                        button.classList.add('selected');
+                    }
+
+                });
+
+
+            /*
+             * Update location information
+             */
+            document.getElementById(
+                'selectedLocationName'
+            ).textContent = location.name;
+
+
+            document.getElementById(
+                'selectedLocationDescription'
+            ).textContent =
+                location.description || '';
+
+
+            /*
+             * Load map image
+             */
+            const map =
+                document.getElementById('worldMap');
+
+
+            map.src =
+                `locations/${encodeURIComponent(location.name)}/Map/${encodeURIComponent(location.image)}`;
+
+
+            map.alt =
+                `${location.name} Map`;
+
+
+            document
+                .getElementById('mapContainer')
+                .classList.remove('hidden');
+
+
+            /*
+             * Load areas belonging to this location
+             */
+            await loadAreas(location.id);
+
+        }
+
+
+        /*
+         * Load areas for selected location
+         */
+        async function loadAreas(locationId) {
+
+            const {
+                data: areas,
+                error
+            } = await supabaseClient
+                .from('areas')
+                .select('*')
+                .eq('location_id', locationId)
+                .order('id');
+
+
+            if (error) {
+                console.error(
+                    'Error loading areas:',
+                    error
+                );
+                return;
+            }
+
+
+            const areaMarkers =
+                document.getElementById('areaMarkers');
+
+            areaMarkers.innerHTML = '';
+
+
+            areas.forEach(area => {
+
+                /*
+                 * Locked areas aren't displayed
+                 * yet. We can change this later
+                 * if you want locked areas to be
+                 * visible on the map.
+                 */
+                if (!area.is_unlocked) {
+                    return;
+                }
+
+
+                const marker =
+                    document.createElement('div');
+
+
+                marker.className =
+                    'area-marker';
+
+
+                /*
+                 * map_x / map_y are percentages.
+                 */
+                marker.style.left =
+                    `${area.map_x}%`;
+
+                marker.style.top =
+                    `${area.map_y}%`;
+
+
+                marker.dataset.name =
+                    area.name;
+
+                marker.dataset.description =
+                    area.description || '';
+
+                marker.dataset.minLevel =
+                    area.min_level ?? 1;
+
+                marker.dataset.maxLevel =
+                    area.max_level ?? 999;
+
+
+                /*
+                 * Hover events
+                 */
+                marker.addEventListener(
+                    'mouseenter',
+                    event => {
+
+                        showAreaTooltip(
+                            area,
+                            event
+                        );
+
+                    }
+                );
+
+
+                marker.addEventListener(
+                    'mouseleave',
+                    hideAreaTooltip
+                );
+
+
+                areaMarkers.appendChild(marker);
+
+            });
+
+        }
+
+
+        /*
+         * Show area information
+         */
+        function showAreaTooltip(area, event) {
+
+            const tooltip =
+                document.getElementById(
+                    'areaTooltip'
+                );
+
+
+            document.getElementById(
+                'tooltipName'
+            ).textContent =
+                area.name;
+
+
+            document.getElementById(
+                'tooltipDescription'
+            ).textContent =
+                area.description || '';
+
+
+            document.getElementById(
+                'tooltipLevel'
+            ).textContent =
+                `${area.min_level} - ${area.max_level}`;
+
+
+            /*
+             * Position tooltip near cursor
+             */
+            tooltip.style.left =
+                `${event.clientX + 15}px`;
+
+            tooltip.style.top =
+                `${event.clientY + 15}px`;
+
+
+            tooltip.classList.remove(
+                'hidden'
+            );
+
+        }
+
+
+        /*
+         * Hide area information
+         */
+        function hideAreaTooltip() {
+
+            document
+                .getElementById('areaTooltip')
+                .classList.add('hidden');
+
+        }
+
+
+        /*
+         * Basic HTML escaping
+         */
+        function escapeHtml(value) {
+
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+        }
+
+
+        /*
+         * Start
+         */
+        loadCharacter();
+
+    </script>
+
+</body>
+
+</html>
