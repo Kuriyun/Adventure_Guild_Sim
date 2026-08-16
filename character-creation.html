@@ -28,52 +28,74 @@
 
 
             <!-- Character Creation Box -->
-            <div class="creation-card">
+            <div class="creation-layout">
 
-                <form id="createCharacterForm" class="creation-form">
+                <!-- Left: Character Creation -->
+                <div class="creation-card">
 
-                    <div class="field creation-field">
-                        <label for="characterNameInput">
-                            Character Name
-                        </label>
+                    <form id="createCharacterForm" class="creation-form">
 
-                        <input
-                            id="characterNameInput"
-                            class="name-input"
-                            type="text"
-                            maxlength="20"
-                            placeholder="Enter your character name"
-                            required
-                        >
-                    </div>
+                        <div class="field creation-field">
+                            <label for="characterNameInput">
+                                Character Name
+                            </label>
 
+                            <input
+                                id="characterNameInput"
+                                class="name-input"
+                                type="text"
+                                maxlength="20"
+                                placeholder="Enter your character name"
+                                required
+                            >
+                        </div>
 
-                    <div class="field creation-field">
-                        <label for="classSelect">
-                            Choose Your Class
-                        </label>
+                        <div class="field creation-field">
+                            <label for="classSelect">
+                                Choose Your Class
+                            </label>
+
+                            <div id="classesContainer" class="classes-container"></div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="primary-btn save-name-btn">
+                            Create Character
+                        </button>
 
                         <div
-                            id="classesContainer"
-                            class="classes-container">
+                            id="creationMessage"
+                            class="form-message"
+                            aria-live="polite">
                         </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- Right: Selected Class Preview -->
+                <div class="class-preview">
+
+                    <div class="class-preview-title">
+                        Selected Class
                     </div>
 
+                    <img
+                        id="selectedClassIcon"
+                        class="selected-class-icon"
+                        src=""
+                        alt="Selected class"
+                    >
 
-                    <button
-                        type="submit"
-                        class="primary-btn save-name-btn">
-                        Create Character
-                    </button>
+                    <h2 id="selectedClassName">Warrior</h2>
 
+                    <p id="selectedClassDescription">
+                        Select a class to see its description.
+                    </p>
 
-                    <div
-                        id="creationMessage"
-                        class="form-message"
-                        aria-live="polite">
-                    </div>
-
-                </form>
+                </div>
 
             </div>
 
@@ -87,6 +109,9 @@
         const createCharacterForm = document.getElementById('createCharacterForm');
         const creationMessage = document.getElementById('creationMessage');
         const classesContainer = document.getElementById('classesContainer');
+        const selectedClassIcon = document.getElementById('selectedClassIcon');
+        const selectedClassName = document.getElementById('selectedClassName');
+        const selectedClassDescription = document.getElementById('selectedClassDescription');
         let selectedClassId = null;
         let availableClasses = [];
 
@@ -171,14 +196,24 @@
 
                 radio.addEventListener('change', () => {
                     selectedClassId = classItem.id;
+
+                    updateClassPreview(classItem);
                 });
 
                 if (isWarrior) {
                     selectedClassId = classItem.id;
+                    updateClassPreview(classItem);
                 }
 
                 classesContainer.appendChild(classBox);
             });
+        }
+
+        function updateClassPreview(classItem) {
+            selectedClassIcon.src = `classes/${classItem.name}/ClassIcon/${classItem.name}.png`;
+            selectedClassIcon.alt = classItem.name;
+            selectedClassName.textContent = classItem.name;
+            selectedClassDescription.textContent = classItem.description;
         }
         async function createCharacter(name, classId) {
             const {
