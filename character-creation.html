@@ -9,27 +9,76 @@
 </head>
 
 <body>
+
     <div id="creationPanel" class="creation-panel">
-        <div class="creation-card">
-            <div class="creation-badge">Realm Forge</div>
-            <h1>Forge Your Hero</h1>
-            <p>Choose the name you want to be known by in this realm. You can change it later from this page.</p>
 
-            <form id="createCharacterForm" class="creation-form">
-                <div class="field creation-field">
-                    <label for="characterNameInput">Character Name</label>
-                    <input id="characterNameInput" class="name-input" type="text" maxlength="20" placeholder="Enter your character name" required>
-                </div>
+        <div class="creation-content">
 
-                <div class="field creation-field">
-                    <label for="classSelect">Choose Your Class</label>
-                    <div id="classesContainer" class="classes-container"></div>
-                </div>
+            <!-- Intro Box -->
+            <div class="creation-intro">
+                <div class="creation-badge">Realm Gateway</div>
 
-                <button type="submit" class="primary-btn save-name-btn">Create Character</button>
-                <div id="creationMessage" class="form-message" aria-live="polite"></div>
-            </form>
+                <h1>Forge Your Hero</h1>
+
+                <p>
+                    Choose the name you want to be known by in this realm.
+                    You can change it later from this page.
+                </p>
+            </div>
+
+
+            <!-- Character Creation Box -->
+            <div class="creation-card">
+
+                <form id="createCharacterForm" class="creation-form">
+
+                    <div class="field creation-field">
+                        <label for="characterNameInput">
+                            Character Name
+                        </label>
+
+                        <input
+                            id="characterNameInput"
+                            class="name-input"
+                            type="text"
+                            maxlength="20"
+                            placeholder="Enter your character name"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="field creation-field">
+                        <label for="classSelect">
+                            Choose Your Class
+                        </label>
+
+                        <div
+                            id="classesContainer"
+                            class="classes-container">
+                        </div>
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-btn save-name-btn">
+                        Create Character
+                    </button>
+
+
+                    <div
+                        id="creationMessage"
+                        class="form-message"
+                        aria-live="polite">
+                    </div>
+
+                </form>
+
+            </div>
+
         </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -91,10 +140,26 @@
             availableClasses.forEach(classItem => {
                 const classBox = document.createElement('div');
                 classBox.className = 'class-option';
+
+                const isWarrior = classItem.name.toLowerCase() === 'warrior';
+
                 classBox.innerHTML = `
-                    <input type="radio" id="class-${classItem.id}" name="classSelect" value="${classItem.id}" required>
+                    <input 
+                        type="radio" 
+                        id="class-${classItem.id}" 
+                        name="classSelect" 
+                        value="${classItem.id}" 
+                        ${isWarrior ? 'checked' : ''}
+                        required
+                    >
+
                     <label for="class-${classItem.id}" class="class-label">
-                        <img src="classes/${classItem.name}/ClassIcon/${classItem.name}.png" alt="${classItem.name}" class="class-icon">
+                        <img 
+                            src="classes/${classItem.name}/ClassIcon/${classItem.name}.png" 
+                            alt="${classItem.name}" 
+                            class="class-icon"
+                        >
+
                         <div class="class-info">
                             <div class="class-name">${classItem.name}</div>
                             <div class="class-description">${classItem.description}</div>
@@ -102,14 +167,19 @@
                     </label>
                 `;
 
-                classBox.querySelector(`#class-${classItem.id}`).addEventListener('change', () => {
+                const radio = classBox.querySelector(`#class-${classItem.id}`);
+
+                radio.addEventListener('change', () => {
                     selectedClassId = classItem.id;
                 });
+
+                if (isWarrior) {
+                    selectedClassId = classItem.id;
+                }
 
                 classesContainer.appendChild(classBox);
             });
         }
-
         async function createCharacter(name, classId) {
             const {
                 data: { user },
