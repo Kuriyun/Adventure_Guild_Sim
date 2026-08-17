@@ -258,23 +258,16 @@
                 }
 
 
-                const lockIcon =
-                    locked ? '🔒' : '📍';
+                const lockIcon = locked ? '🔒' : '';
 
 
                 let levelText = '';
 
-
-                if (
-                    location.level_requirement &&
-                    Number(location.level_requirement) > 1
-                ) {
-
-                    levelText =
-                        `Level ${location.level_requirement} required`;
-
+                if (Number(location.level_requirement) > 0 && locked) {
+                    levelText =  `Level ${location.level_requirement} required`;
+                } else if (currentCharacter.level >= Number(location.level_requirement)) {
+                    levelText = `Level ${location.min_level} - ${location.max_level}`;
                 }
-
 
                 locationButton.innerHTML = `
 
@@ -487,23 +480,15 @@
                 }
 
 
-                const lockIcon =
-                    locked ? '🔒' : '';
-
-
+                const lockIcon = locked ? '🔒' : '';
+                
                 let levelText = '';
 
 
-                if (
-                    sublocation.level_requirement &&
-                    Number(
-                        sublocation.level_requirement
-                    ) > 1
-                ) {
-
-                    levelText =
-                        `Level ${sublocation.level_requirement} required`;
-
+                if (Number(sublocation.level_requirement) > 0 && locked) {
+                    levelText =  `Level ${sublocation.level_requirement} required`;
+                } else if (currentCharacter.level >= Number(sublocation.level_requirement)) {
+                    levelText = `Level ${sublocation.min_level} - ${sublocation.max_level}`;
                 }
 
 

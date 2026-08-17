@@ -254,7 +254,6 @@ body {
         rgba(212, 175, 55, 0.08);
 
     border-color: #d4af37;
-
     transform: translateX(3px);
 }
 
@@ -269,35 +268,27 @@ body {
 
     border-color: #d4af37;
 
-    box-shadow:
-        inset 3px 0 0 #d4af37;
+    box-shadow: inset 3px 0 0 #d4af37;
 }
 
 
 .location-item.locked {
     opacity: 0.45;
-
     cursor: not-allowed;
 }
 
 
 .location-item.locked:hover {
-    background:
-        rgba(15, 18, 25, 0.7);
-
+    background: rgba(15, 18, 25, 0.7);
     border-color: #3d4452;
-
     transform: none;
 }
 
 
 .location-item-icon {
     width: 30px;
-
     font-size: 20px;
-
     text-align: center;
-
     flex-shrink: 0;
 }
 
@@ -311,8 +302,7 @@ body {
     color: #d4af37;
 
     font-weight: bold;
-
-    font-size: 14px;
+    font-size: 15px;
 
     margin-bottom: 3px;
 
@@ -327,7 +317,7 @@ body {
 .location-item-level {
     color: #8b8b8b;
 
-    font-size: 11px;
+    font-size: 14px;
 }
 
 
