@@ -262,6 +262,7 @@
 
 
                 let levelText = '';
+
                 if (!location.is_unlocked) {
                     levelText = 'in progress...'
                 } else if (Number(location.level_requirement) > currentCharacter.level) {
@@ -485,9 +486,10 @@
                 
                 let levelText = '';
 
-
-                if (Number(sublocation.level_requirement) > 0 && locked) {
-                    levelText =  `Level ${sublocation.level_requirement} required`;
+                if (!sublocation.is_unlocked) {
+                    levelText = 'in progress...'
+                } else if (Number(sublocation.level_requirement) > currentCharacter.level) {
+                    levelText = `Level ${sublocation.level_requirement} required`;
                 } else if (currentCharacter.level >= Number(sublocation.level_requirement)) {
                     levelText = `Level ${sublocation.min_level} - ${sublocation.max_level}`;
                 }
