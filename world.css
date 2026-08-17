@@ -135,11 +135,12 @@ body {
 
 
 /* =========================================================
-   LOCATION SIDEBAR
+   LOCATION + SUBLOCATION SIDEBARS
    ========================================================= */
 
-.location-sidebar {
-    width: 280px;
+.location-sidebar,
+.sublocation-sidebar {
+    width: 250px;
 
     flex-shrink: 0;
 
@@ -165,11 +166,17 @@ body {
 }
 
 
+/* =========================================================
+   SIDEBAR HEADER
+   ========================================================= */
+
 .sidebar-header {
     padding: 20px;
 
     border-bottom: 1px solid
         rgba(212, 175, 55, 0.2);
+
+    flex-shrink: 0;
 }
 
 
@@ -191,6 +198,10 @@ body {
 }
 
 
+/* =========================================================
+   LIST
+   ========================================================= */
+
 .location-list {
     flex: 1;
 
@@ -201,7 +212,7 @@ body {
 
 
 /* =========================================================
-   LOCATION BUTTONS
+   LOCATION / SUBLOCATION BUTTONS
    ========================================================= */
 
 .location-item {
@@ -304,6 +315,12 @@ body {
     font-size: 14px;
 
     margin-bottom: 3px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 }
 
 
@@ -315,13 +332,31 @@ body {
 
 
 /* =========================================================
+   EMPTY SUBLOCATION MESSAGE
+   ========================================================= */
+
+.empty-message {
+    padding: 20px 10px;
+
+    text-align: center;
+
+    color: #777;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
    MAP SECTION
    ========================================================= */
 
 .map-section {
-    flex: 0 1 auto;
+    flex: 1;
 
     min-width: 0;
+
     min-height: 0;
 
     display: flex;
@@ -344,6 +379,7 @@ body {
         0 10px 35px
         rgba(0, 0, 0, 0.45);
 }
+
 
 /* =========================================================
    MAP HEADER
@@ -382,9 +418,14 @@ body {
 .map-container {
     position: relative;
 
+    flex: 1;
+
+    min-height: 0;
+
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     overflow: hidden;
@@ -397,10 +438,12 @@ body {
     display: block;
 
     width: auto;
+
     height: auto;
 
     max-width: 100%;
-    max-height: calc(100vh - 180px);
+
+    max-height: 100%;
 
     object-fit: contain;
 
@@ -427,6 +470,7 @@ body {
     position: absolute;
 
     width: 22px;
+
     height: 22px;
 
     transform:
@@ -434,8 +478,7 @@ body {
 
     border-radius: 50%;
 
-    background:
-        #d4af37;
+    background: #d4af37;
 
     border: 3px solid #f0d968;
 
@@ -543,7 +586,7 @@ body {
 
 
 /* =========================================================
-   SCROLLBAR
+   SCROLLBARS
    ========================================================= */
 
 .location-list::-webkit-scrollbar {
@@ -571,6 +614,16 @@ body {
 /* =========================================================
    RESPONSIVE
    ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .location-sidebar,
+    .sublocation-sidebar {
+        width: 220px;
+    }
+
+}
+
 
 @media (max-width: 800px) {
 
@@ -602,7 +655,8 @@ body {
     }
 
 
-    .location-sidebar {
+    .location-sidebar,
+    .sublocation-sidebar {
         width: 100%;
 
         max-height: 250px;

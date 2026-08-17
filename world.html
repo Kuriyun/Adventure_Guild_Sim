@@ -16,6 +16,7 @@
 
         <!-- Header -->
         <header class="world-header">
+
             <div>
                 <h1>🌍 World</h1>
                 <p>Explore the lands and discover what awaits you.</p>
@@ -24,13 +25,18 @@
             <a href="hub.html" class="back-button">
                 ← Back to Hub
             </a>
+
         </header>
 
 
         <!-- Main World Interface -->
         <main class="world-interface">
 
-            <!-- Location List -->
+
+            <!-- =====================================================
+                 LOCATIONS
+                 ===================================================== -->
+
             <aside class="location-sidebar">
 
                 <div class="sidebar-header">
@@ -39,24 +45,49 @@
                 </div>
 
                 <div id="locationList" class="location-list">
-                    <!-- Locations will be inserted here -->
+                    <!-- Locations inserted here -->
                 </div>
 
             </aside>
 
 
-            <!-- Map Area -->
+            <!-- =====================================================
+                 SUBLOCATIONS
+                 ===================================================== -->
+
+            <aside class="sublocation-sidebar" id="sublocationSidebar">
+
+                <div class="sidebar-header">
+                    <h2 id="sublocationTitle">Sublocations</h2>
+                    <p id="sublocationDescription">
+                        Select a sublocation to explore.
+                    </p>
+                </div>
+
+                <div id="sublocationList" class="location-list">
+                    <!-- Sublocations inserted here -->
+                </div>
+
+            </aside>
+
+
+            <!-- =====================================================
+                 MAP
+                 ===================================================== -->
+
             <section class="map-section">
 
-                <!-- Location information -->
-                <div id="locationHeader" class="map-header">
-                    <h2 id="selectedLocationName">
-                        Select a Location
+                <!-- Sublocation information -->
+                <div id="mapHeader" class="map-header">
+
+                    <h2 id="selectedSublocationName">
+                        Select a Sublocation
                     </h2>
 
-                    <p id="selectedLocationDescription">
-                        Choose a location from the list to begin exploring.
+                    <p id="selectedSublocationDescription">
+                        Choose a sublocation from the list to begin exploring.
                     </p>
+
                 </div>
 
 
@@ -67,14 +98,15 @@
                         id="worldMap"
                         class="world-map"
                         src=""
-                        alt="Location Map"
+                        alt="Sublocation Map"
                     >
 
-                    <!-- Area markers will be inserted here -->
+                    <!-- Area markers -->
                     <div id="areaMarkers"></div>
 
                     <!-- Area tooltip -->
                     <div id="areaTooltip" class="area-tooltip hidden">
+
                         <h3 id="tooltipName"></h3>
 
                         <p id="tooltipDescription"></p>
@@ -83,6 +115,7 @@
                             Level
                             <span id="tooltipLevel"></span>
                         </div>
+
                     </div>
 
                 </div>
@@ -103,17 +136,20 @@
 
         let currentCharacter = null;
         let currentLocation = null;
+        let currentSublocation = null;
 
 
-        /*
-         * Load the current character
-         */
+        /* =========================================================
+           LOAD CHARACTER
+           ========================================================= */
+
         async function loadCharacter() {
 
             const {
                 data: { user },
                 error: userError
             } = await supabaseClient.auth.getUser();
+
 
             if (userError || !user) {
                 window.location.href = 'login.html';
@@ -132,10 +168,12 @@
 
 
             if (characterError) {
+
                 console.error(
                     'Error loading character:',
                     characterError
                 );
+
                 return;
             }
 
@@ -152,9 +190,10 @@
         }
 
 
-        /*
-         * Load all world locations
-         */
+        /* =========================================================
+           LOAD LOCATIONS
+           ========================================================= */
+
         async function loadLocations() {
 
             const {
@@ -165,17 +204,21 @@
                 .select('*')
                 .order('id');
 
+
             if (error) {
+
                 console.error(
                     'Error loading locations:',
                     error
                 );
+
                 return;
             }
 
 
             const locationList =
                 document.getElementById('locationList');
+
 
             locationList.innerHTML = '';
 
@@ -186,6 +229,7 @@
                     currentCharacter.level <
                     Number(location.level_requirement || 0);
 
+
                 const locked =
                     !location.is_unlocked ||
                     levelTooLow;
@@ -193,6 +237,7 @@
 
                 const locationButton =
                     document.createElement('button');
+
 
                 locationButton.className =
                     'location-item';
@@ -219,6 +264,7 @@
 
                 let levelText = '';
 
+
                 if (
                     location.level_requirement &&
                     Number(location.level_requirement) > 1
@@ -244,9 +290,11 @@
 
                         ${
                             levelText
-                                ? `<div class="location-item-level">
-                                    ${levelText}
-                                   </div>`
+                                ? `
+                                    <div class="location-item-level">
+                                        ${levelText}
+                                    </div>
+                                  `
                                 : ''
                         }
 
@@ -262,16 +310,15 @@
             });
 
 
-            /*
-             * Automatically select the first
-             * available location.
-             */
+            /* Automatically select first available location */
+
             const firstAvailable =
                 locations.find(location => {
 
                     const levelTooLow =
                         currentCharacter.level <
                         Number(location.level_requirement || 0);
+
 
                     return (
                         location.is_unlocked &&
@@ -282,23 +329,24 @@
 
 
             if (firstAvailable) {
-                selectLocation(firstAvailable);
+                await selectLocation(firstAvailable);
             }
 
         }
 
 
-        /*
-         * Select a location
-         */
+        /* =========================================================
+           SELECT LOCATION
+           ========================================================= */
+
         async function selectLocation(location) {
 
             currentLocation = location;
+            currentSublocation = null;
 
 
-            /*
-             * Highlight selected location
-             */
+            /* Highlight selected location */
+
             document
                 .querySelectorAll('.location-item')
                 .forEach(button => {
@@ -310,44 +358,276 @@
                             '.location-item-name'
                         );
 
+
                     if (
                         nameElement &&
-                        nameElement.textContent ===
+                        nameElement.textContent.trim() ===
                         location.name
                     ) {
+
                         button.classList.add('selected');
+
+                    }
+
+                });
+
+            /* Update sublocation sidebar*/
+
+            document.getElementById('sublocationDescription').textContent = location.description || '';
+            document.getElementById('sublocationTitle').textContent = location.name || '';
+
+            /* Clear previous map */
+
+            document
+                .getElementById('mapContainer')
+                .classList.add('hidden');
+
+
+            document.getElementById(
+                'selectedSublocationName'
+            ).textContent =
+                'Select a Sublocation';
+
+
+            document.getElementById(
+                'selectedSublocationDescription'
+            ).textContent =
+                'Choose a sublocation from the list to begin exploring.';
+
+
+            /* Load sublocations */
+
+            await loadSublocations(location.id);
+
+        }
+
+
+        /* =========================================================
+           LOAD SUBLOCATIONS
+           ========================================================= */
+
+        async function loadSublocations(locationId) {
+
+            const {
+                data: sublocations,
+                error
+            } = await supabaseClient
+                .from('sublocation')
+                .select('*')
+                .eq('location_id', locationId)
+                .order('id');
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading sublocations:',
+                    error
+                );
+
+                return;
+            }
+
+
+            const sublocationList =
+                document.getElementById(
+                    'sublocationList'
+                );
+
+
+            sublocationList.innerHTML = '';
+
+
+            if (!sublocations || sublocations.length === 0) {
+
+                sublocationList.innerHTML = `
+                    <div class="empty-message">
+                        No sublocations available.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            sublocations.forEach(sublocation => {
+
+                const levelTooLow =
+                    currentCharacter.level <
+                    Number(
+                        sublocation.level_requirement || 0
+                    );
+
+
+                const locked =
+                    !sublocation.is_unlocked ||
+                    levelTooLow;
+
+
+                const button =
+                    document.createElement('button');
+
+
+                button.className =
+                    'location-item sublocation-item';
+
+
+                if (locked) {
+                    button.classList.add('locked');
+                }
+
+
+                if (!locked) {
+
+                    button.addEventListener(
+                        'click',
+                        () => selectSublocation(sublocation)
+                    );
+
+                }
+
+
+                const lockIcon =
+                    locked ? '🔒' : '📍';
+
+
+                let levelText = '';
+
+
+                if (
+                    sublocation.level_requirement &&
+                    Number(
+                        sublocation.level_requirement
+                    ) > 1
+                ) {
+
+                    levelText =
+                        `Level ${sublocation.level_requirement} required`;
+
+                }
+
+
+                button.innerHTML = `
+
+                    <div class="location-item-icon">
+                        ${lockIcon}
+                    </div>
+
+                    <div class="location-item-content">
+
+                        <div class="location-item-name">
+                            ${escapeHtml(sublocation.name)}
+                        </div>
+
+                        ${
+                            levelText
+                                ? `
+                                    <div class="location-item-level">
+                                        ${levelText}
+                                    </div>
+                                  `
+                                : ''
+                        }
+
+                    </div>
+
+                `;
+
+
+                sublocationList.appendChild(button);
+
+            });
+
+
+            /* Automatically select first available sublocation */
+
+            const firstAvailable =
+                sublocations.find(sublocation => {
+
+                    const levelTooLow =
+                        currentCharacter.level <
+                        Number(
+                            sublocation.level_requirement || 0
+                        );
+
+
+                    return (
+                        sublocation.is_unlocked &&
+                        !levelTooLow
+                    );
+
+                });
+
+
+            if (firstAvailable) {
+                await selectSublocation(firstAvailable);
+            }
+
+        }
+
+
+        /* =========================================================
+           SELECT SUBLOCATION
+           ========================================================= */
+
+        async function selectSublocation(sublocation) {
+
+            currentSublocation = sublocation;
+
+
+            /* Highlight selected sublocation */
+
+            document
+                .querySelectorAll('.sublocation-item')
+                .forEach(button => {
+
+                    button.classList.remove('selected');
+
+                    const nameElement =
+                        button.querySelector(
+                            '.location-item-name'
+                        );
+
+
+                    if (
+                        nameElement &&
+                        nameElement.textContent.trim() ===
+                        sublocation.name
+                    ) {
+
+                        button.classList.add('selected');
+
                     }
 
                 });
 
 
-            /*
-             * Update location information
-             */
-            document.getElementById(
-                'selectedLocationName'
-            ).textContent = location.name;
-
+            /* Update map header */
 
             document.getElementById(
-                'selectedLocationDescription'
+                'selectedSublocationName'
             ).textContent =
-                location.description || '';
+                sublocation.name;
 
 
-            /*
-             * Load map image
-             */
+            document.getElementById(
+                'selectedSublocationDescription'
+            ).textContent =
+                sublocation.description || '';
+
+
+            /* Load map */
+
             const map =
                 document.getElementById('worldMap');
 
 
             map.src =
-                `locations/${encodeURIComponent(location.name)}/Map/${encodeURIComponent(location.image)}`;
-
+                `locations/${encodeURIComponent(currentLocation.name)}/Map/${encodeURIComponent(sublocation.name)}/${encodeURIComponent(sublocation.image)}.png`;
+            console.log(map.src)
 
             map.alt =
-                `${location.name} Map`;
+                `${sublocation.name} Map`;
 
 
             document
@@ -355,18 +635,18 @@
                 .classList.remove('hidden');
 
 
-            /*
-             * Load areas belonging to this location
-             */
-            await loadAreas(location.id);
+            /* Load areas belonging to this sublocation */
+
+            await loadAreas(sublocation.id);
 
         }
 
 
-        /*
-         * Load areas for selected location
-         */
-        async function loadAreas(locationId) {
+        /* =========================================================
+           LOAD AREAS
+           ========================================================= */
+
+        async function loadAreas(sublocationId) {
 
             const {
                 data: areas,
@@ -374,21 +654,26 @@
             } = await supabaseClient
                 .from('areas')
                 .select('*')
-                .eq('location_id', locationId)
+                .eq('sublocation_id', sublocationId)
                 .order('id');
 
 
             if (error) {
+
                 console.error(
                     'Error loading areas:',
                     error
                 );
+
                 return;
             }
 
 
             const areaMarkers =
-                document.getElementById('areaMarkers');
+                document.getElementById(
+                    'areaMarkers'
+                );
+
 
             areaMarkers.innerHTML = '';
 
@@ -396,11 +681,9 @@
             areas.forEach(area => {
 
                 /*
-                 * Locked areas aren't displayed
-                 * yet. We can change this later
-                 * if you want locked areas to be
-                 * visible on the map.
+                 * Locked areas aren't displayed yet.
                  */
+
                 if (!area.is_unlocked) {
                     return;
                 }
@@ -417,6 +700,7 @@
                 /*
                  * map_x / map_y are percentages.
                  */
+
                 marker.style.left =
                     `${area.map_x}%`;
 
@@ -437,9 +721,8 @@
                     area.max_level ?? 999;
 
 
-                /*
-                 * Hover events
-                 */
+                /* Hover events */
+
                 marker.addEventListener(
                     'mouseenter',
                     event => {
@@ -466,9 +749,10 @@
         }
 
 
-        /*
-         * Show area information
-         */
+        /* =========================================================
+           AREA TOOLTIP
+           ========================================================= */
+
         function showAreaTooltip(area, event) {
 
             const tooltip =
@@ -495,11 +779,9 @@
                 `${area.min_level} - ${area.max_level}`;
 
 
-            /*
-             * Position tooltip near cursor
-             */
             tooltip.style.left =
                 `${event.clientX + 15}px`;
+
 
             tooltip.style.top =
                 `${event.clientY + 15}px`;
@@ -512,9 +794,10 @@
         }
 
 
-        /*
-         * Hide area information
-         */
+        /* =========================================================
+           HIDE AREA TOOLTIP
+           ========================================================= */
+
         function hideAreaTooltip() {
 
             document
@@ -524,9 +807,10 @@
         }
 
 
-        /*
-         * Basic HTML escaping
-         */
+        /* =========================================================
+           HTML ESCAPING
+           ========================================================= */
+
         function escapeHtml(value) {
 
             return String(value ?? '')
@@ -539,9 +823,10 @@
         }
 
 
-        /*
-         * Start
-         */
+        /* =========================================================
+           START
+           ========================================================= */
+
         loadCharacter();
 
     </script>
