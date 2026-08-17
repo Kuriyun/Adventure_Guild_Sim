@@ -262,9 +262,10 @@
 
 
                 let levelText = '';
-
-                if (Number(location.level_requirement) > 0 && locked) {
-                    levelText =  `Level ${location.level_requirement} required`;
+                if (!location.is_unlocked) {
+                    levelText = 'in progress...'
+                } else if (Number(location.level_requirement) > currentCharacter.level) {
+                    levelText = `Level ${location.level_requirement} required`;
                 } else if (currentCharacter.level >= Number(location.level_requirement)) {
                     levelText = `Level ${location.min_level} - ${location.max_level}`;
                 }
