@@ -353,10 +353,9 @@ body {
    ========================================================= */
 
 .map-section {
-    flex: 1;
+    flex: 0 1 auto;
 
     min-width: 0;
-
     min-height: 0;
 
     display: flex;
@@ -418,15 +417,10 @@ body {
 .map-container {
     position: relative;
 
-    flex: 1;
+    width: fit-content;
+    max-width: 100%;
 
-    min-height: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
+    margin: 0 auto;
 
     overflow: hidden;
 
@@ -438,17 +432,14 @@ body {
     display: block;
 
     width: auto;
-
     height: auto;
 
     max-width: 100%;
-
     max-height: 100%;
 
     object-fit: contain;
 
     user-select: none;
-
     pointer-events: none;
 }
 
