@@ -443,44 +443,29 @@
 
                 return;
             }
-
-
+            let lastSublocationLocked = false;
             sublocations.forEach(sublocation => {
 
-                const levelTooLow =
-                    currentCharacter.level <
-                    Number(
-                        sublocation.level_requirement || 0
-                    );
+                const levelTooLow = currentCharacter.level < Number(sublocation.level_requirement || 0);
 
-
-                const locked =
-                    !sublocation.is_unlocked ||
-                    levelTooLow;
-
-
-                const button =
-                    document.createElement('button');
-
-
-                button.className =
-                    'location-item sublocation-item';
-
+                const locked = !sublocation.is_unlocked || levelTooLow;
+                
+                const button = document.createElement('button');
+                button.className = 'location-item sublocation-item';
+                
+                let subLocationName = `${escapeHtml(sublocation.name)}`;
 
                 if (locked) {
                     button.classList.add('locked');
+                    if (lastSublocationLocked) {
+                        subLocationName = '???';
+                    }
+                    lastSublocationLocked = true;
                 }
-
 
                 if (!locked) {
-
-                    button.addEventListener(
-                        'click',
-                        () => selectSublocation(sublocation)
-                    );
-
+                    button.addEventListener('click',() => selectSublocation(sublocation));
                 }
-
 
                 const lockIcon = locked ? '🔒' : '';
                 
@@ -504,7 +489,7 @@
                     <div class="location-item-content">
 
                         <div class="location-item-name">
-                            ${escapeHtml(sublocation.name)}
+                            ${subLocationName}
                         </div>
 
                         ${
@@ -520,7 +505,6 @@
                     </div>
 
                 `;
-
 
                 sublocationList.appendChild(button);
 
