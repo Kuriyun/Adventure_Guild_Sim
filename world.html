@@ -127,6 +127,81 @@
     </div>
 
 
+    <!-- =====================================================
+         AREA VIEW OVERLAY
+         ===================================================== -->
+
+    <div id="areaViewOverlay" class="area-view-overlay hidden">
+
+        <div class="area-view-content">
+
+            <button id="areaViewClose" class="area-view-close">
+                ✕
+            </button>
+
+            <h2 id="areaViewName"></h2>
+
+            <div class="area-view-image-wrapper">
+
+                <img
+                    id="areaViewImage"
+                    class="area-view-image"
+                    src=""
+                    alt="Area"
+                >
+
+                <!-- Area node markers -->
+                <div id="areaNodeMarkers"></div>
+
+                <!-- Area node tooltip -->
+                <div id="areaNodeTooltip" class="area-tooltip area-node-tooltip hidden">
+
+                    <h3 id="areaNodeTooltipName"></h3>
+
+                    <p id="areaNodeTooltipDescription"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         NPC DIALOG OVERLAY
+         ===================================================== -->
+
+    <div id="npcDialogOverlay" class="npc-dialog-overlay hidden">
+
+        <div class="npc-dialog-content">
+
+            <button id="npcDialogClose" class="area-view-close">
+                ✕
+            </button>
+
+            <div class="npc-dialog-body">
+
+                <div class="npc-dialog-box">
+
+                    <h2 id="npcDialogName"></h2>
+
+                    <p id="npcDialogText"></p>
+
+                </div>
+
+                <div id="npcQuestPanel" class="npc-quest-panel hidden">
+                    <!-- Quest cards inserted here -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
@@ -714,6 +789,14 @@
                 );
 
 
+                /* Click event */
+
+                marker.addEventListener(
+                    'click',
+                    () => openArea(area)
+                );
+
+
                 areaMarkers.appendChild(marker);
 
             });
@@ -777,6 +860,530 @@
                 .classList.add('hidden');
 
         }
+
+
+        /* =========================================================
+           OPEN AREA
+           ========================================================= */
+
+        function openArea(area) {
+
+            hideAreaTooltip();
+
+
+            document.getElementById('areaViewName').textContent =
+                area.name;
+
+
+            document.getElementById('areaViewImage').src =
+                `locations/${encodeURIComponent(currentLocation.name)}/Map/${encodeURIComponent(currentSublocation.name)}/Areas/${encodeURIComponent(area.image)}.png`;
+
+
+            document.getElementById('areaViewImage').alt =
+                `${area.name} Area`;
+
+
+            document
+                .getElementById('areaViewOverlay')
+                .classList.remove('hidden');
+
+
+            loadAreaNodes(area.id);
+
+        }
+
+
+        /* =========================================================
+           LOAD AREA NODES
+           ========================================================= */
+
+        async function loadAreaNodes(areaId) {
+
+            const areaNodeMarkers =
+                document.getElementById('areaNodeMarkers');
+
+
+            areaNodeMarkers.innerHTML = '';
+
+
+            const {
+                data: areaNodes,
+                error
+            } = await supabaseClient
+                .from('area_nodes')
+                .select('*')
+                .eq('area_id', areaId)
+                .order('id');
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading area nodes:',
+                    error
+                );
+
+                return;
+            }
+
+
+            areaNodes.forEach(node => {
+
+                const marker =
+                    document.createElement('div');
+
+
+                marker.className =
+                    'area-marker';
+
+
+                /*
+                 * area_x / area_y are percentages.
+                 */
+
+                marker.style.left =
+                    `${node.area_x}%`;
+
+                marker.style.top =
+                    `${node.area_y}%`;
+
+
+                marker.addEventListener(
+                    'mouseenter',
+                    event => showAreaNodeTooltip(node, event)
+                );
+
+
+                marker.addEventListener(
+                    'mouseleave',
+                    hideAreaNodeTooltip
+                );
+
+
+                marker.addEventListener(
+                    'click',
+                    () => openAreaNode(node)
+                );
+
+
+                areaNodeMarkers.appendChild(marker);
+
+            });
+
+        }
+
+
+        /* =========================================================
+           AREA NODE TOOLTIP
+           ========================================================= */
+
+        function showAreaNodeTooltip(node, event) {
+
+            const tooltip =
+                document.getElementById('areaNodeTooltip');
+
+
+            document.getElementById(
+                'areaNodeTooltipName'
+            ).textContent =
+                node.name;
+
+
+            document.getElementById(
+                'areaNodeTooltipDescription'
+            ).textContent =
+                node.description || '';
+
+
+            tooltip.style.left =
+                `${event.clientX + 15}px`;
+
+
+            tooltip.style.top =
+                `${event.clientY + 15}px`;
+
+
+            tooltip.classList.remove('hidden');
+
+        }
+
+
+        function hideAreaNodeTooltip() {
+
+            document
+                .getElementById('areaNodeTooltip')
+                .classList.add('hidden');
+
+        }
+
+
+        /* =========================================================
+           OPEN AREA NODE
+           ========================================================= */
+
+        function openAreaNode(node) {
+
+            hideAreaNodeTooltip();
+
+
+            if (node.node_type === 'npcs') {
+                openNpcDialog(node.entity_id);
+            }
+
+        }
+
+
+        /* =========================================================
+           NPC DIALOG
+           ========================================================= */
+
+        let activeQuestIds = new Set();
+
+
+        async function openNpcDialog(npcId) {
+
+            const {
+                data: npc,
+                error
+            } = await supabaseClient
+                .from('npcs')
+                .select('*')
+                .eq('id', npcId)
+                .maybeSingle();
+
+
+            if (error || !npc) {
+
+                console.error(
+                    'Error loading npc:',
+                    error
+                );
+
+                return;
+            }
+
+
+            document.getElementById('npcDialogName').textContent =
+                npc.name;
+
+
+            document.getElementById('npcDialogText').textContent =
+                npc.dialog || '';
+
+
+            await loadActiveQuestIds();
+
+            await loadNpcQuests(npcId);
+
+
+            document
+                .getElementById('npcDialogOverlay')
+                .classList.remove('hidden');
+
+        }
+
+
+        /* =========================================================
+           LOAD ACTIVE QUEST IDS
+           ========================================================= */
+
+        async function loadActiveQuestIds() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'get_active_quests'
+            );
+
+
+            if (error || !data?.success) {
+
+                console.error(
+                    'Error loading active quests:',
+                    error
+                );
+
+                activeQuestIds = new Set();
+
+                return;
+            }
+
+
+            activeQuestIds = new Set(
+                data.quests
+                    .filter(characterQuest => characterQuest.quests)
+                    .map(characterQuest => characterQuest.quests.id)
+            );
+
+        }
+
+
+        /* =========================================================
+           LOAD NPC QUESTS
+           ========================================================= */
+
+        async function loadNpcQuests(npcId) {
+
+            const questPanel =
+                document.getElementById('npcQuestPanel');
+
+
+            questPanel.innerHTML = '';
+
+
+            const {
+                data: npcQuests,
+                error
+            } = await supabaseClient
+                .from('npc_quests')
+                .select('*, quests(*)')
+                .eq('npc_id', npcId);
+
+
+            if (error || !npcQuests || npcQuests.length === 0) {
+                questPanel.classList.add('hidden');
+                return;
+            }
+
+
+            questPanel.classList.remove('hidden');
+
+
+            const title =
+                document.createElement('div');
+
+            title.className = 'npc-quest-panel-title';
+            title.textContent = 'Quests';
+
+            questPanel.appendChild(title);
+
+
+            npcQuests
+                .filter(npcQuest => npcQuest.quests)
+                .forEach(npcQuest => {
+                    renderNpcQuestCard(questPanel, npcQuest.quests);
+                });
+
+        }
+
+
+        /* =========================================================
+           RENDER NPC QUEST CARD
+           ========================================================= */
+
+        function renderNpcQuestCard(container, quest) {
+
+            const card =
+                document.createElement('div');
+
+
+            card.className = 'npc-quest-card';
+
+
+            const levelMet =
+                currentCharacter.level >=
+                Number(quest.level_requirement ?? 0);
+
+            const alreadyActive =
+                activeQuestIds.has(quest.id);
+
+
+            card.innerHTML = `
+
+                <h3>${escapeHtml(quest.name)}</h3>
+
+                <p>${escapeHtml(quest.description || '')}</p>
+
+                <div class="npc-quest-reward">
+                    Gold: ${quest.gold_reward ?? 0} | EXP: ${quest.experience_reward ?? 0}
+                </div>
+
+                <div class="npc-quest-status"></div>
+
+            `;
+
+
+            const statusElement =
+                card.querySelector('.npc-quest-status');
+
+
+            if (alreadyActive) {
+
+                statusElement.textContent =
+                    'Quest already active.';
+
+            } else if (!levelMet) {
+
+                statusElement.textContent =
+                    `Requires Level ${quest.level_requirement}`;
+
+            } else {
+
+                const acceptButton =
+                    document.createElement('button');
+
+                acceptButton.className = 'accept-quest-btn';
+                acceptButton.textContent = 'Accept Quest';
+
+                acceptButton.addEventListener(
+                    'click',
+                    () => acceptNpcQuest(quest, card)
+                );
+
+                statusElement.appendChild(acceptButton);
+
+            }
+
+
+            container.appendChild(card);
+
+        }
+
+
+        /* =========================================================
+           ACCEPT NPC QUEST
+           ========================================================= */
+
+        async function acceptNpcQuest(quest, card) {
+
+            const statusElement =
+                card.querySelector('.npc-quest-status');
+
+
+            if (activeQuestIds.size >= 3) {
+
+                statusElement.textContent =
+                    'You can only have up to 3 active quests at a time.';
+
+                return;
+            }
+
+
+            if (activeQuestIds.has(quest.id)) {
+
+                statusElement.textContent =
+                    'This quest is already active.';
+
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'accept_quest',
+                {
+                    body: {
+                        quest_id: quest.id
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage = 'Could not accept quest.';
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context.clone().json();
+
+                        if (response?.error) {
+                            errorMessage = response.error;
+                        }
+
+                    } catch (e) {
+                        console.error('Could not parse Edge Function error:', e);
+                    }
+
+                }
+
+                statusElement.textContent = errorMessage;
+
+                return;
+            }
+
+
+            if (!data?.success) {
+
+                statusElement.textContent =
+                    data?.error || 'Could not accept quest.';
+
+                return;
+            }
+
+
+            activeQuestIds.add(quest.id);
+
+            statusElement.textContent = 'Quest accepted!';
+
+        }
+
+
+        /* =========================================================
+           CLOSE NPC DIALOG
+           ========================================================= */
+
+        function closeNpcDialog() {
+
+            document
+                .getElementById('npcDialogOverlay')
+                .classList.add('hidden');
+
+        }
+
+
+        document
+            .getElementById('npcDialogClose')
+            .addEventListener('click', closeNpcDialog);
+
+
+        document
+            .getElementById('npcDialogOverlay')
+            .addEventListener('click', event => {
+
+                if (event.target.id === 'npcDialogOverlay') {
+                    closeNpcDialog();
+                }
+
+            });
+
+
+        /* =========================================================
+           CLOSE AREA
+           ========================================================= */
+
+        function closeArea() {
+
+            document
+                .getElementById('areaViewOverlay')
+                .classList.add('hidden');
+
+
+            hideAreaNodeTooltip();
+
+        }
+
+
+        document
+            .getElementById('areaViewClose')
+            .addEventListener('click', closeArea);
+
+
+        document
+            .getElementById('areaViewOverlay')
+            .addEventListener('click', event => {
+
+                if (event.target.id === 'areaViewOverlay') {
+                    closeArea();
+                }
+
+            });
 
 
         /* =========================================================
