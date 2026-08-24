@@ -4,18 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Character - Dark Fantasy RPG</title>
+
     <link rel="stylesheet" href="game-style.css">
 </head>
 
 <body>
+
     <div id="mainCharacterView" class="game-container hidden">
-        
-        <!-- Left Panel: Character Info -->
+
+        <!-- ========================================= -->
+        <!-- LEFT PANEL                                -->
+        <!-- ========================================= -->
+
         <div class="left-panel">
-            
-            <!-- Character Header -->
-            <div class="character-header">
+
+            <div class="character-header desired-character-header">
                 <div class="character-avatar">
                     <img id="classIcon" src="" alt="Class Icon" class="avatar-image">
                 </div>
@@ -25,190 +30,604 @@
                 </div>
             </div>
 
-            <!-- Character Stats -->
-            <div class="card stats-card">
-                <h2>⚡ Stats</h2>
-                <div class="stats-grid">
-                    <div class="stat-column">
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">Strength</span>
-                            <span id="strengthValue" class="stat-value">0</span>
-                        </div>
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">Dexterity</span>
-                            <span id="dexterityValue" class="stat-value">0</span>
-                        </div>
-                    </div>
-                    <div class="stat-column">
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">Intelligence</span>
-                            <span id="intelligenceValue" class="stat-value">0</span>
-                        </div>
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">Defense</span>
-                            <span id="defenseValue" class="stat-value">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Experience & Leveling -->
-            <div class="card">
+            <div class="card experience-card">
                 <h2>📈 Experience</h2>
                 <div class="exp-info">
-                    <div class="exp-row">
-                        <span>Current XP</span>
-                        <span id="currentExperienceText">0 / 100</span>
-                    </div>
-                    <div class="exp-bar">
-                        <div id="expFill" class="exp-fill" style="width: 0%"></div>
-                    </div>
-                    <div class="exp-row">
-                        <span>XP to Next Level</span>
-                        <span id="xpToNextText">100 XP</span>
-                    </div>
+                    <div class="exp-row"><span>Current XP</span><span id="currentExperienceText">0 / 100</span></div>
+                    <div class="exp-bar"><div id="expFill" class="exp-fill" style="width: 0%"></div></div>
+                    <div class="exp-row"><span>XP to Next Level</span><span id="xpToNextText">100 XP</span></div>
                 </div>
             </div>
 
-            <!-- Health & Mana -->
-            <div class="card">
+            <div class="card vitals-card">
                 <h2>❤️ Vitals</h2>
-                <div class="vital-row">
-                    <span class="vital-label">Health</span>
-                    <div class="vital-bar health-bar">
-                        <div id="healthFill" class="vital-fill" style="width: 0%"></div>
+                <div class="vitals-grid">
+                    <div class="vital-row">
+                        <span class="vital-label">Health</span>
+                        <div class="vital-bar health-bar"><div id="healthFill" class="vital-fill" style="width: 0%"></div></div>
+                        <span id="healthText" class="vital-value">0 / 100</span>
                     </div>
-                    <span id="healthText" class="vital-value">0 / 100</span>
-                </div>
-                <div class="vital-row">
-                    <span class="vital-label">Mana</span>
-                    <div class="vital-bar mana-bar">
-                        <div id="manaFill" class="vital-fill" style="width: 0%"></div>
-                    </div>
-                    <span id="manaText" class="vital-value">0 / 100</span>
-                </div>
-            </div>
-
-            <!-- Equipment -->
-            <div class="card">
-                <h2>🛡️ Equipment</h2>
-                <div class="equipment-layout">
-                    <div class="equipment-column">
-                        <div class="equipment-slot" data-slot="Helmet">
-                            <div class="slot-icon">🪖</div>
-                            <p>Helmet</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot" data-slot="Chestplate">
-                            <div class="slot-icon">🧥</div>
-                            <p>Chestplate</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot" data-slot="Legs">
-                            <div class="slot-icon">👖</div>
-                            <p>Legs</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot" data-slot="Shoes">
-                            <div class="slot-icon">🥾</div>
-                            <p>Shoes</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                    </div>
-
-                    <div class="equipment-column">
-                        <div class="equipment-slot" data-slot="Ring 1">
-                            <div class="slot-icon">💍</div>
-                            <p>Ring</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot" data-slot="Ring 2">
-                            <div class="slot-icon">💍</div>
-                            <p>Ring</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot main-weapon-slot" data-slot="Main Weapon">
-                            <div class="slot-icon">⚔️</div>
-                            <p>Main Weapon</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
-                        <div class="equipment-slot offhand-slot" data-slot="Offhand">
-                            <div class="slot-icon">🛡️</div>
-                            <p>Offhand</p>
-                            <span class="slot-empty">Empty</span>
-                        </div>
+                    <div class="vital-row">
+                        <span class="vital-label">Mana</span>
+                        <div class="vital-bar mana-bar"><div id="manaFill" class="vital-fill" style="width: 0%"></div></div>
+                        <span id="manaText" class="vital-value">0 / 100</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Inventory -->
-            <div class="card">
-                <h2>🎒 Inventory</h2>
+            <div class="card equipment-card">
+                <div class="card-header"><h2>🛡️ Equipment</h2></div>
+                <div class="equipment-grid">
+                    <div class="equipment-slot" data-slot="Helmet" data-equipment-type="helmet"><div class="item-slot-image"><img src="Items/Empty Slots/Helmet.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Legs" data-equipment-type="legs"><div class="item-slot-image"><img src="Items/Empty Slots/Legs.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Necklace" data-equipment-type="necklace"><div class="item-slot-image"><img src="Items/Empty Slots/Necklace.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Shoes" data-equipment-type="shoes"><div class="item-slot-image"><img src="Items/Empty Slots/Shoes.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Chestplate" data-equipment-type="chestplate"><div class="item-slot-image"><img src="Items/Empty Slots/Chestplate.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Ring 1" data-equipment-type="ring"><div class="item-slot-image"><img src="Items/Empty Slots/Ring.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Gloves" data-equipment-type="gloves"><div class="item-slot-image"><img src="Items/Empty Slots/Gloves.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot" data-slot="Ring 2" data-equipment-type="ring"><div class="item-slot-image"><img src="Items/Empty Slots/Ring.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot main-weapon-slot" data-slot="Main Weapon" data-equipment-type="main_weapon"><div class="item-slot-image"><img src="Items/Empty Slots/Main Weapon.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                    <div class="equipment-slot offhand-slot" data-slot="Offhand" data-equipment-type="offhand"><div class="item-slot-image"><img src="Items/Empty Slots/Offhand.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
+                </div>
+                <div class="card stats-card">
+                    <div class="stats-grid"><div class="stat-column">
+                        <div class="stat-row simple-stat-row"><span class="stat-label">Strength</span><span id="strengthValue" class="stat-value">0</span></div>
+                        <div class="stat-row simple-stat-row"><span class="stat-label">Intelligence</span><span id="intelligenceValue" class="stat-value">0</span></div>
+                        <div class="stat-row simple-stat-row"><span class="stat-label">Dexterity</span><span id="dexterityValue" class="stat-value">0</span></div>
+                        <div class="stat-row simple-stat-row"><span class="stat-label">Defense</span><span id="defenseValue" class="stat-value">0</span></div>
+                    </div></div>
+                </div>
+            </div>
+
+            <!-- Character Header -->
+            <div class="character-header legacy-character-header">
+
+                <div class="character-avatar">
+
+
+                    <!-- Main Weapon -->
+                    <div class="equipment-slot main-weapon-slot"
+                         data-slot="Main Weapon"
+                         data-equipment-type="main_weapon">
+
+                        <div class="item-slot-image">
+                            <img src=""
+                                 alt=""
+                                 class="item-image">
+                        </div>
+
+                        <div class="equipment-slot-name">
+                            Main Weapon
+                        </div>
+
+                    </div>
+
+
+                    <!-- Offhand -->
+                    <div class="equipment-slot offhand-slot"
+                         data-slot="Offhand"
+                         data-equipment-type="offhand">
+
+                        <div class="item-slot-image">
+                            <img src=""
+                                 alt=""
+                                 class="item-image">
+                        </div>
+
+                        <div class="equipment-slot-name">
+                            Offhand
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card stats-card">
+                    <h2>⚡ Stats</h2>
+                    <div class="stats-grid">
+                        <div class="stat-column">
+                            <div class="stat-row simple-stat-row">
+                                <span class="stat-label">Strength</span>
+                                <span id="strengthValue" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-row simple-stat-row">
+                                <span class="stat-label">Intelligence</span>
+                                <span id="intelligenceValue" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-row simple-stat-row">
+                                <span class="stat-label">Dexterity</span>
+                                <span id="dexterityValue" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-row simple-stat-row">
+                                <span class="stat-label">Defense</span>
+                                <span id="defenseValue" class="stat-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- INVENTORY                                  -->
+            <!-- ========================================= -->
+
+            <div class="card inventory-card">
+
+                <div class="inventory-header">
+
+                    <h2>🎒 Inventory</h2>
+
+                    <div class="inventory-gold">
+                        <span class="gold-icon">💰</span>
+                        <span id="goldAmount">0 Gold</span>
+                    </div>
+
+                </div>
+
+
+                <!--
+                    6 columns × 5 rows = 30 inventory slots
+
+                    Each slot already contains an image element
+                    for your future 64x64 item icons.
+                -->
+
                 <div class="inventory-grid">
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                    <div class="inventory-slot-empty" aria-label="Empty inventory slot"></div>
-                </div>
-            </div>
 
-            <!-- Gold -->
-            <div class="card gold-card">
-                <h2>💰 Gold</h2>
-                <div id="goldAmount" class="gold-amount">0 Gold</div>
+                    <div class="inventory-slot"
+                         data-inventory-slot="1">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="2">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="3">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="4">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="5">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="6">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="7">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="8">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="9">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="10">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="11">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="12">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="13">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="14">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="15">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="16">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="17">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="18">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="19">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="20">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="21">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="22">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="23">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="24">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="25">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="26">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="27">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="28">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="29">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="30">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="31">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="32">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="33">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="34">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="35">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="36">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="37">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="38">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="39">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                    <div class="inventory-slot"
+                         data-inventory-slot="40">
+                        <img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
 
-        <!-- Right Panel: Tabs & Actions -->
+
+        <!-- ========================================= -->
+        <!-- RIGHT PANEL                               -->
+        <!-- ========================================= -->
+
         <div class="right-panel">
-            
-            <!-- Back to Hub Button -->
-            <a href="hub.html" style="text-decoration: none; margin-bottom: 10px;">
-                <button style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3d4452 0%, #4d5562 100%); border: 2px solid #d4af37; color: #d4af37; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; font-family: 'Georgia', serif; transition: all 0.3s ease;">
+
+            <!-- Back to Hub -->
+            <a href="hub.html"
+               style="text-decoration: none; margin-bottom: 10px;">
+
+                <button style="
+                    width: 100%;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #3d4452 0%, #4d5562 100%);
+                    border: 2px solid #d4af37;
+                    color: #d4af37;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 14px;
+                    font-family: 'Georgia', serif;
+                    transition: all 0.3s ease;
+                ">
                     ← Back to Hub
                 </button>
+
             </a>
 
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="skills">✨ Skills</button>
-                <button class="tab-btn" data-tab="quests">📜 Quests</button>
+
+            <!-- ========================================= -->
+            <!-- STATS                                     -->
+            <!-- ========================================= -->
+
+            <!--
+            <div class="card stats-card">
+
+                <h2>⚡ Stats</h2>
+
+                <div class="stats-grid">
+
+                    <div class="stat-column">
+
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">
+                                Strength
+                            </span>
+
+                            <span id="strengthValue"
+                                  class="stat-value">
+                                0
+                            </span>
+                        </div>
+
+
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">
+                                Dexterity
+                            </span>
+
+                            <span id="dexterityValue"
+                                  class="stat-value">
+                                0
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-column">
+
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">
+                                Intelligence
+                            </span>
+
+                            <span id="intelligenceValue"
+                                  class="stat-value">
+                                0
+                            </span>
+                        </div>
+
+
+                        <div class="stat-row simple-stat-row">
+                            <span class="stat-label">
+                                Defense
+                            </span>
+
+                            <span id="defenseValue"
+                                  class="stat-value">
+                                0
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <!-- Tab Content -->
+
+            <!-- ========================================= -->
+            <!-- EXPERIENCE                                -->
+            <!-- ========================================= -->
+            -->
+
+            <div class="card legacy-experience-card">
+
+                <h2>📈 Experience</h2>
+
+                <div class="exp-info">
+
+                    <div class="exp-row">
+                        <span>Current XP</span>
+
+                        <span id="currentExperienceText">
+                            0 / 100
+                        </span>
+                    </div>
+
+
+                    <div class="exp-bar">
+                        <div id="expFill"
+                             class="exp-fill"
+                             style="width: 0%">
+                        </div>
+                    </div>
+
+
+                    <div class="exp-row">
+                        <span>XP to Next Level</span>
+
+                        <span id="xpToNextText">
+                            100 XP
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- VITALS                                    -->
+            <!-- ========================================= -->
+
+            <div class="card legacy-vitals-card">
+
+                <h2>❤️ Vitals</h2>
+
+                <!-- Health -->
+                <div class="vital-row">
+
+                    <span class="vital-label">
+                        Health
+                    </span>
+
+                    <div class="vital-bar health-bar">
+                        <div id="healthFill"
+                             class="vital-fill"
+                             style="width: 0%">
+                        </div>
+                    </div>
+
+                    <span id="healthText"
+                          class="vital-value">
+                        0 / 100
+                    </span>
+
+                </div>
+
+
+                <!-- Mana -->
+                <div class="vital-row">
+
+                    <span class="vital-label">
+                        Mana
+                    </span>
+
+                    <div class="vital-bar mana-bar">
+                        <div id="manaFill"
+                             class="vital-fill"
+                             style="width: 0%">
+                        </div>
+                    </div>
+
+                    <span id="manaText"
+                          class="vital-value">
+                        0 / 100
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- TABS                                      -->
+            <!-- ========================================= -->
+
+            <div class="tabs">
+
+                <button class="tab-btn active"
+                        data-tab="skills">
+                    ✨ Skills
+                </button>
+
+                <button class="tab-btn"
+                        data-tab="quests">
+                    📜 Quests
+                </button>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- TAB CONTENT                               -->
+            <!-- ========================================= -->
+
             <div class="tab-content">
 
-                <!-- Skills Tab -->
-                <div id="skills" class="tab-pane active">
+                <!-- Skills -->
+                <div id="skills"
+                     class="tab-pane active">
+
                     <h2>Skills</h2>
-                    <div class="empty-quest-message" style="margin-top: 12px;">No Skills Available</div>
+
+                    <div class="empty-quest-message"
+                         style="margin-top: 12px;">
+                        No Skills Available
+                    </div>
+
                 </div>
-                
-                <!-- Quests Tab -->
-                <div id="quests" class="tab-pane">
+
+
+                <!-- Quests -->
+                <div id="quests"
+                     class="tab-pane">
+
                     <h2>Active Quests</h2>
-                    <div class="empty-quest-message" style="margin-top: 12px;">No Active Quests</div>
+
+                    <div class="empty-quest-message"
+                         style="margin-top: 12px;">
+                        No Active Quests
+                    </div>
+
                 </div>
 
             </div>
@@ -216,19 +635,31 @@
         </div>
 
     </div>
+
+
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script src="supabase.js"></script>
+
+
     <script>
+
         async function loadCharacter() {
+
             const {
                 data: { user },
                 error: userError
             } = await supabaseClient.auth.getUser();
 
+
             if (userError || !user) {
+
                 window.location.href = 'login.html';
                 return;
+
             }
+
 
             const {
                 data: character,
@@ -239,84 +670,316 @@
                 .eq('user_id', user.id)
                 .maybeSingle();
 
+
             if (characterError) {
-                console.error('Error loading character:', characterError);
+
+                console.error(
+                    'Error loading character:',
+                    characterError
+                );
+
                 return;
+
             }
+
 
             if (!character) {
-                // No character exists, redirect to creation page
-                window.location.href = 'character-creation.html';
+
+                window.location.href =
+                    'character-creation.html';
+
                 return;
+
             }
 
+
             updateCharacterDisplay(character);
+
         }
 
+
         async function updateCharacterDisplay(character) {
-            const name = character.name || 'Adventurer';
-            const level = Number(character.level || 1);
-            const currentExperience = Number(character.experience || 0);
-            const currentHealth = Number(character.health || 0);
-            const maxHealth = Number(character.max_health || currentHealth || 100);
-            const currentMana = Number(character.mana || 0);
-            const maxMana = Number(character.max_mana || currentMana || 100);
-            const gold = Number(character.gold || 0);
-            const strength = Number(character.strength || 0);
-            const dexterity = Number(character.dexterity || 0);
-            const intelligence = Number(character.intelligence || 0);
-            const defense = Number(character.defense || 0);
-            
-            // Fetch the class name to load the appropriate icon
+
+            const name =
+                character.name || 'Adventurer';
+
+            const level =
+                Number(character.level || 1);
+
+            const currentExperience =
+                Number(character.experience || 0);
+
+            const currentHealth =
+                Number(character.health || 0);
+
+            const maxHealth =
+                Number(
+                    character.max_health ||
+                    currentHealth ||
+                    100
+                );
+
+            const currentMana =
+                Number(character.mana || 0);
+
+            const maxMana =
+                Number(
+                    character.max_mana ||
+                    currentMana ||
+                    100
+                );
+
+            const gold =
+                Number(character.gold || 0);
+
+            const strength =
+                Number(character.strength || 0);
+
+            const dexterity =
+                Number(character.dexterity || 0);
+
+            const intelligence =
+                Number(character.intelligence || 0);
+
+            const defense =
+                Number(character.defense || 0);
+
+
+            /* ========================================= */
+            /* CLASS ICON                                */
+            /* ========================================= */
+
             if (character.class_id) {
-                const { data: classData, error: classError } = await supabaseClient
+
+                const {
+                    data: classData,
+                    error: classError
+                } = await supabaseClient
                     .from('classes')
                     .select('name')
                     .eq('id', character.class_id)
                     .single();
 
+
                 if (!classError && classData) {
-                    const classIcon = document.getElementById('classIcon');
-                    classIcon.src = `classes/${classData.name}/ClassIcon/${classData.name}.png`;
+
+                    const classIcon =
+                        document.getElementById(
+                            'classIcon'
+                        );
+
+                    classIcon.src =
+                        `classes/${classData.name}/ClassIcon/${classData.name}.png`;
+
                 }
+
             }
-            
-            const xpForNextLevel = Math.max(100, (level + 1) * 100);
-            const xpProgress = Math.min(100, Math.max(0, (currentExperience / xpForNextLevel) * 100));
-            const healthProgress = Math.min(100, Math.max(0, (currentHealth / maxHealth) * 100));
-            const manaProgress = Math.min(100, Math.max(0, (currentMana / maxMana) * 100));
+
+
+            /* ========================================= */
+            /* EXPERIENCE                               */
+            /* ========================================= */
+
+            const xpForNextLevel =
+                Math.max(
+                    100,
+                    (level + 1) * 100
+                );
+
+
+            const xpProgress =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        (
+                            currentExperience /
+                            xpForNextLevel
+                        ) * 100
+                    )
+                );
+
+
+            /* ========================================= */
+            /* HEALTH / MANA                            */
+            /* ========================================= */
+
+            const healthProgress =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        (
+                            currentHealth /
+                            maxHealth
+                        ) * 100
+                    )
+                );
+
+
+            const manaProgress =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        (
+                            currentMana /
+                            maxMana
+                        ) * 100
+                    )
+                );
+
+
+            /* ========================================= */
+            /* STATS                                    */
+            /* ========================================= */
 
             const statMap = [
-                { fill: 'strengthFill', value: 'strengthValue', amount: strength },
-                { fill: 'dexterityFill', value: 'dexterityValue', amount: dexterity },
-                { fill: 'intelligenceFill', value: 'intelligenceValue', amount: intelligence },
-                { fill: 'defenseFill', value: 'defenseValue', amount: defense }
+
+                {
+                    value: 'strengthValue',
+                    amount: strength
+                },
+
+                {
+                    value: 'dexterityValue',
+                    amount: dexterity
+                },
+
+                {
+                    value: 'intelligenceValue',
+                    amount: intelligence
+                },
+
+                {
+                    value: 'defenseValue',
+                    amount: defense
+                }
+
             ];
 
-            statMap.forEach(({ value, amount }) => {
-                const valueElement = document.getElementById(value);
-                if (valueElement) valueElement.textContent = amount;
-            });
 
-            document.getElementById('characterName').textContent = name;
-            document.getElementById('characterLevel').textContent = `Level ${level}`;
-            document.getElementById('currentExperienceText').textContent = `${currentExperience} / ${xpForNextLevel}`;
-            document.getElementById('expFill').style.width = `${xpProgress}%`;
-            document.getElementById('xpToNextText').textContent = `${Math.max(0, xpForNextLevel - currentExperience)} XP`;
-            document.getElementById('healthFill').style.width = `${healthProgress}%`;
-            document.getElementById('healthText').textContent = `${currentHealth} / ${maxHealth}`;
-            document.getElementById('manaFill').style.width = `${manaProgress}%`;
-            document.getElementById('manaText').textContent = `${currentMana} / ${maxMana}`;
-            document.getElementById('goldAmount').textContent = `${gold} Gold`;
-            
-            // Show the character view now that data is loaded
-            document.getElementById('mainCharacterView').classList.remove('hidden');
+            statMap.forEach(
+                ({ value, amount }) => {
+
+                    const valueElement =
+                        document.getElementById(
+                            value
+                        );
+
+
+                    if (valueElement) {
+
+                        valueElement.textContent =
+                            amount;
+
+                    }
+
+                }
+            );
+
+
+            /* ========================================= */
+            /* CHARACTER INFORMATION                    */
+            /* ========================================= */
+
+            document.getElementById(
+                'characterName'
+            ).textContent = name;
+
+
+            document.getElementById(
+                'characterLevel'
+            ).textContent =
+                `Level ${level}`;
+
+
+            /* ========================================= */
+            /* EXPERIENCE DISPLAY                       */
+            /* ========================================= */
+
+            document.getElementById(
+                'currentExperienceText'
+            ).textContent =
+                `${currentExperience} / ${xpForNextLevel}`;
+
+
+            document.getElementById(
+                'expFill'
+            ).style.width =
+                `${xpProgress}%`;
+
+
+            document.getElementById(
+                'xpToNextText'
+            ).textContent =
+                `${Math.max(
+                    0,
+                    xpForNextLevel -
+                    currentExperience
+                )} XP`;
+
+
+            /* ========================================= */
+            /* HEALTH DISPLAY                           */
+            /* ========================================= */
+
+            document.getElementById(
+                'healthFill'
+            ).style.width =
+                `${healthProgress}%`;
+
+
+            document.getElementById(
+                'healthText'
+            ).textContent =
+                `${currentHealth} / ${maxHealth}`;
+
+
+            /* ========================================= */
+            /* MANA DISPLAY                             */
+            /* ========================================= */
+
+            document.getElementById(
+                'manaFill'
+            ).style.width =
+                `${manaProgress}%`;
+
+
+            document.getElementById(
+                'manaText'
+            ).textContent =
+                `${currentMana} / ${maxMana}`;
+
+
+            /* ========================================= */
+            /* GOLD DISPLAY                             */
+            /* ========================================= */
+
+            document.getElementById(
+                'goldAmount'
+            ).textContent =
+                `${gold} Gold`;
+
+
+            /* ========================================= */
+            /* SHOW CHARACTER                           */
+            /* ========================================= */
+
+            document.getElementById(
+                'mainCharacterView'
+            ).classList.remove('hidden');
+
         }
 
+
         loadCharacter();
+
     </script>
 
+
     <script src="game-script.js"></script>
+
 </body>
 
 </html>

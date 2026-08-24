@@ -288,31 +288,6 @@
                 </a>
             </div>
 
-            <!-- Quests -->
-            <div class="location-card">
-                <div class="location-icon">📜</div>
-                <div class="location-name">Quests</div>
-                <div class="location-desc">Accept quests and complete them to earn rewards and experience.</div>
-                <button class="enter-btn" onclick="navigateTo('quests')">Enter</button>
-            </div>
-
-            <!-- Shop -->
-            <div class="location-card">
-                <div class="location-icon">🏪</div>
-                <div class="location-name">Shop</div>
-                <div class="location-desc">Buy weapons, armor, potions, and rare items from merchants.</div>
-                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
-            </div>
-
-            <!-- Dungeon -->
-            <div class="location-card">
-                <div class="location-icon">🏰</div>
-                <div class="location-name">Dungeon</div>
-                <div class="location-desc">Venture into dark dungeons and battle fierce enemies.</div>
-                <div class="location-status">in progress...</div>
-                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
-            </div>
-
             <!-- World -->
             <div class="location-card">
                 <div class="location-icon">🗺️</div>
@@ -321,11 +296,11 @@
                 <button class="enter-btn" onclick="navigateTo('world')">Enter</button>
             </div>
 
-            <!-- Achievements -->
+            <!-- Dungeon -->
             <div class="location-card">
-                <div class="location-icon">🏆</div>
-                <div class="location-name">Achievements</div>
-                <div class="location-desc">Track your accomplishments and unlock special rewards.</div>
+                <div class="location-icon">🏰</div>
+                <div class="location-name">Dungeon</div>
+                <div class="location-desc">Venture into dark dungeons and battle fierce enemies.</div>
                 <div class="location-status">in progress...</div>
                 <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
             </div>
@@ -408,13 +383,10 @@
         }
 
         function navigateTo(location) {
-            if (location === 'quests') {
-                window.location.href = 'quest.html';
-            } else if (location === 'shop') {
-                window.location.href = 'game.html?tab=shop';
-            } else if (location === 'world') {
+
+            if (location === 'world') {
                 window.location.href = 'world.html';
-            } else if (location === 'achievements') {
+            } else if(location === 'achievements') {
                 window.location.href = 'game.html?tab=achievements';
             }
         }
