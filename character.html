@@ -31,7 +31,6 @@
             </div>
 
             <div class="card experience-card">
-                <h2>📈 Experience</h2>
                 <div class="exp-info">
                     <div class="exp-row"><span>Current XP</span><span id="currentExperienceText">0 / 100</span></div>
                     <div class="exp-bar"><div id="expFill" class="exp-fill" style="width: 0%"></div></div>
@@ -40,23 +39,35 @@
             </div>
 
             <div class="card vitals-card">
-                <h2>❤️ Vitals</h2>
+                <h2>Vitals</h2>
                 <div class="vitals-grid">
-                    <div class="vital-row">
-                        <span class="vital-label">Health</span>
-                        <div class="vital-bar health-bar"><div id="healthFill" class="vital-fill" style="width: 0%"></div></div>
-                        <span id="healthText" class="vital-value">0 / 100</span>
-                    </div>
-                    <div class="vital-row">
-                        <span class="vital-label">Mana</span>
-                        <div class="vital-bar mana-bar"><div id="manaFill" class="vital-fill" style="width: 0%"></div></div>
-                        <span id="manaText" class="vital-value">0 / 100</span>
-                    </div>
+                        <div class="vital-row">
+                            <span class="vital-label">Health</span>
+
+                            <div class="vital-bar health-bar">
+                                <div id="healthFill" class="vital-fill" style="width: 0%"></div>
+
+                                <span id="healthText" class="vital-value">
+                                    0 / 100
+                                </span>
+                            </div>
+                        </div>
+                        <div class="vital-row">
+                            <span class="vital-label">Mana</span>
+
+                            <div class="vital-bar mana-bar">
+                                <div id="manaFill" class="vital-fill" style="width: 0%"></div>
+
+                                <span id="manaText" class="vital-value">
+                                    0 / 100
+                                </span>
+                            </div>
+                        </div>
                 </div>
             </div>
 
             <div class="card equipment-card">
-                <div class="card-header"><h2>🛡️ Equipment</h2></div>
+                <div class="card-header"><h2>Equipment</h2></div>
                 <div class="equipment-grid">
                     <div class="equipment-slot" data-slot="Helmet" data-equipment-type="helmet"><div class="item-slot-image"><img src="Items/Empty Slots/Helmet.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
                     <div class="equipment-slot" data-slot="Legs" data-equipment-type="legs"><div class="item-slot-image"><img src="Items/Empty Slots/Legs.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
@@ -123,7 +134,7 @@
                 </div>
 
                 <div class="card stats-card">
-                    <h2>⚡ Stats</h2>
+                    <h2>Stats</h2>
                     <div class="stats-grid">
                         <div class="stat-column">
                             <div class="stat-row simple-stat-row">
@@ -157,10 +168,9 @@
 
                 <div class="inventory-header">
 
-                    <h2>🎒 Inventory</h2>
+                    <h2>Inventory</h2>
 
                     <div class="inventory-gold">
-                        <span class="gold-icon">💰</span>
                         <span id="goldAmount">0 Gold</span>
                     </div>
 
@@ -411,86 +421,7 @@
 
             </a>
 
-
-            <!-- ========================================= -->
-            <!-- STATS                                     -->
-            <!-- ========================================= -->
-
-            <!--
-            <div class="card stats-card">
-
-                <h2>⚡ Stats</h2>
-
-                <div class="stats-grid">
-
-                    <div class="stat-column">
-
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">
-                                Strength
-                            </span>
-
-                            <span id="strengthValue"
-                                  class="stat-value">
-                                0
-                            </span>
-                        </div>
-
-
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">
-                                Dexterity
-                            </span>
-
-                            <span id="dexterityValue"
-                                  class="stat-value">
-                                0
-                            </span>
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-column">
-
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">
-                                Intelligence
-                            </span>
-
-                            <span id="intelligenceValue"
-                                  class="stat-value">
-                                0
-                            </span>
-                        </div>
-
-
-                        <div class="stat-row simple-stat-row">
-                            <span class="stat-label">
-                                Defense
-                            </span>
-
-                            <span id="defenseValue"
-                                  class="stat-value">
-                                0
-                            </span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ========================================= -->
-            <!-- EXPERIENCE                                -->
-            <!-- ========================================= -->
-            -->
-
             <div class="card legacy-experience-card">
-
-                <h2>📈 Experience</h2>
 
                 <div class="exp-info">
 
@@ -577,29 +508,19 @@
 
             </div>
 
-
-            <!-- ========================================= -->
-            <!-- TABS                                      -->
-            <!-- ========================================= -->
-
             <div class="tabs">
 
                 <button class="tab-btn active"
                         data-tab="skills">
-                    ✨ Skills
+                    Skills
                 </button>
 
                 <button class="tab-btn"
                         data-tab="quests">
-                    📜 Quests
+                    Quests
                 </button>
 
             </div>
-
-
-            <!-- ========================================= -->
-            <!-- TAB CONTENT                               -->
-            <!-- ========================================= -->
 
             <div class="tab-content">
 
@@ -694,6 +615,319 @@
 
 
             updateCharacterDisplay(character);
+
+            loadInventory(character.id);
+
+        }
+
+
+        /* ========================================= */
+        /* INVENTORY                                 */
+        /* ========================================= */
+
+        const RARITY_COLORS = {
+            common: '#888',
+            uncommon: '#00aa00',
+            rare: '#0066ff',
+            epic: '#aa00ff',
+            legendary: '#ffaa00',
+            unique: '#FF0000'
+        };
+
+        // Maps items.item_type to the table holding that item's extra stats
+        const ITEM_TYPE_TABLES = {
+            weapons: {
+                table: 'weapons',
+                select: 'item_id, weapon_type, damage, attack_speed, strength, dexterity, intelligence'
+            },
+            armors: {
+                table: 'armors',
+                select: 'item_id, armor_type, defense, equipment_slot, strength, dexterity, intelligence'
+            },
+            consumables: {
+                table: 'consumables',
+                select: 'item_id, effect_type, effect_value'
+            },
+            materials: {
+                table: 'materials',
+                select: 'item_id, material_type'
+            }
+        };
+
+
+        async function loadInventory(characterId) {
+
+            const {
+                data: inventoryRows,
+                error: inventoryError
+            } = await supabaseClient
+                .from('character_inventories')
+                .select(`
+                    inventory_id,
+                    quantity,
+                    items (
+                        item_id,
+                        name,
+                        description,
+                        item_type,
+                        rarity,
+                        required_level,
+                        sell_price,
+                        icon_path,
+                        stackable,
+                        max_stack_size
+                    )
+                `)
+                .eq('character_id', characterId)
+                .order('inventory_id', { ascending: true });
+
+
+            if (inventoryError) {
+
+                console.error(
+                    'Error loading inventory:',
+                    inventoryError
+                );
+
+                return;
+
+            }
+
+
+            const inventoryItems =
+                (inventoryRows || []).filter(row => row.items);
+
+
+            /* ========================================= */
+            /* TYPE-SPECIFIC ITEM DETAILS               */
+            /* ========================================= */
+
+            const detailsByItemId = {};
+
+            for (const [itemType, config] of Object.entries(ITEM_TYPE_TABLES)) {
+
+                const itemIds =
+                    inventoryItems
+                        .filter(row => row.items.item_type === itemType)
+                        .map(row => row.items.item_id);
+
+
+                if (itemIds.length === 0) {
+                    continue;
+                }
+
+
+                const {
+                    data: typeData,
+                    error: typeError
+                } = await supabaseClient
+                    .from(config.table)
+                    .select(config.select)
+                    .in('item_id', itemIds);
+
+
+                if (typeError) {
+
+                    console.error(
+                        `Error loading ${config.table}:`,
+                        typeError
+                    );
+
+                    continue;
+
+                }
+
+
+                typeData.forEach(detail => {
+                    detailsByItemId[detail.item_id] = detail;
+                });
+
+            }
+
+
+            /* ========================================= */
+            /* RENDER INVENTORY SLOTS                   */
+            /* ========================================= */
+
+            const slotElements =
+                document.querySelectorAll('.inventory-slot');
+
+
+            slotElements.forEach(slotElement => {
+
+                slotElement.innerHTML =
+                    '<img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">';
+
+                slotElement.removeAttribute('data-tooltip');
+                slotElement.style.borderColor = '';
+
+            });
+
+
+            let inventorySlotIndex = 0;
+
+            inventoryItems.forEach((row) => {
+
+                const item = row.items;
+                const details = detailsByItemId[item.item_id];
+
+                let remainingQuantity = Number(row.quantity) || 0;
+
+                // Non-stackable items always use one slot
+                if (!item.stackable) {
+                    remainingQuantity = 1;
+                }
+
+                // Determine the maximum amount per stack
+                const maxStackSize =
+                    item.stackable
+                        ? Math.max(1, Number(item.max_stack_size) || 1)
+                        : 1;
+
+                // Split the item into multiple visual stacks
+                while (remainingQuantity > 0) {
+
+                    const slotElement =
+                        slotElements[inventorySlotIndex];
+
+                    // Inventory is full
+                    if (!slotElement) {
+                        console.warn(
+                            'Inventory is full. Some items could not be displayed.'
+                        );
+                        return;
+                    }
+
+                    const stackQuantity =
+                        Math.min(
+                            remainingQuantity,
+                            maxStackSize
+                        );
+
+                    /* ========================================= */
+                    /* RENDER ITEM                              */
+                    /* ========================================= */
+
+                    slotElement.innerHTML =
+                        `<img src="${item.icon_path}"
+                            alt="${item.name}"
+                            class="item-image">`;
+
+                    /* ========================================= */
+                    /* STACK COUNT                              */
+                    /* ========================================= */
+
+                    if (item.stackable && stackQuantity > 1) {
+
+                        slotElement.innerHTML +=
+                            `<span class="item-count">${stackQuantity}</span>`;
+
+                    }
+
+                    /* ========================================= */
+                    /* RARITY                                   */
+                    /* ========================================= */
+
+                    const rarityColor =
+                        RARITY_COLORS[
+                            (item.rarity || '').toLowerCase()
+                        ];
+
+                    if (rarityColor) {
+                        slotElement.style.borderColor =
+                            rarityColor;
+                    }
+
+                    /* ========================================= */
+                    /* TOOLTIP                                  */
+                    /* ========================================= */
+
+                    slotElement.setAttribute(
+                        'data-tooltip',
+                        buildItemTooltip(
+                            item,
+                            details,
+                            stackQuantity
+                        )
+                    );
+
+                    /* ========================================= */
+                    /* NEXT STACK                               */
+                    /* ========================================= */
+
+                    inventorySlotIndex++;
+
+                    remainingQuantity -= stackQuantity;
+                }
+
+            });
+
+        }
+
+
+        function buildItemTooltip(item, details, quantity) {
+
+            const lines = [item.name || 'Unknown Item'];
+
+
+            if (item.rarity) {
+                lines.push(item.rarity);
+            }
+
+
+            if (item.description) {
+                lines.push(item.description);
+            }
+
+            lines.push('');
+
+
+            if (details) {
+
+                switch (item.item_type) {
+
+                    case 'weapons':
+                        if (details.damage) lines.push(`${details.damage} Damage`);
+                        if (details.strength) lines.push(`${details.strength} Strength`);
+                        if (details.dexterity) lines.push(`${details.dexterity} Dexterity`);
+                        if (details.intelligence) lines.push(`${details.intelligence} Intelligence`);
+                        break;
+
+                    case 'armors':
+                        lines.push(
+                            `${details.armor_type} (${details.equipment_slot}) - Defense: ${details.defense}`
+                        );
+                        break;
+
+                    case 'consumables':
+                        lines.push(
+                            `${details.effect_type}: +${details.effect_value}`
+                        );
+                        break;
+
+                    case 'materials':
+                        lines.push(`Material: ${details.material_type}`);
+                        break;
+
+                }
+
+            }
+
+
+            if (item.required_level) {
+                lines.push(`Requires Level ${item.required_level}`);
+            }
+
+
+            if (item.stackable) {
+                lines.push(`Quantity: ${quantity} / ${item.max_stack_size}`);
+            }
+
+
+            lines.push(`Sell Price: ${item.sell_price} Gold`);
+
+
+            return lines.join('\n');
 
         }
 

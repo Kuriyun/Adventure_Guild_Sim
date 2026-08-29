@@ -1025,7 +1025,7 @@ body {
 
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
-    gap: 12px;
+    gap: 30px;
 }
 
 .vitals-grid .vital-row {
@@ -1033,7 +1033,7 @@ body {
 }
 
 .vital-label {
-    width: 70px;
+    width: 50px;
 
     font-size: 14px;
 
@@ -1041,9 +1041,11 @@ body {
 }
 
 .vital-bar {
+    position: relative;
+
     flex: 1;
 
-    height: 18px;
+    height: 24px;
 
     background:
         linear-gradient(
@@ -1098,13 +1100,29 @@ body {
 }
 
 .vital-value {
-    width: 70px;
+    position: absolute;
 
-    text-align: right;
+    top: 50%;
+    left: 50%;
 
-    font-size: 13px;
+    transform: translate(-50%, -50%);
 
-    color: #d4af37;
+    width: 100%;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.9);
+
+    z-index: 2;
+
+    pointer-events: none;
 }
 
 
@@ -1411,9 +1429,6 @@ body {
     font-size: 15px;
 }
 
-
-/* Inventory grid */
-
 .inventory-grid {
     display: grid;
 
@@ -1582,6 +1597,8 @@ body {
     line-height: 1.5;
 
     text-align: left;
+
+    white-space: pre-line;
 
     opacity: 0;
 
