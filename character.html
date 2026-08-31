@@ -8,6 +8,7 @@
     <title>Character - Dark Fantasy RPG</title>
 
     <link rel="stylesheet" href="game-style.css">
+    <link rel="stylesheet" href="character.css">
 </head>
 
 <body>
@@ -563,8 +564,19 @@
 
     <script src="supabase.js"></script>
 
-
     <script>
+
+        /* ========================================= */
+        /* INVENTORY DRAG STATE                      */
+        /* ========================================= */
+
+        let draggedSlot = null;
+        let currentCharacterId = null;
+
+
+        /* ========================================= */
+        /* LOAD CHARACTER                            */
+        /* ========================================= */
 
         async function loadCharacter() {
 
@@ -614,9 +626,11 @@
             }
 
 
+            currentCharacterId = character.id;
+
             updateCharacterDisplay(character);
 
-            loadInventory(character.id);
+            await loadInventory(character.id);
 
         }
 
@@ -634,26 +648,62 @@
             unique: '#FF0000'
         };
 
-        // Maps items.item_type to the table holding that item's extra stats
+
+        /* ========================================= */
+        /* ITEM TYPE TABLES                          */
+        /* ========================================= */
+
         const ITEM_TYPE_TABLES = {
+
             weapons: {
                 table: 'weapons',
-                select: 'item_id, weapon_type, damage, attack_speed, strength, dexterity, intelligence'
+                select: `
+                    item_id,
+                    weapon_type,
+                    damage,
+                    attack_speed,
+                    strength,
+                    dexterity,
+                    intelligence
+                `
             },
+
             armors: {
                 table: 'armors',
-                select: 'item_id, armor_type, defense, equipment_slot, strength, dexterity, intelligence'
+                select: `
+                    item_id,
+                    armor_type,
+                    defense,
+                    equipment_slot,
+                    strength,
+                    dexterity,
+                    intelligence
+                `
             },
+
             consumables: {
                 table: 'consumables',
-                select: 'item_id, effect_type, effect_value'
+                select: `
+                    item_id,
+                    effect_type,
+                    effect_value
+                `
             },
+
             materials: {
                 table: 'materials',
-                select: 'item_id, material_type'
+                select: `
+                    item_id,
+                    material_type
+                `
             }
+
         };
 
+
+        /* ========================================= */
+        /* LOAD INVENTORY                            */
+        /* ========================================= */
 
         async function loadInventory(characterId) {
 
@@ -665,6 +715,7 @@
                 .select(`
                     inventory_id,
                     quantity,
+                    slot_position,
                     items (
                         item_id,
                         name,
@@ -679,7 +730,9 @@
                     )
                 `)
                 .eq('character_id', characterId)
-                .order('inventory_id', { ascending: true });
+                .order('slot_position', {
+                    ascending: true
+                });
 
 
             if (inventoryError) {
@@ -695,21 +748,33 @@
 
 
             const inventoryItems =
-                (inventoryRows || []).filter(row => row.items);
+                (inventoryRows || []).filter(
+                    row => row.items
+                );
 
 
             /* ========================================= */
-            /* TYPE-SPECIFIC ITEM DETAILS               */
+            /* LOAD TYPE-SPECIFIC DETAILS                */
             /* ========================================= */
 
             const detailsByItemId = {};
 
-            for (const [itemType, config] of Object.entries(ITEM_TYPE_TABLES)) {
+
+            for (
+                const [itemType, config]
+                of Object.entries(ITEM_TYPE_TABLES)
+            ) {
 
                 const itemIds =
                     inventoryItems
-                        .filter(row => row.items.item_type === itemType)
-                        .map(row => row.items.item_id);
+                        .filter(
+                            row =>
+                                row.items.item_type === itemType
+                        )
+                        .map(
+                            row =>
+                                row.items.item_id
+                        );
 
 
                 if (itemIds.length === 0) {
@@ -723,7 +788,10 @@
                 } = await supabaseClient
                     .from(config.table)
                     .select(config.select)
-                    .in('item_id', itemIds);
+                    .in(
+                        'item_id',
+                        itemIds
+                    );
 
 
                 if (typeError) {
@@ -739,174 +807,569 @@
 
 
                 typeData.forEach(detail => {
-                    detailsByItemId[detail.item_id] = detail;
+
+                    detailsByItemId[
+                        detail.item_id
+                    ] = detail;
+
                 });
 
             }
 
 
             /* ========================================= */
-            /* RENDER INVENTORY SLOTS                   */
+            /* RESET INVENTORY SLOTS                     */
             /* ========================================= */
 
             const slotElements =
-                document.querySelectorAll('.inventory-slot');
+                document.querySelectorAll(
+                    '.inventory-slot'
+                );
 
 
             slotElements.forEach(slotElement => {
 
                 slotElement.innerHTML =
-                    '<img src="Items/Empty Slots/Inventory Slot.png" alt="" class="item-image">';
+                    `<img src="Items/Empty Slots/Inventory Slot.png"
+                        alt=""
+                        class="item-image">`;
 
-                slotElement.removeAttribute('data-tooltip');
+                slotElement.removeAttribute(
+                    'data-tooltip'
+                );
+
+                slotElement.removeAttribute(
+                    'data-item'
+                );
+
+                slotElement.removeAttribute(
+                    'draggable'
+                );
+
                 slotElement.style.borderColor = '';
 
             });
 
 
-            let inventorySlotIndex = 0;
+            /* ========================================= */
+            /* RENDER INVENTORY ITEMS                    */
+            /* ========================================= */
 
             inventoryItems.forEach((row) => {
 
                 const item = row.items;
-                const details = detailsByItemId[item.item_id];
 
-                let remainingQuantity = Number(row.quantity) || 0;
+                const details =
+                    detailsByItemId[
+                        item.item_id
+                    ];
 
-                // Non-stackable items always use one slot
-                if (!item.stackable) {
-                    remainingQuantity = 1;
+                const slotPosition =
+                    Number(row.slot_position);
+
+
+                if (
+                    !Number.isInteger(slotPosition) ||
+                    slotPosition < 1 ||
+                    slotPosition > slotElements.length
+                ) {
+
+                    console.warn(
+                        'Invalid inventory slot position:',
+                        row
+                    );
+
+                    return;
+
                 }
 
-                // Determine the maximum amount per stack
-                const maxStackSize =
-                    item.stackable
-                        ? Math.max(1, Number(item.max_stack_size) || 1)
-                        : 1;
 
-                // Split the item into multiple visual stacks
-                while (remainingQuantity > 0) {
+                const slotElement =
+                    document.querySelector(
+                        `.inventory-slot[data-inventory-slot="${slotPosition}"]`
+                    );
 
-                    const slotElement =
-                        slotElements[inventorySlotIndex];
 
-                    // Inventory is full
-                    if (!slotElement) {
-                        console.warn(
-                            'Inventory is full. Some items could not be displayed.'
-                        );
+                if (!slotElement) {
+
+                    console.warn(
+                        'Inventory slot not found:',
+                        slotPosition
+                    );
+
+                    return;
+
+                }
+
+
+                renderInventoryItem(
+                    slotElement,
+                    item,
+                    details,
+                    Number(row.quantity) || 1,
+                    row.inventory_id
+                );
+
+            });
+
+
+            /* ========================================= */
+            /* ENABLE DRAG AND DROP                      */
+            /* ========================================= */
+
+            initializeInventoryDragAndDrop();
+
+        }
+
+
+        /* ========================================= */
+        /* RENDER INVENTORY ITEM                      */
+        /* ========================================= */
+
+        function renderInventoryItem(
+            slotElement,
+            item,
+            details,
+            quantity,
+            inventoryId
+        ) {
+
+            slotElement.innerHTML =
+                `<img src="${item.icon_path}"
+                    alt="${item.name}"
+                    class="item-image">`;
+
+
+            if (
+                item.stackable &&
+                quantity > 1
+            ) {
+
+                slotElement.innerHTML +=
+                    `<span class="item-count">
+                        ${quantity}
+                    </span>`;
+
+            }
+
+
+            const rarityColor =
+                RARITY_COLORS[
+                    (
+                        item.rarity ||
+                        ''
+                    ).toLowerCase()
+                ];
+
+
+            if (rarityColor) {
+
+                slotElement.style.borderColor =
+                    rarityColor;
+
+            }
+
+
+            const tooltip =
+                buildItemTooltip(
+                    item,
+                    details,
+                    quantity
+                );
+
+
+            slotElement.setAttribute(
+                'data-tooltip',
+                tooltip
+            );
+
+
+            /* Store item data directly on slot */
+
+            slotElement.dataset.item =
+                JSON.stringify({
+                    inventoryId,
+                    item,
+                    details,
+                    quantity
+                });
+
+
+            /* Make item draggable */
+
+            slotElement.setAttribute(
+                'draggable',
+                'true'
+            );
+
+        }
+
+
+        /* ========================================= */
+        /* INVENTORY DRAG AND DROP                    */
+        /* ========================================= */
+
+        function initializeInventoryDragAndDrop() {
+
+            const inventorySlots =
+                document.querySelectorAll(
+                    '.inventory-slot'
+                );
+
+
+            inventorySlots.forEach(slot => {
+
+                slot.ondragstart = function (event) {
+
+                    if (!slot.dataset.item) {
+                        event.preventDefault();
                         return;
                     }
 
-                    const stackQuantity =
-                        Math.min(
-                            remainingQuantity,
-                            maxStackSize
-                        );
+                    draggedSlot = slot;
 
-                    /* ========================================= */
-                    /* RENDER ITEM                              */
-                    /* ========================================= */
+                    event.dataTransfer.effectAllowed =
+                        'move';
 
-                    slotElement.innerHTML =
-                        `<img src="${item.icon_path}"
-                            alt="${item.name}"
-                            class="item-image">`;
-
-                    /* ========================================= */
-                    /* STACK COUNT                              */
-                    /* ========================================= */
-
-                    if (item.stackable && stackQuantity > 1) {
-
-                        slotElement.innerHTML +=
-                            `<span class="item-count">${stackQuantity}</span>`;
-
-                    }
-
-                    /* ========================================= */
-                    /* RARITY                                   */
-                    /* ========================================= */
-
-                    const rarityColor =
-                        RARITY_COLORS[
-                            (item.rarity || '').toLowerCase()
-                        ];
-
-                    if (rarityColor) {
-                        slotElement.style.borderColor =
-                            rarityColor;
-                    }
-
-                    /* ========================================= */
-                    /* TOOLTIP                                  */
-                    /* ========================================= */
-
-                    slotElement.setAttribute(
-                        'data-tooltip',
-                        buildItemTooltip(
-                            item,
-                            details,
-                            stackQuantity
-                        )
+                    event.dataTransfer.setData(
+                        'text/plain',
+                        slot.dataset.inventorySlot
                     );
 
-                    /* ========================================= */
-                    /* NEXT STACK                               */
-                    /* ========================================= */
+                    setTimeout(() => {
+                        slot.classList.add('dragging');
+                    }, 0);
 
-                    inventorySlotIndex++;
+                };
 
-                    remainingQuantity -= stackQuantity;
-                }
+
+                slot.ondragend = function () {
+
+                    slot.classList.remove('dragging');
+
+                    inventorySlots.forEach(
+                        inventorySlot => {
+                            inventorySlot.classList.remove(
+                                'drag-over'
+                            );
+                        }
+                    );
+
+                    draggedSlot = null;
+
+                };
+
+
+                slot.ondragover = function (event) {
+
+                    event.preventDefault();
+
+                    if (
+                        draggedSlot &&
+                        draggedSlot !== slot
+                    ) {
+                        slot.classList.add('drag-over');
+                    }
+
+                };
+
+
+                slot.ondragleave = function () {
+                    slot.classList.remove('drag-over');
+                };
+
+
+                slot.ondrop = async function (event) {
+
+                    event.preventDefault();
+                    slot.classList.remove('drag-over');
+
+                    if (
+                        !draggedSlot ||
+                        draggedSlot === slot
+                    ) {
+                        return;
+                    }
+
+                    await swapInventorySlots(
+                        draggedSlot,
+                        slot
+                    );
+
+                };
 
             });
 
         }
 
 
-        function buildItemTooltip(item, details, quantity) {
+        /* ========================================= */
+        /* MOVE / SWAP INVENTORY SLOTS                */
+        /* ========================================= */
 
-            const lines = [item.name || 'Unknown Item'];
+        async function swapInventorySlots(sourceSlot, targetSlot) {
+        
+            const sourceSlotNumber =
+                Number(sourceSlot.dataset.inventorySlot);
+
+            const targetSlotNumber =
+                Number(targetSlot.dataset.inventorySlot);
+
+
+            /* Save current visual state in case we need to revert */
+
+            const sourceState = getSlotState(sourceSlot);
+            const targetState = getSlotState(targetSlot);
+
+
+            /* Move instantly in browser */
+
+            applySlotState(sourceSlot, targetState);
+            applySlotState(targetSlot, sourceState);
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } = await supabaseClient.functions.invoke(
+                    'move_inventory_item',
+                    {
+                        body: {
+                            source_slot: sourceSlotNumber,
+                            target_slot: targetSlotNumber
+                        }
+                    }
+                );
+
+
+                if (error || !data?.success) {
+
+                    throw error || new Error(
+                        data?.error || 'Inventory move failed'
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Inventory move failed:',
+                    error
+                );
+
+
+                /* Revert browser state */
+
+                applySlotState(
+                    sourceSlot,
+                    sourceState
+                );
+
+                applySlotState(
+                    targetSlot,
+                    targetState
+                );
+
+
+                alert(
+                    'Could not move inventory item.'
+                );
+
+            }
+
+        }
+        function getSlotState(slot) {
+
+            return {
+                html: slot.innerHTML,
+
+                item:
+                    slot.dataset.item || null,
+
+                tooltip:
+                    slot.getAttribute(
+                        'data-tooltip'
+                    ),
+
+                borderColor:
+                    slot.style.borderColor,
+
+                draggable:
+                    slot.getAttribute(
+                        'draggable'
+                    )
+            };
+
+        }
+
+        function applySlotState(
+            slot,
+            state
+        ) {
+
+            slot.innerHTML =
+                state.html;
+
+
+            if (state.item) {
+
+                slot.dataset.item =
+                    state.item;
+
+            } else {
+
+                delete slot.dataset.item;
+
+            }
+
+
+            if (state.tooltip) {
+
+                slot.setAttribute(
+                    'data-tooltip',
+                    state.tooltip
+                );
+
+            } else {
+
+                slot.removeAttribute(
+                    'data-tooltip'
+                );
+
+            }
+
+
+            slot.style.borderColor =
+                state.borderColor || '';
+
+
+            if (state.draggable) {
+
+                slot.setAttribute(
+                    'draggable',
+                    state.draggable
+                );
+
+            } else {
+
+                slot.removeAttribute(
+                    'draggable'
+                );
+
+            }
+
+        }
+        /* ========================================= */
+        /* ITEM TOOLTIP                               */
+        /* ========================================= */
+
+        function buildItemTooltip(
+            item,
+            details,
+            quantity
+        ) {
+
+            const lines = [
+                item.name || 'Unknown Item'
+            ];
 
 
             if (item.rarity) {
-                lines.push(item.rarity);
+
+                lines.push(
+                    item.rarity
+                );
+
             }
 
 
             if (item.description) {
-                lines.push(item.description);
+
+                lines.push(
+                    item.description
+                );
+
             }
+
 
             lines.push('');
 
 
             if (details) {
 
-                switch (item.item_type) {
+                switch (
+                    item.item_type
+                ) {
+
 
                     case 'weapons':
-                        if (details.damage) lines.push(`${details.damage} Damage`);
-                        if (details.strength) lines.push(`${details.strength} Strength`);
-                        if (details.dexterity) lines.push(`${details.dexterity} Dexterity`);
-                        if (details.intelligence) lines.push(`${details.intelligence} Intelligence`);
+
+                        if (details.damage) {
+
+                            lines.push(
+                                `${details.damage} Damage`
+                            );
+
+                        }
+
+
+                        if (details.strength) {
+
+                            lines.push(
+                                `${details.strength} Strength`
+                            );
+
+                        }
+
+
+                        if (details.dexterity) {
+
+                            lines.push(
+                                `${details.dexterity} Dexterity`
+                            );
+
+                        }
+
+
+                        if (
+                            details.intelligence
+                        ) {
+
+                            lines.push(
+                                `${details.intelligence} Intelligence`
+                            );
+
+                        }
+
                         break;
 
+
                     case 'armors':
+
                         lines.push(
                             `${details.armor_type} (${details.equipment_slot}) - Defense: ${details.defense}`
                         );
+
                         break;
 
+
                     case 'consumables':
+
                         lines.push(
                             `${details.effect_type}: +${details.effect_value}`
                         );
+
                         break;
 
+
                     case 'materials':
-                        lines.push(`Material: ${details.material_type}`);
+
+                        lines.push(
+                            `Material: ${details.material_type}`
+                        );
+
                         break;
 
                 }
@@ -914,37 +1377,73 @@
             }
 
 
-            if (item.required_level) {
-                lines.push(`Requires Level ${item.required_level}`);
+            if (
+                item.required_level
+            ) {
+
+                lines.push(
+                    `Requires Level ${item.required_level}`
+                );
+
             }
 
 
-            if (item.stackable) {
-                lines.push(`Quantity: ${quantity} / ${item.max_stack_size}`);
+            if (
+                item.stackable
+            ) {
+
+                lines.push(
+                    `Quantity: ${quantity} / ${item.max_stack_size}`
+                );
+
             }
 
 
-            lines.push(`Sell Price: ${item.sell_price} Gold`);
+            lines.push(
+                `Sell Price: ${item.sell_price} Gold`
+            );
 
 
-            return lines.join('\n');
+            return lines.join(
+                '\n'
+            );
 
         }
 
 
-        async function updateCharacterDisplay(character) {
+        /* ========================================= */
+        /* CHARACTER DISPLAY                          */
+        /* ========================================= */
+
+        async function updateCharacterDisplay(
+            character
+        ) {
 
             const name =
-                character.name || 'Adventurer';
+                character.name ||
+                'Adventurer';
+
 
             const level =
-                Number(character.level || 1);
+                Number(
+                    character.level ||
+                    1
+                );
+
 
             const currentExperience =
-                Number(character.experience || 0);
+                Number(
+                    character.experience ||
+                    0
+                );
+
 
             const currentHealth =
-                Number(character.health || 0);
+                Number(
+                    character.health ||
+                    0
+                );
+
 
             const maxHealth =
                 Number(
@@ -953,8 +1452,13 @@
                     100
                 );
 
+
             const currentMana =
-                Number(character.mana || 0);
+                Number(
+                    character.mana ||
+                    0
+                );
+
 
             const maxMana =
                 Number(
@@ -963,27 +1467,49 @@
                     100
                 );
 
+
             const gold =
-                Number(character.gold || 0);
+                Number(
+                    character.gold ||
+                    0
+                );
+
 
             const strength =
-                Number(character.strength || 0);
+                Number(
+                    character.strength ||
+                    0
+                );
+
 
             const dexterity =
-                Number(character.dexterity || 0);
+                Number(
+                    character.dexterity ||
+                    0
+                );
+
 
             const intelligence =
-                Number(character.intelligence || 0);
+                Number(
+                    character.intelligence ||
+                    0
+                );
+
 
             const defense =
-                Number(character.defense || 0);
+                Number(
+                    character.defense ||
+                    0
+                );
 
 
             /* ========================================= */
-            /* CLASS ICON                                */
+            /* CLASS ICON                                 */
             /* ========================================= */
 
-            if (character.class_id) {
+            if (
+                character.class_id
+            ) {
 
                 const {
                     data: classData,
@@ -991,16 +1517,23 @@
                 } = await supabaseClient
                     .from('classes')
                     .select('name')
-                    .eq('id', character.class_id)
+                    .eq(
+                        'id',
+                        character.class_id
+                    )
                     .single();
 
 
-                if (!classError && classData) {
+                if (
+                    !classError &&
+                    classData
+                ) {
 
                     const classIcon =
                         document.getElementById(
                             'classIcon'
                         );
+
 
                     classIcon.src =
                         `classes/${classData.name}/ClassIcon/${classData.name}.png`;
@@ -1011,7 +1544,7 @@
 
 
             /* ========================================= */
-            /* EXPERIENCE                               */
+            /* EXPERIENCE                                 */
             /* ========================================= */
 
             const xpForNextLevel =
@@ -1035,7 +1568,7 @@
 
 
             /* ========================================= */
-            /* HEALTH / MANA                            */
+            /* HEALTH / MANA                              */
             /* ========================================= */
 
             const healthProgress =
@@ -1065,7 +1598,7 @@
 
 
             /* ========================================= */
-            /* STATS                                    */
+            /* STATS                                      */
             /* ========================================= */
 
             const statMap = [
@@ -1094,7 +1627,10 @@
 
 
             statMap.forEach(
-                ({ value, amount }) => {
+                ({
+                    value,
+                    amount
+                }) => {
 
                     const valueElement =
                         document.getElementById(
@@ -1102,7 +1638,9 @@
                         );
 
 
-                    if (valueElement) {
+                    if (
+                        valueElement
+                    ) {
 
                         valueElement.textContent =
                             amount;
@@ -1114,12 +1652,13 @@
 
 
             /* ========================================= */
-            /* CHARACTER INFORMATION                    */
+            /* CHARACTER INFORMATION                      */
             /* ========================================= */
 
             document.getElementById(
                 'characterName'
-            ).textContent = name;
+            ).textContent =
+                name;
 
 
             document.getElementById(
@@ -1129,7 +1668,7 @@
 
 
             /* ========================================= */
-            /* EXPERIENCE DISPLAY                       */
+            /* EXPERIENCE DISPLAY                         */
             /* ========================================= */
 
             document.getElementById(
@@ -1155,7 +1694,7 @@
 
 
             /* ========================================= */
-            /* HEALTH DISPLAY                           */
+            /* HEALTH DISPLAY                             */
             /* ========================================= */
 
             document.getElementById(
@@ -1170,10 +1709,6 @@
                 `${currentHealth} / ${maxHealth}`;
 
 
-            /* ========================================= */
-            /* MANA DISPLAY                             */
-            /* ========================================= */
-
             document.getElementById(
                 'manaFill'
             ).style.width =
@@ -1185,24 +1720,16 @@
             ).textContent =
                 `${currentMana} / ${maxMana}`;
 
-
-            /* ========================================= */
-            /* GOLD DISPLAY                             */
-            /* ========================================= */
-
             document.getElementById(
                 'goldAmount'
             ).textContent =
                 `${gold} Gold`;
 
-
-            /* ========================================= */
-            /* SHOW CHARACTER                           */
-            /* ========================================= */
-
             document.getElementById(
                 'mainCharacterView'
-            ).classList.remove('hidden');
+            ).classList.remove(
+                'hidden'
+            );
 
         }
 
