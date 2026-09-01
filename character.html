@@ -571,6 +571,7 @@
         /* ========================================= */
 
         let draggedSlot = null;
+        let draggedEquipmentSlot = null;
         let currentCharacterId = null;
 
 
@@ -750,6 +751,10 @@
 
                 delete slot.dataset.item;
 
+                slot.removeAttribute(
+                    'draggable'
+                );
+
                 slot.style.borderColor = '';
 
             });
@@ -902,10 +907,222 @@
                             1
                     });
 
+
+                slotElement.setAttribute(
+                    'draggable',
+                    'true'
+                );
+
             });
 
 
             initializeEquipmentDragAndDrop();
+
+        }
+
+
+        /* ========================================= */
+        /* CLIENT-SIDE EQUIPMENT VALIDATION          */
+        /* ========================================= */
+
+        function canEquipClientSide(
+            sourceSlot,
+            targetSlot
+        ) {
+
+            if (
+                !sourceSlot ||
+                !sourceSlot.dataset.item
+            ) {
+                return false;
+            }
+
+
+            const sourceData =
+                JSON.parse(
+                    sourceSlot.dataset.item
+                );
+
+
+            const item =
+                sourceData.item;
+
+
+            const details =
+                sourceData.details;
+
+
+            const targetEquipmentSlot =
+                getEquipmentSlotName(
+                    targetSlot
+                );
+
+
+            if (
+                !item ||
+                !details
+            ) {
+                return false;
+            }
+
+
+            /* Armor / accessories */
+
+            if (
+                item.item_type ===
+                'armors'
+            ) {
+
+                if (
+                    details.equipment_slot ===
+                    'ring'
+                ) {
+
+                    return (
+                        targetEquipmentSlot ===
+                            'ring_1' ||
+                        targetEquipmentSlot ===
+                            'ring_2'
+                    );
+
+                }
+
+
+                return (
+                    details.equipment_slot ===
+                    targetEquipmentSlot
+                );
+
+            }
+
+
+            /* Weapons */
+
+            if (
+                item.item_type ===
+                'weapons'
+            ) {
+
+                const offhandOnlyTypes = [
+                    'shield',
+                    'magic_orb'
+                ];
+
+
+                if (
+                    offhandOnlyTypes.includes(
+                        details.weapon_type
+                    )
+                ) {
+
+                    if (
+                        targetEquipmentSlot !==
+                        'offhand'
+                    ) {
+                        return false;
+                    }
+
+                }
+
+                else if (
+                    details.twohanded ===
+                    true
+                ) {
+
+                    if (
+                        targetEquipmentSlot !==
+                        'main_weapon'
+                    ) {
+                        return false;
+                    }
+
+
+                    const offhandSlot =
+                        document.querySelector(
+                            '.equipment-grid .equipment-slot[data-equipment-type="offhand"]'
+                        );
+
+
+                    if (
+                        offhandSlot?.dataset.item
+                    ) {
+                        return false;
+                    }
+
+                }
+
+                else {
+
+                    if (
+                        targetEquipmentSlot !==
+                            'main_weapon' &&
+                        targetEquipmentSlot !==
+                            'offhand'
+                    ) {
+                        return false;
+                    }
+
+                }
+
+
+                if (
+                    targetEquipmentSlot ===
+                    'offhand'
+                ) {
+
+                    const mainHandSlot =
+                        document.querySelector(
+                            '.equipment-grid .equipment-slot[data-equipment-type="main_weapon"]'
+                        );
+
+
+                    if (
+                        mainHandSlot?.dataset.item
+                    ) {
+
+                        const mainHandData =
+                            JSON.parse(
+                                mainHandSlot.dataset.item
+                            );
+
+
+                        if (
+                            mainHandData.item?.item_type ===
+                                'weapons' &&
+                            mainHandData.details?.twohanded ===
+                                true
+                        ) {
+                            return false;
+                        }
+
+                    }
+
+                }
+
+
+                return true;
+
+            }
+
+
+            return false;
+
+        }
+
+
+        function clearEquipmentDragHighlights() {
+
+            document.querySelectorAll(
+                '.equipment-grid .equipment-slot'
+            ).forEach(slot => {
+
+                slot.classList.remove(
+                    'drag-valid',
+                    'drag-invalid',
+                    'drag-over'
+                );
+
+            });
 
         }
 
@@ -919,6 +1136,10 @@
 
 
             equipmentSlots.forEach(slot => {
+
+                /* ========================================= */
+                /* TOOLTIP                                   */
+                /* ========================================= */
 
                 slot.onmouseenter = function () {
 
@@ -968,16 +1189,134 @@
                     hideItemTooltip();
 
                     slot.classList.remove(
+                        'drag-valid',
+                        'drag-invalid',
                         'drag-over'
                     );
 
                 };
 
 
+                /* ========================================= */
+                /* DRAG EQUIPPED ITEM                        */
+                /* ========================================= */
+
+                slot.ondragstart = function (event) {
+
+                    hideItemTooltip();
+
+
+                    if (!slot.dataset.item) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+
+                    draggedEquipmentSlot =
+                        slot;
+
+
+                    draggedSlot =
+                        null;
+
+
+                    event.dataTransfer.effectAllowed =
+                        'move';
+
+
+                    event.dataTransfer.setData(
+                        'text/plain',
+                        getEquipmentSlotName(
+                            slot
+                        )
+                    );
+
+
+                    setTimeout(() => {
+
+                        slot.classList.add(
+                            'dragging'
+                        );
+
+                    }, 0);
+
+                };
+
+
+                slot.ondragend = function () {
+
+                    slot.classList.remove(
+                        'dragging'
+                    );
+
+
+                    clearEquipmentDragHighlights();
+
+
+                    document.querySelectorAll(
+                        '.inventory-slot'
+                    ).forEach(inventorySlot => {
+
+                        inventorySlot.classList.remove(
+                            'drag-valid',
+                            'drag-invalid',
+                            'drag-over'
+                        );
+
+                    });
+
+
+                    draggedEquipmentSlot =
+                        null;
+
+                };
+
+
+                /* ========================================= */
+                /* INVENTORY -> EQUIPMENT                    */
+                /* ========================================= */
+
                 slot.ondragover = function (event) {
 
+                    /*
+                     * Equipment-to-equipment dragging is not
+                     * implemented here. This handler accepts
+                     * inventory items only.
+                     */
                     if (!draggedSlot) {
                         return;
+                    }
+
+
+                    const eligible =
+                        canEquipClientSide(
+                            draggedSlot,
+                            slot
+                        );
+
+
+                    slot.classList.toggle(
+                        'drag-valid',
+                        eligible
+                    );
+
+
+                    slot.classList.toggle(
+                        'drag-invalid',
+                        !eligible
+                    );
+
+
+                    if (!eligible) {
+
+                        event.dataTransfer.dropEffect =
+                            'none';
+
+                        return;
+
                     }
 
 
@@ -986,17 +1325,14 @@
                     event.dataTransfer.dropEffect =
                         'move';
 
-
-                    slot.classList.add(
-                        'drag-over'
-                    );
-
                 };
 
 
                 slot.ondragleave = function () {
 
                     slot.classList.remove(
+                        'drag-valid',
+                        'drag-invalid',
                         'drag-over'
                     );
 
@@ -1009,30 +1345,19 @@
 
                     hideItemTooltip();
 
-                    slot.classList.remove(
-                        'drag-over'
-                    );
-
 
                     if (!draggedSlot) {
                         return;
                     }
 
 
-                    if (slot.dataset.item) {
-
-                        alert(
-                            'That equipment slot is already occupied.'
-                        );
-
-                        return;
-
-                    }
+                    const sourceSlot =
+                        draggedSlot;
 
 
                     const inventorySlot =
                         Number(
-                            draggedSlot.dataset.inventorySlot
+                            sourceSlot.dataset.inventorySlot
                         );
 
 
@@ -1042,30 +1367,259 @@
                         );
 
 
-                    const equipped =
-                        await equipInventoryItem(
-                            inventorySlot,
-                            equipmentSlot
-                        );
+                    if (
+                        !canEquipClientSide(
+                            sourceSlot,
+                            slot
+                        )
+                    ) {
 
+                        clearEquipmentDragHighlights();
 
-                    if (!equipped) {
                         return;
+
                     }
 
 
-                    await loadInventory(
-                        currentCharacterId
+                    clearEquipmentDragHighlights();
+
+
+                    const sourceState =
+                        getSlotState(
+                            sourceSlot
+                        );
+
+
+                    const targetState =
+                        getSlotState(
+                            slot
+                        );
+
+
+                    const replacingItem =
+                        Boolean(
+                            slot.dataset.item
+                        );
+
+
+                    /*
+                     * Immediate browser update.
+                     *
+                     * Empty equipment slot:
+                     * inventory -> equipment
+                     *
+                     * Occupied equipment slot:
+                     * inventory item and equipped item
+                     * visually exchange places.
+                     */
+                    if (replacingItem) {
+
+                        applyOptimisticEquipmentSwap(
+                            sourceSlot,
+                            slot
+                        );
+
+                    } else {
+
+                        applyOptimisticEquip(
+                            sourceSlot,
+                            slot
+                        );
+
+                    }
+
+
+                    slot.classList.add(
+                        'equip-pending'
                     );
 
 
-                    await loadEquipment(
-                        currentCharacterId
+                    const result =
+                        replacingItem
+                            ? await swapEquippedItem(
+                                inventorySlot,
+                                equipmentSlot
+                            )
+                            : await equipInventoryItem(
+                                inventorySlot,
+                                equipmentSlot
+                            );
+
+
+                    slot.classList.remove(
+                        'equip-pending'
                     );
+
+
+                    if (!result) {
+
+                        applySlotState(
+                            sourceSlot,
+                            sourceState
+                        );
+
+
+                        applySlotState(
+                            slot,
+                            targetState
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    applyEffectiveStats(
+                        result.effectiveStats
+                    );
+
+
+                    /*
+                     * Update IDs returned by the server without
+                     * doing a full inventory/equipment reload.
+                     */
+                    if (
+                        slot.dataset.item &&
+                        result.equippedItem?.equipment_id
+                    ) {
+
+                        const equippedSlotData =
+                            JSON.parse(
+                                slot.dataset.item
+                            );
+
+
+                        equippedSlotData.equipmentId =
+                            result.equippedItem.equipment_id;
+
+
+                        slot.dataset.item =
+                            JSON.stringify(
+                                equippedSlotData
+                            );
+
+                    }
+
+
+                    if (
+                        replacingItem &&
+                        sourceSlot.dataset.item &&
+                        result.inventoryItem?.inventory_id
+                    ) {
+
+                        const inventorySlotData =
+                            JSON.parse(
+                                sourceSlot.dataset.item
+                            );
+
+
+                        inventorySlotData.inventoryId =
+                            result.inventoryItem.inventory_id;
+
+
+                        sourceSlot.dataset.item =
+                            JSON.stringify(
+                                inventorySlotData
+                            );
+
+                    }
 
                 };
 
             });
+
+        }
+
+
+        async function swapEquippedItem(
+            inventorySlot,
+            equipmentSlot
+        ) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'equip_inventory_item_swap',
+                {
+                    body: {
+                        inventory_slot:
+                            inventorySlot,
+
+                        equipment_slot:
+                            equipmentSlot
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not swap equipped item';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const errorBody =
+                            await error.context.json();
+
+
+                        errorMessage =
+                            errorBody.error ||
+                            errorMessage;
+
+
+                        console.error(
+                            'Equipment swap error response:',
+                            errorBody
+                        );
+
+                    } catch {
+
+                        console.error(
+                            'Equipment swap error:',
+                            error
+                        );
+
+                    }
+
+                }
+
+
+                alert(
+                    errorMessage
+                );
+
+
+                return null;
+
+            }
+
+
+            if (!data?.success) {
+
+                alert(
+                    data?.error ||
+                    'Could not swap equipped item'
+                );
+
+
+                return null;
+
+            }
+
+
+            console.log(
+                'Equipment swapped:',
+                data
+            );
+
+
+            return data;
 
         }
 
@@ -1133,7 +1687,7 @@
                 );
 
 
-                return false;
+                return null;
 
             }
 
@@ -1150,7 +1704,7 @@
                 );
 
 
-                return false;
+                return null;
 
             }
 
@@ -1161,7 +1715,355 @@
             );
 
 
-            return true;
+            return data;
+
+        }
+
+
+        /* ========================================= */
+        /* OPTIMISTIC EQUIPMENT UI                   */
+        /* ========================================= */
+
+        function applyOptimisticEquip(
+            sourceSlot,
+            targetSlot
+        ) {
+
+            if (!sourceSlot.dataset.item) {
+                return;
+            }
+
+
+            const sourceData =
+                JSON.parse(
+                    sourceSlot.dataset.item
+                );
+
+
+            const item =
+                sourceData.item;
+
+
+            const rarityColor =
+                RARITY_COLORS[
+                    (
+                        item.rarity ||
+                        ''
+                    ).toLowerCase()
+                ];
+
+
+            targetSlot.innerHTML = `
+                <div class="item-slot-image">
+                    <img
+                        src="${item.icon_path}"
+                        alt="${item.name}"
+                        class="item-image"
+                    >
+                </div>
+                <div class="equipment-slot-name"></div>
+            `;
+
+
+            targetSlot.dataset.item =
+                JSON.stringify({
+                    equipmentId:
+                        null,
+
+                    item:
+                        item,
+
+                    details:
+                        sourceData.details,
+
+                    quantity:
+                        1
+                });
+
+
+            targetSlot.setAttribute(
+                'draggable',
+                'true'
+            );
+
+
+            targetSlot.style.borderColor =
+                rarityColor || '';
+
+
+            sourceSlot.innerHTML =
+                `<img
+                    src="Items/Empty Slots/Inventory Slot.png"
+                    alt=""
+                    class="item-image"
+                >`;
+
+
+            delete sourceSlot.dataset.item;
+
+            sourceSlot.removeAttribute(
+                'draggable'
+            );
+
+            sourceSlot.removeAttribute(
+                'data-tooltip'
+            );
+
+            sourceSlot.style.borderColor =
+                '';
+
+        }
+
+
+        function applyOptimisticEquipmentSwap(
+            inventorySlot,
+            equipmentSlot
+        ) {
+
+            if (
+                !inventorySlot.dataset.item ||
+                !equipmentSlot.dataset.item
+            ) {
+                return;
+            }
+
+
+            const inventoryData =
+                JSON.parse(
+                    inventorySlot.dataset.item
+                );
+
+
+            const equipmentData =
+                JSON.parse(
+                    equipmentSlot.dataset.item
+                );
+
+
+            const newEquipmentItem =
+                inventoryData.item;
+
+
+            const oldEquipmentItem =
+                equipmentData.item;
+
+
+            const newEquipmentRarity =
+                RARITY_COLORS[
+                    (
+                        newEquipmentItem.rarity ||
+                        ''
+                    ).toLowerCase()
+                ];
+
+
+            /*
+             * New inventory item becomes equipped.
+             */
+            equipmentSlot.innerHTML = `
+                <div class="item-slot-image">
+                    <img
+                        src="${newEquipmentItem.icon_path}"
+                        alt="${newEquipmentItem.name}"
+                        class="item-image"
+                    >
+                </div>
+                <div class="equipment-slot-name"></div>
+            `;
+
+
+            equipmentSlot.dataset.item =
+                JSON.stringify({
+                    equipmentId:
+                        equipmentData.equipmentId,
+
+                    item:
+                        newEquipmentItem,
+
+                    details:
+                        inventoryData.details,
+
+                    quantity:
+                        1
+                });
+
+
+            equipmentSlot.style.borderColor =
+                newEquipmentRarity || '';
+
+
+            equipmentSlot.setAttribute(
+                'draggable',
+                'true'
+            );
+
+
+            /*
+             * Previously equipped item goes into the exact
+             * inventory slot from which the new item came.
+             */
+            renderInventoryItem(
+                inventorySlot,
+                oldEquipmentItem,
+                equipmentData.details,
+                1,
+                null
+            );
+
+        }
+
+
+        function applyOptimisticUnequip(
+            equipmentSlot,
+            inventorySlot
+        ) {
+
+            if (!equipmentSlot.dataset.item) {
+                return;
+            }
+
+
+            const equipmentData =
+                JSON.parse(
+                    equipmentSlot.dataset.item
+                );
+
+
+            /*
+             * Put equipped item into target inventory slot.
+             */
+            renderInventoryItem(
+                inventorySlot,
+                equipmentData.item,
+                equipmentData.details,
+                1,
+                null
+            );
+
+
+            /*
+             * Restore empty equipment slot.
+             */
+            const equipmentSlotName =
+                getEquipmentSlotName(
+                    equipmentSlot
+                );
+
+
+            const emptyImage =
+                EMPTY_EQUIPMENT_IMAGES[
+                    equipmentSlotName
+                ] || '';
+
+
+            equipmentSlot.innerHTML = `
+                <div class="item-slot-image">
+                    <img
+                        src="${emptyImage}"
+                        alt=""
+                        class="item-image"
+                    >
+                </div>
+                <div class="equipment-slot-name"></div>
+            `;
+
+
+            delete equipmentSlot.dataset.item;
+
+
+            equipmentSlot.removeAttribute(
+                'draggable'
+            );
+
+
+            equipmentSlot.style.borderColor =
+                '';
+
+        }
+
+
+        async function unequipEquipmentItem(
+            equipmentSlot,
+            targetInventorySlot
+        ) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'unequip_equipment_item',
+                {
+                    body: {
+                        equipment_slot:
+                            equipmentSlot,
+
+                        target_inventory_slot:
+                            targetInventorySlot
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not unequip item';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const errorBody =
+                            await error.context.json();
+
+
+                        errorMessage =
+                            errorBody.error ||
+                            errorMessage;
+
+
+                        console.error(
+                            'Unequip error response:',
+                            errorBody
+                        );
+
+                    } catch {
+
+                        console.error(
+                            'Unequip error:',
+                            error
+                        );
+
+                    }
+
+                }
+
+
+                alert(
+                    errorMessage
+                );
+
+
+                return null;
+
+            }
+
+
+            if (!data?.success) {
+
+                alert(
+                    data?.error ||
+                    'Could not unequip item'
+                );
+
+
+                return null;
+
+            }
+
+
+            return data;
 
         }
 
@@ -1196,6 +2098,9 @@
                     strength,
                     dexterity,
                     intelligence,
+                    defense,
+                    bonus_health,
+                    bonus_mana,
                     twohanded
                 `
             },
@@ -1209,7 +2114,9 @@
                     equipment_slot,
                     strength,
                     dexterity,
-                    intelligence
+                    intelligence,
+                    bonus_health,
+                    bonus_mana
                 `
             },
 
@@ -1531,8 +2438,12 @@
                     '.inventory-slot'
                 );
 
-            // Event to handle the mouse hover for showing item tooltips
+
             inventorySlots.forEach(slot => {
+
+                /* ========================================= */
+                /* TOOLTIP                                   */
+                /* ========================================= */
 
                 slot.onmouseenter = function () {
 
@@ -1550,8 +2461,10 @@
                     const item =
                         slotData.item;
 
+
                     const details =
                         slotData.details;
+
 
                     const quantity =
                         slotData.quantity;
@@ -1587,26 +2500,57 @@
 
                     hideItemTooltip();
 
+                    slot.classList.remove(
+                        'drag-valid',
+                        'drag-invalid',
+                        'drag-over'
+                    );
+
                 };
+
+
+                /* ========================================= */
+                /* DRAG INVENTORY ITEM                       */
+                /* ========================================= */
+
                 slot.ondragstart = function (event) {
+
                     hideItemTooltip();
+
+
                     if (!slot.dataset.item) {
+
                         event.preventDefault();
+
                         return;
+
                     }
 
-                    draggedSlot = slot;
+
+                    draggedSlot =
+                        slot;
+
+
+                    draggedEquipmentSlot =
+                        null;
+
 
                     event.dataTransfer.effectAllowed =
                         'move';
+
 
                     event.dataTransfer.setData(
                         'text/plain',
                         slot.dataset.inventorySlot
                     );
 
+
                     setTimeout(() => {
-                        slot.classList.add('dragging');
+
+                        slot.classList.add(
+                            'dragging'
+                        );
+
                     }, 0);
 
                 };
@@ -1614,44 +2558,244 @@
 
                 slot.ondragend = function () {
 
-                    slot.classList.remove('dragging');
+                    slot.classList.remove(
+                        'dragging'
+                    );
+
 
                     inventorySlots.forEach(
                         inventorySlot => {
+
                             inventorySlot.classList.remove(
+                                'drag-valid',
+                                'drag-invalid',
                                 'drag-over'
                             );
+
                         }
                     );
 
-                    draggedSlot = null;
+
+                    clearEquipmentDragHighlights();
+
+
+                    draggedSlot =
+                        null;
 
                 };
 
 
+                /* ========================================= */
+                /* DRAG OVER INVENTORY SLOT                  */
+                /* ========================================= */
+
                 slot.ondragover = function (event) {
 
-                    event.preventDefault();
+                    /*
+                     * Equipment may only be unequipped into
+                     * an EMPTY inventory slot.
+                     */
+                    if (draggedEquipmentSlot) {
 
+                        const empty =
+                            !slot.dataset.item;
+
+
+                        slot.classList.toggle(
+                            'drag-valid',
+                            empty
+                        );
+
+
+                        slot.classList.toggle(
+                            'drag-invalid',
+                            !empty
+                        );
+
+
+                        if (!empty) {
+
+                            event.dataTransfer.dropEffect =
+                                'none';
+
+                            return;
+
+                        }
+
+
+                        event.preventDefault();
+
+                        event.dataTransfer.dropEffect =
+                            'move';
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Normal inventory-to-inventory move/swap.
+                     */
                     if (
                         draggedSlot &&
                         draggedSlot !== slot
                     ) {
-                        slot.classList.add('drag-over');
+
+                        event.preventDefault();
+
+                        slot.classList.add(
+                            'drag-over'
+                        );
+
                     }
 
                 };
 
 
                 slot.ondragleave = function () {
-                    slot.classList.remove('drag-over');
+
+                    slot.classList.remove(
+                        'drag-valid',
+                        'drag-invalid',
+                        'drag-over'
+                    );
+
                 };
 
+
+                /* ========================================= */
+                /* DROP                                      */
+                /* ========================================= */
 
                 slot.ondrop = async function (event) {
 
                     event.preventDefault();
-                    slot.classList.remove('drag-over');
+
+
+                    slot.classList.remove(
+                        'drag-valid',
+                        'drag-invalid',
+                        'drag-over'
+                    );
+
+
+                    /* ========================================= */
+                    /* EQUIPMENT -> EMPTY INVENTORY               */
+                    /* ========================================= */
+
+                    if (draggedEquipmentSlot) {
+
+                        if (slot.dataset.item) {
+                            return;
+                        }
+
+
+                        const sourceEquipmentSlot =
+                            draggedEquipmentSlot;
+
+
+                        const equipmentSlotName =
+                            getEquipmentSlotName(
+                                sourceEquipmentSlot
+                            );
+
+
+                        const targetInventorySlot =
+                            Number(
+                                slot.dataset.inventorySlot
+                            );
+
+
+                        const sourceState =
+                            getSlotState(
+                                sourceEquipmentSlot
+                            );
+
+
+                        const targetState =
+                            getSlotState(
+                                slot
+                            );
+
+
+                        applyOptimisticUnequip(
+                            sourceEquipmentSlot,
+                            slot
+                        );
+
+
+                        slot.classList.add(
+                            'unequip-pending'
+                        );
+
+
+                        const result =
+                            await unequipEquipmentItem(
+                                equipmentSlotName,
+                                targetInventorySlot
+                            );
+
+
+                        slot.classList.remove(
+                            'unequip-pending'
+                        );
+
+
+                        if (!result) {
+
+                            applySlotState(
+                                sourceEquipmentSlot,
+                                sourceState
+                            );
+
+
+                            applySlotState(
+                                slot,
+                                targetState
+                            );
+
+
+                            return;
+
+                        }
+
+
+                        applyEffectiveStats(
+                            result.effectiveStats
+                        );
+
+
+                        if (
+                            slot.dataset.item &&
+                            result.inventoryItem?.inventory_id
+                        ) {
+
+                            const inventoryData =
+                                JSON.parse(
+                                    slot.dataset.item
+                                );
+
+
+                            inventoryData.inventoryId =
+                                result.inventoryItem.inventory_id;
+
+
+                            slot.dataset.item =
+                                JSON.stringify(
+                                    inventoryData
+                                );
+
+                        }
+
+
+                        return;
+
+                    }
+
+
+                    /* ========================================= */
+                    /* INVENTORY -> INVENTORY                     */
+                    /* ========================================= */
 
                     if (
                         !draggedSlot ||
@@ -1660,11 +2804,11 @@
                         return;
                     }
 
+
                     await swapInventorySlots(
                         draggedSlot,
                         slot
                     );
-
 
                 };
 
@@ -2101,8 +3245,9 @@
 
             const maxHealth =
                 Number(
-                    character.max_health ||
-                    currentHealth ||
+                    character.effective_max_health ??
+                    character.max_health ??
+                    currentHealth ??
                     100
                 );
 
@@ -2116,8 +3261,9 @@
 
             const maxMana =
                 Number(
-                    character.max_mana ||
-                    currentMana ||
+                    character.effective_max_mana ??
+                    character.max_mana ??
+                    currentMana ??
                     100
                 );
 
@@ -2131,28 +3277,32 @@
 
             const strength =
                 Number(
-                    character.strength ||
+                    character.effective_strength ??
+                    character.strength ??
                     0
                 );
 
 
             const dexterity =
                 Number(
-                    character.dexterity ||
+                    character.effective_dexterity ??
+                    character.dexterity ??
                     0
                 );
 
 
             const intelligence =
                 Number(
-                    character.intelligence ||
+                    character.effective_intelligence ??
+                    character.intelligence ??
                     0
                 );
 
 
             const defense =
                 Number(
-                    character.defense ||
+                    character.effective_defense ??
+                    character.defense ??
                     0
                 );
 
@@ -2388,6 +3538,211 @@
         }
         
         loadCharacter();
+
+        /* ========================================= */
+        /* EFFECTIVE STATS DISPLAY                   */
+        /* ========================================= */
+
+        function applyEffectiveStats(
+            effectiveStats
+        ) {
+
+            if (!effectiveStats) {
+                return;
+            }
+
+
+            const strength =
+                Number(
+                    effectiveStats.effective_strength ??
+                    0
+                );
+
+
+            const dexterity =
+                Number(
+                    effectiveStats.effective_dexterity ??
+                    0
+                );
+
+
+            const intelligence =
+                Number(
+                    effectiveStats.effective_intelligence ??
+                    0
+                );
+
+
+            const defense =
+                Number(
+                    effectiveStats.effective_defense ??
+                    0
+                );
+
+
+            const currentHealth =
+                Number(
+                    effectiveStats.health ??
+                    0
+                );
+
+
+            const maxHealth =
+                Number(
+                    effectiveStats.effective_max_health ??
+                    0
+                );
+
+
+            const currentMana =
+                Number(
+                    effectiveStats.mana ??
+                    0
+                );
+
+
+            const maxMana =
+                Number(
+                    effectiveStats.effective_max_mana ??
+                    0
+                );
+
+
+            const strengthElement =
+                document.getElementById(
+                    'strengthValue'
+                );
+
+
+            const dexterityElement =
+                document.getElementById(
+                    'dexterityValue'
+                );
+
+
+            const intelligenceElement =
+                document.getElementById(
+                    'intelligenceValue'
+                );
+
+
+            const defenseElement =
+                document.getElementById(
+                    'defenseValue'
+                );
+
+
+            if (strengthElement) {
+                strengthElement.textContent =
+                    strength;
+            }
+
+
+            if (dexterityElement) {
+                dexterityElement.textContent =
+                    dexterity;
+            }
+
+
+            if (intelligenceElement) {
+                intelligenceElement.textContent =
+                    intelligence;
+            }
+
+
+            if (defenseElement) {
+                defenseElement.textContent =
+                    defense;
+            }
+
+
+            const healthProgress =
+                maxHealth > 0
+                    ? Math.min(
+                        100,
+                        Math.max(
+                            0,
+                            (
+                                currentHealth /
+                                maxHealth
+                            ) * 100
+                        )
+                    )
+                    : 0;
+
+
+            const manaProgress =
+                maxMana > 0
+                    ? Math.min(
+                        100,
+                        Math.max(
+                            0,
+                            (
+                                currentMana /
+                                maxMana
+                            ) * 100
+                        )
+                    )
+                    : 0;
+
+
+            const healthFill =
+                document.getElementById(
+                    'healthFill'
+                );
+
+
+            const healthText =
+                document.getElementById(
+                    'healthText'
+                );
+
+
+            const manaFill =
+                document.getElementById(
+                    'manaFill'
+                );
+
+
+            const manaText =
+                document.getElementById(
+                    'manaText'
+                );
+
+
+            if (healthFill) {
+
+                healthFill.style.width =
+                    `${healthProgress}%`;
+
+            }
+
+
+            if (healthText) {
+
+                healthText.textContent =
+                    `${currentHealth} / ${maxHealth}`;
+
+            }
+
+
+            if (manaFill) {
+
+                manaFill.style.width =
+                    `${manaProgress}%`;
+
+            }
+
+
+            if (manaText) {
+
+                manaText.textContent =
+                    `${currentMana} / ${maxMana}`;
+
+            }
+
+        }
+
 
         async function addItemToInventory(itemId, quantity) {
 

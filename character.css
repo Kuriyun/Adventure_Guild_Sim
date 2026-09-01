@@ -1446,3 +1446,83 @@
     }
 
 }
+
+
+/* =========================================================
+   EQUIPMENT OPTIMISTIC UPDATE
+   ========================================================= */
+
+.equipment-slot.equip-pending {
+    animation: equipmentPendingPulse 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes equipmentPendingPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.18);
+    }
+}
+
+
+/* =========================================================
+   EQUIPMENT DROP ELIGIBILITY
+   ========================================================= */
+
+.equipment-slot.drag-valid {
+    border-color: #45c46f !important;
+
+    box-shadow:
+        0 0 18px rgba(69, 196, 111, 0.55);
+
+    transform:
+        translateY(-2px)
+        scale(1.03);
+}
+
+.equipment-slot.drag-invalid {
+    border-color: #d9534f !important;
+
+    box-shadow:
+        0 0 14px rgba(217, 83, 79, 0.35);
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   EQUIPMENT / INVENTORY DRAG FEEDBACK
+   ========================================================= */
+
+.inventory-slot.drag-valid,
+.equipment-slot.drag-valid {
+    border-color: #45c46f !important;
+
+    box-shadow:
+        0 0 18px rgba(69, 196, 111, 0.55);
+
+    transform:
+        translateY(-2px)
+        scale(1.03);
+}
+
+.inventory-slot.drag-invalid,
+.equipment-slot.drag-invalid {
+    border-color: #d9534f !important;
+
+    box-shadow:
+        0 0 14px rgba(217, 83, 79, 0.35);
+
+    cursor: not-allowed;
+}
+
+.inventory-slot.unequip-pending {
+    animation:
+        equipmentPendingPulse
+        0.7s
+        ease-in-out
+        infinite
+        alternate;
+}
