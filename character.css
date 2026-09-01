@@ -987,6 +987,66 @@
 }
 
 
+
+/* Inventory HTML tooltip with individually colored name + rarity */
+
+.item-tooltip.floating-item-tooltip {
+    position: fixed;
+
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+
+    padding: 10px 12px;
+
+    background: rgba(10, 14, 39, 0.98);
+    color: #f0f0f0;
+
+    border: 1px solid #d4af37;
+    border-radius: 7px;
+
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: left;
+
+    white-space: normal;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.55);
+
+    z-index: 99999;
+}
+
+.item-tooltip-name {
+    display: block;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    line-height: 1.3;
+
+    margin-bottom: 2px;
+}
+
+.item-tooltip-rarity {
+    display: block;
+
+    margin-top: 1px;
+    margin-bottom: 7px;
+
+    font-weight: bold;
+
+    text-transform: capitalize;
+}
+
+.item-tooltip-details {
+    display: block;
+
+    color: #f0f0f0;
+}
+
 /* =========================================================
    RARITY
    ========================================================= */

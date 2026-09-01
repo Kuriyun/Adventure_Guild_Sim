@@ -631,6 +631,537 @@
             updateCharacterDisplay(character);
 
             await loadInventory(character.id);
+            await loadEquipment(character.id);
+
+        }
+
+
+
+        /* ========================================= */
+        /* EQUIPMENT                                 */
+        /* ========================================= */
+
+        const EMPTY_EQUIPMENT_IMAGES = {
+            helmet: 'Items/Empty Slots/Helmet.png',
+            legs: 'Items/Empty Slots/Legs.png',
+            necklace: 'Items/Empty Slots/Necklace.png',
+            shoes: 'Items/Empty Slots/Shoes.png',
+            chestplate: 'Items/Empty Slots/Chestplate.png',
+            ring_1: 'Items/Empty Slots/Ring.png',
+            ring_2: 'Items/Empty Slots/Ring.png',
+            gloves: 'Items/Empty Slots/Gloves.png',
+            main_weapon: 'Items/Empty Slots/Main Weapon.png',
+            offhand: 'Items/Empty Slots/Offhand.png'
+        };
+
+
+        function getEquipmentSlotName(slotElement) {
+
+            const slotLabel =
+                slotElement.dataset.slot;
+
+
+            if (slotLabel === 'Ring 1') {
+                return 'ring_1';
+            }
+
+
+            if (slotLabel === 'Ring 2') {
+                return 'ring_2';
+            }
+
+
+            return slotElement.dataset.equipmentType;
+
+        }
+
+
+        async function loadEquipment(characterId) {
+
+            const {
+                data: equipmentRows,
+                error: equipmentError
+            } = await supabaseClient
+                .from('character_equipment')
+                .select(`
+                    equipment_id,
+                    item_id,
+                    equipment_slot,
+                    items (
+                        item_id,
+                        name,
+                        description,
+                        item_type,
+                        rarity,
+                        required_level,
+                        sell_price,
+                        icon_path,
+                        stackable,
+                        max_stack_size
+                    )
+                `)
+                .eq(
+                    'character_id',
+                    characterId
+                );
+
+
+            if (equipmentError) {
+
+                console.error(
+                    'Error loading equipment:',
+                    equipmentError
+                );
+
+                return;
+
+            }
+
+
+            const equipmentSlots =
+                document.querySelectorAll(
+                    '.equipment-grid .equipment-slot'
+                );
+
+
+            equipmentSlots.forEach(slot => {
+
+                const equipmentSlot =
+                    getEquipmentSlotName(slot);
+
+
+                const emptyImage =
+                    EMPTY_EQUIPMENT_IMAGES[
+                        equipmentSlot
+                    ] || '';
+
+
+                slot.innerHTML = `
+                    <div class="item-slot-image">
+                        <img
+                            src="${emptyImage}"
+                            alt=""
+                            class="item-image"
+                        >
+                    </div>
+                    <div class="equipment-slot-name"></div>
+                `;
+
+
+                delete slot.dataset.item;
+
+                slot.style.borderColor = '';
+
+            });
+
+
+            const rows =
+                (equipmentRows || []).filter(
+                    row => row.items
+                );
+
+
+            const detailsByItemId = {};
+
+
+            for (
+                const [itemType, config]
+                of Object.entries(ITEM_TYPE_TABLES)
+            ) {
+
+                const itemIds =
+                    rows
+                        .filter(
+                            row =>
+                                row.items.item_type ===
+                                itemType
+                        )
+                        .map(
+                            row =>
+                                row.items.item_id
+                        );
+
+
+                if (itemIds.length === 0) {
+                    continue;
+                }
+
+
+                const {
+                    data: typeData,
+                    error: typeError
+                } = await supabaseClient
+                    .from(config.table)
+                    .select(config.select)
+                    .in(
+                        'item_id',
+                        itemIds
+                    );
+
+
+                if (typeError) {
+
+                    console.error(
+                        `Error loading equipped ${config.table}:`,
+                        typeError
+                    );
+
+                    continue;
+
+                }
+
+
+                (typeData || []).forEach(
+                    detail => {
+
+                        detailsByItemId[
+                            detail.item_id
+                        ] = detail;
+
+                    }
+                );
+
+            }
+
+
+            rows.forEach(row => {
+
+                const item =
+                    row.items;
+
+
+                const slotElement =
+                    Array.from(
+                        equipmentSlots
+                    ).find(
+                        slot =>
+                            getEquipmentSlotName(slot) ===
+                            row.equipment_slot
+                    );
+
+
+                if (!slotElement) {
+
+                    console.warn(
+                        'Equipment slot not found:',
+                        row.equipment_slot
+                    );
+
+                    return;
+
+                }
+
+
+                const details =
+                    detailsByItemId[
+                        item.item_id
+                    ];
+
+
+                const rarityColor =
+                    RARITY_COLORS[
+                        (
+                            item.rarity ||
+                            ''
+                        ).toLowerCase()
+                    ];
+
+
+                slotElement.innerHTML = `
+                    <div class="item-slot-image">
+                        <img
+                            src="${item.icon_path}"
+                            alt="${item.name}"
+                            class="item-image"
+                        >
+                    </div>
+                    <div class="equipment-slot-name"></div>
+                `;
+
+
+                if (rarityColor) {
+
+                    slotElement.style.borderColor =
+                        rarityColor;
+
+                }
+
+
+                slotElement.dataset.item =
+                    JSON.stringify({
+                        equipmentId:
+                            row.equipment_id,
+
+                        item:
+                            item,
+
+                        details:
+                            details,
+
+                        quantity:
+                            1
+                    });
+
+            });
+
+
+            initializeEquipmentDragAndDrop();
+
+        }
+
+
+        function initializeEquipmentDragAndDrop() {
+
+            const equipmentSlots =
+                document.querySelectorAll(
+                    '.equipment-grid .equipment-slot'
+                );
+
+
+            equipmentSlots.forEach(slot => {
+
+                slot.onmouseenter = function () {
+
+                    if (!slot.dataset.item) {
+                        return;
+                    }
+
+
+                    const slotData =
+                        JSON.parse(
+                            slot.dataset.item
+                        );
+
+
+                    const item =
+                        slotData.item;
+
+
+                    const rarityColor =
+                        RARITY_COLORS[
+                            (
+                                item.rarity ||
+                                ''
+                            ).toLowerCase()
+                        ];
+
+
+                    const tooltipHtml =
+                        buildItemTooltip(
+                            item,
+                            slotData.details,
+                            1,
+                            rarityColor
+                        );
+
+
+                    showItemTooltip(
+                        slot,
+                        tooltipHtml
+                    );
+
+                };
+
+
+                slot.onmouseleave = function () {
+
+                    hideItemTooltip();
+
+                    slot.classList.remove(
+                        'drag-over'
+                    );
+
+                };
+
+
+                slot.ondragover = function (event) {
+
+                    if (!draggedSlot) {
+                        return;
+                    }
+
+
+                    event.preventDefault();
+
+                    event.dataTransfer.dropEffect =
+                        'move';
+
+
+                    slot.classList.add(
+                        'drag-over'
+                    );
+
+                };
+
+
+                slot.ondragleave = function () {
+
+                    slot.classList.remove(
+                        'drag-over'
+                    );
+
+                };
+
+
+                slot.ondrop = async function (event) {
+
+                    event.preventDefault();
+
+                    hideItemTooltip();
+
+                    slot.classList.remove(
+                        'drag-over'
+                    );
+
+
+                    if (!draggedSlot) {
+                        return;
+                    }
+
+
+                    if (slot.dataset.item) {
+
+                        alert(
+                            'That equipment slot is already occupied.'
+                        );
+
+                        return;
+
+                    }
+
+
+                    const inventorySlot =
+                        Number(
+                            draggedSlot.dataset.inventorySlot
+                        );
+
+
+                    const equipmentSlot =
+                        getEquipmentSlotName(
+                            slot
+                        );
+
+
+                    const equipped =
+                        await equipInventoryItem(
+                            inventorySlot,
+                            equipmentSlot
+                        );
+
+
+                    if (!equipped) {
+                        return;
+                    }
+
+
+                    await loadInventory(
+                        currentCharacterId
+                    );
+
+
+                    await loadEquipment(
+                        currentCharacterId
+                    );
+
+                };
+
+            });
+
+        }
+
+
+        async function equipInventoryItem(
+            inventorySlot,
+            equipmentSlot
+        ) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'equip_inventory_item',
+                {
+                    body: {
+                        inventory_slot:
+                            inventorySlot,
+
+                        equipment_slot:
+                            equipmentSlot
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not equip item';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const errorBody =
+                            await error.context.json();
+
+
+                        errorMessage =
+                            errorBody.error ||
+                            errorMessage;
+
+
+                        console.error(
+                            'Equip error response:',
+                            errorBody
+                        );
+
+                    } catch {
+
+                        console.error(
+                            'Equip error:',
+                            error
+                        );
+
+                    }
+
+                }
+
+
+                alert(
+                    errorMessage
+                );
+
+
+                return false;
+
+            }
+
+
+            if (!data?.success) {
+
+                const errorMessage =
+                    data?.error ||
+                    'Could not equip item';
+
+
+                alert(
+                    errorMessage
+                );
+
+
+                return false;
+
+            }
+
+
+            console.log(
+                'Item equipped:',
+                data
+            );
+
+
+            return true;
 
         }
 
@@ -664,7 +1195,8 @@
                     attack_speed,
                     strength,
                     dexterity,
-                    intelligence
+                    intelligence,
+                    twohanded
                 `
             },
 
@@ -969,23 +1501,6 @@
 
             }
 
-
-            const tooltip =
-                buildItemTooltip(
-                    item,
-                    details,
-                    quantity
-                );
-
-
-            slotElement.setAttribute(
-                'data-tooltip',
-                tooltip
-            );
-
-
-            /* Store item data directly on slot */
-
             slotElement.dataset.item =
                 JSON.stringify({
                     inventoryId,
@@ -1016,11 +1531,65 @@
                     '.inventory-slot'
                 );
 
-
+            // Event to handle the mouse hover for showing item tooltips
             inventorySlots.forEach(slot => {
 
-                slot.ondragstart = function (event) {
+                slot.onmouseenter = function () {
 
+                    if (!slot.dataset.item) {
+                        return;
+                    }
+
+
+                    const slotData =
+                        JSON.parse(
+                            slot.dataset.item
+                        );
+
+
+                    const item =
+                        slotData.item;
+
+                    const details =
+                        slotData.details;
+
+                    const quantity =
+                        slotData.quantity;
+
+
+                    const rarityColor =
+                        RARITY_COLORS[
+                            (
+                                item.rarity ||
+                                ''
+                            ).toLowerCase()
+                        ];
+
+
+                    const tooltipHtml =
+                        buildItemTooltip(
+                            item,
+                            details,
+                            quantity,
+                            rarityColor
+                        );
+
+
+                    showItemTooltip(
+                        slot,
+                        tooltipHtml
+                    );
+
+                };
+
+
+                slot.onmouseleave = function () {
+
+                    hideItemTooltip();
+
+                };
+                slot.ondragstart = function (event) {
+                    hideItemTooltip();
                     if (!slot.dataset.item) {
                         event.preventDefault();
                         return;
@@ -1095,6 +1664,7 @@
                         draggedSlot,
                         slot
                     );
+
 
                 };
 
@@ -1262,151 +1832,235 @@
 
         }
         /* ========================================= */
+        /* FLOATING TOOLTIP                            */
+        /* ========================================= */
+
+        let activeItemTooltip = null;
+
+
+        function showItemTooltip(
+            slotElement,
+            tooltipHtml
+        ) {
+
+            hideItemTooltip();
+
+
+            const wrapper =
+                document.createElement('div');
+
+
+            wrapper.innerHTML =
+                tooltipHtml.trim();
+
+
+            const tooltipElement =
+                wrapper.firstElementChild;
+
+
+            if (!tooltipElement) {
+                return;
+            }
+
+
+            tooltipElement.classList.add(
+                'floating-item-tooltip'
+            );
+
+
+            document.body.appendChild(
+                tooltipElement
+            );
+
+
+            activeItemTooltip =
+                tooltipElement;
+
+
+            const slotRect =
+                slotElement.getBoundingClientRect();
+
+
+            const tooltipRect =
+                tooltipElement.getBoundingClientRect();
+
+
+            let left =
+                slotRect.left +
+                (
+                    slotRect.width / 2
+                ) -
+                (
+                    tooltipRect.width / 2
+                );
+
+
+            let top =
+                slotRect.top -
+                tooltipRect.height -
+                10;
+
+
+            const viewportPadding = 8;
+
+
+            if (
+                left < viewportPadding
+            ) {
+
+                left =
+                    viewportPadding;
+
+            }
+
+
+            if (
+                left +
+                tooltipRect.width >
+                window.innerWidth -
+                viewportPadding
+            ) {
+
+                left =
+                    window.innerWidth -
+                    tooltipRect.width -
+                    viewportPadding;
+
+            }
+
+
+            if (
+                top < viewportPadding
+            ) {
+
+                top =
+                    slotRect.bottom +
+                    10;
+
+            }
+
+
+            tooltipElement.style.left =
+                `${left}px`;
+
+
+            tooltipElement.style.top =
+                `${top}px`;
+
+        }
+
+
+        function hideItemTooltip() {
+
+            if (activeItemTooltip) {
+                
+                activeItemTooltip.remove();
+                activeItemTooltip = null;
+            }
+
+        }
+
+
+        /* ========================================= */
         /* ITEM TOOLTIP                               */
         /* ========================================= */
 
         function buildItemTooltip(
             item,
             details,
-            quantity
+            quantity,
+            rarityColor
         ) {
 
-            const lines = [
-                item.name || 'Unknown Item'
-            ];
+            const escapeHtml = (value) =>
+                String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
 
 
-            if (item.rarity) {
-
-                lines.push(
-                    item.rarity
-                );
-
-            }
+            const detailLines = [];
 
 
             if (item.description) {
-
-                lines.push(
-                    item.description
-                );
-
+                detailLines.push(escapeHtml(item.description));
             }
-
-
-            lines.push('');
 
 
             if (details) {
 
-                switch (
-                    item.item_type
-                ) {
-
+                switch (item.item_type) {
 
                     case 'weapons':
-
-                        if (details.damage) {
-
-                            lines.push(
-                                `${details.damage} Damage`
-                            );
-
-                        }
-
-
-                        if (details.strength) {
-
-                            lines.push(
-                                `${details.strength} Strength`
-                            );
-
-                        }
-
-
-                        if (details.dexterity) {
-
-                            lines.push(
-                                `${details.dexterity} Dexterity`
-                            );
-
-                        }
-
-
-                        if (
-                            details.intelligence
-                        ) {
-
-                            lines.push(
-                                `${details.intelligence} Intelligence`
-                            );
-
-                        }
-
+                        if (details.damage) detailLines.push(`${escapeHtml(details.damage)} Damage`);
+                        if (details.strength) detailLines.push(`${escapeHtml(details.strength)} Strength`);
+                        if (details.dexterity) detailLines.push(`${escapeHtml(details.dexterity)} Dexterity`);
+                        if (details.intelligence) detailLines.push(`${escapeHtml(details.intelligence)} Intelligence`);
                         break;
-
 
                     case 'armors':
-
-                        lines.push(
-                            `${details.armor_type} (${details.equipment_slot}) - Defense: ${details.defense}`
+                        detailLines.push(
+                            `${escapeHtml(details.armor_type)} (${escapeHtml(details.equipment_slot)}) - Defense: ${escapeHtml(details.defense)}`
                         );
-
                         break;
-
 
                     case 'consumables':
-
-                        lines.push(
-                            `${details.effect_type}: +${details.effect_value}`
+                        detailLines.push(
+                            `${escapeHtml(details.effect_type)}: +${escapeHtml(details.effect_value)}`
                         );
-
                         break;
-
 
                     case 'materials':
-
-                        lines.push(
-                            `Material: ${details.material_type}`
+                        detailLines.push(
+                            `Material: ${escapeHtml(details.material_type)}`
                         );
-
                         break;
-
                 }
-
             }
 
 
-            if (
-                item.required_level
-            ) {
-
-                lines.push(
-                    `Requires Level ${item.required_level}`
+            if (item.required_level) {
+                detailLines.push(
+                    `Requires Level ${escapeHtml(item.required_level)}`
                 );
-
             }
 
 
-            if (
-                item.stackable
-            ) {
-
-                lines.push(
-                    `Quantity: ${quantity} / ${item.max_stack_size}`
+            if (item.stackable) {
+                detailLines.push(
+                    `Quantity: ${escapeHtml(quantity)} / ${escapeHtml(item.max_stack_size)}`
                 );
-
             }
 
 
-            lines.push(
-                `Sell Price: ${item.sell_price} Gold`
+            detailLines.push(
+                `Sell Price: ${escapeHtml(item.sell_price)} Gold`
             );
 
 
-            return lines.join(
-                '\n'
-            );
+            const safeRarityColor =
+                rarityColor || '#f0f0f0';
+
+
+            const rarityText =
+                item.rarity
+                    ? `<div class="item-tooltip-rarity" style="color: ${safeRarityColor};">${escapeHtml(item.rarity)}</div>`
+                    : '';
+
+
+            return `
+                <div class="item-tooltip">
+                    <div class="item-tooltip-name" style="color: ${safeRarityColor};">
+                        ${escapeHtml(item.name || 'Unknown Item')}
+                    </div>
+                    ${rarityText}
+                    <div class="item-tooltip-details">
+                        ${detailLines.join('<br>')}
+                    </div>
+                </div>
+            `;
 
         }
 
@@ -1732,9 +2386,69 @@
             );
 
         }
-
-
+        
         loadCharacter();
+
+        async function addItemToInventory(itemId, quantity) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'add_inventory_item',
+                {
+                    body: {
+                        item_id: itemId,
+                        quantity: quantity
+                    }
+                }
+            );
+
+
+            console.log(
+                'Edge Function data:',
+                data
+            );
+
+            if (error) {
+
+                console.error(
+                    'Edge Function error:',
+                    error
+                );
+
+                if (error.context) {
+
+                    try {
+
+                        const errorBody =
+                            await error.context.json();
+
+
+                        console.error(
+                            'Edge Function response:',
+                            errorBody
+                        );
+
+                    } catch {
+
+                        try {
+                            
+                            const errorText =
+                                await error.context.text();
+                        } catch {
+
+                            console.error(
+                                'Could not read Edge Function response'
+                            );
+                        }
+                    }
+                }
+
+                return;
+            }
+
+        }
 
     </script>
 
