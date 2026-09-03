@@ -220,7 +220,7 @@
 
     gap: 10px;
 
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .stats-grid {
@@ -1222,6 +1222,302 @@
 
     text-shadow:
         0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+
+
+/* =========================================================
+   CHARACTER QUESTS
+   ========================================================= */
+
+.character-quest-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+.character-quest-card {
+    padding: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15, 18, 25, 0.92) 0%,
+            rgba(26, 31, 58, 0.92) 100%
+        );
+
+    border:
+        1px solid rgba(212, 175, 55, 0.3);
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+.character-quest-card-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 8px;
+}
+
+
+.character-quest-card-header h3 {
+    margin: 0;
+
+    color: #d4af37;
+
+    font-size: 15px;
+
+    line-height: 1.3;
+}
+
+
+.character-quest-progress {
+    flex-shrink: 0;
+
+    padding: 3px 7px;
+
+    border:
+        1px solid #3d4452;
+
+    border-radius: 5px;
+
+    background:
+        rgba(10, 14, 39, 0.75);
+
+    color: #b0b0b0;
+
+    font-size: 11px;
+
+    font-weight: bold;
+}
+
+
+.character-quest-progress.complete {
+    border-color:
+        rgba(69, 196, 111, 0.65);
+
+    color: #6bd88b;
+}
+
+
+.character-quest-description {
+    margin: 0 0 10px;
+
+    color: #c2c2c2;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+.character-quest-rewards {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px 14px;
+
+    padding-top: 9px;
+
+    border-top:
+        1px solid rgba(61, 68, 82, 0.55);
+
+    color: #d9c778;
+
+    font-size: 11px;
+}
+
+
+.character-quest-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 12px;
+}
+
+
+.character-abandon-quest-btn {
+    padding: 7px 11px;
+
+    border: 1px solid #d47e37;
+
+    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3d4452 0%,
+            #4d5562 100%
+        );
+
+    color: #d48b37;
+
+    font-family: 'Georgia', serif;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.character-abandon-quest-btn:hover {
+    border-color: #d4af37;
+
+    box-shadow:
+        0 0 10px rgba(212, 175, 55, 0.2);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.character-abandon-quest-btn:disabled {
+    opacity: 0.55;
+
+    cursor: default;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+
+.empty-quest-message {
+    color: #888;
+
+    font-size: 12px;
+
+    text-align: center;
+
+    padding: 12px 8px;
+}
+
+
+
+
+/* =========================================================
+   QUEST REWARD ITEMS
+   ========================================================= */
+
+.character-quest-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.quest-reward-items {
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    min-height: 42px;
+}
+
+.quest-reward-item-slot {
+    position: relative;
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0f1219 0%,
+            #1a1f3a 100%
+        );
+
+    border: 2px solid #3d4452;
+    border-radius: 7px;
+
+    cursor: pointer;
+    overflow: visible;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.quest-reward-item-slot:hover {
+    border-color: #d4af37;
+
+    box-shadow:
+        0 0 12px rgba(212, 175, 55, 0.3);
+
+    transform: translateY(-2px);
+}
+
+.quest-reward-item-image {
+    width: 38px;
+    height: 38px;
+
+    object-fit: contain;
+
+    pointer-events: none;
+}
+
+.quest-reward-item-count {
+    position: absolute;
+
+    right: 2px;
+    bottom: 2px;
+
+    min-width: 16px;
+
+    padding: 1px 3px;
+
+    background:
+        rgba(10, 14, 39, 0.96);
+
+    border:
+        1px solid #d4af37;
+
+    border-radius: 4px;
+
+    color: #f0d968;
+
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1.2;
+
+    text-align: center;
+
+    pointer-events: none;
+}
+
+.character-quest-actions {
+    flex-shrink: 0;
+
+    margin-left: auto;
+    margin-top: 0;
 }
 
 

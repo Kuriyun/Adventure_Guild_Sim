@@ -87,6 +87,7 @@
                         <div class="stat-row simple-stat-row"><span class="stat-label">Intelligence</span><span id="intelligenceValue" class="stat-value">0</span></div>
                         <div class="stat-row simple-stat-row"><span class="stat-label">Dexterity</span><span id="dexterityValue" class="stat-value">0</span></div>
                         <div class="stat-row simple-stat-row"><span class="stat-label">Defense</span><span id="defenseValue" class="stat-value">0</span></div>
+                        <div class="stat-row simple-stat-row"><span class="stat-label">Crit Chance</span><span id="critChanceValue" class="stat-value">0%</span></div>
                     </div></div>
                 </div>
             </div>
@@ -545,9 +546,14 @@
 
                     <h2>Active Quests</h2>
 
-                    <div class="empty-quest-message"
-                         style="margin-top: 12px;">
-                        No Active Quests
+                    <div id="characterQuestList"
+                         class="character-quest-list">
+
+                        <div class="empty-quest-message"
+                             style="margin-top: 12px;">
+                            No Active Quests
+                        </div>
+
                     </div>
 
                 </div>
@@ -629,10 +635,175 @@
 
             currentCharacterId = character.id;
 
-            updateCharacterDisplay(character);
+
+            /*
+             * Load the authoritative effective stats from PostgreSQL.
+             *
+             * Formula:
+             * base + ((level - 1) * class increment) + equipment
+             */
+            const effectiveStats =
+                await getCharacterEffectiveStats(
+                    character.id
+                );
+
+
+            const displayCharacter = {
+                ...character,
+                ...(effectiveStats || {})
+            };
+
+
+            await updateCharacterDisplay(
+                displayCharacter
+            );
+
 
             await loadInventory(character.id);
             await loadEquipment(character.id);
+            await loadCharacterQuests(character.id);
+
+        }
+
+
+        /* ========================================= */
+        /* LOAD EFFECTIVE CHARACTER STATS             */
+        /* ========================================= */
+
+        async function getCharacterEffectiveStats(
+            characterId
+        ) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.rpc(
+                'get_character_effective_stats',
+                {
+                    p_character_id:
+                        characterId
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading effective character stats:',
+                    error
+                );
+
+                return null;
+
+            }
+
+
+            /*
+             * A PostgreSQL function declared as RETURNS TABLE
+             * is returned by Supabase as an array.
+             */
+            return Array.isArray(data)
+                ? data[0] || null
+                : data || null;
+
+        }
+
+
+        /* ========================================= */
+        /* REFRESH EFFECTIVE STATS                    */
+        /* ========================================= */
+
+        async function refreshCharacterEffectiveStats() {
+
+            if (!currentCharacterId) {
+                return;
+            }
+
+
+            const [
+                effectiveStatsResult,
+                characterResult
+            ] = await Promise.all([
+
+                supabaseClient.rpc(
+                    'get_character_effective_stats',
+                    {
+                        p_character_id:
+                            currentCharacterId
+                    }
+                ),
+
+                supabaseClient
+                    .from('characters')
+                    .select(`
+                        current_health,
+                        current_mana,
+                        critical_chance
+                    `)
+                    .eq(
+                        'id',
+                        currentCharacterId
+                    )
+                    .maybeSingle()
+
+            ]);
+
+
+            if (effectiveStatsResult.error) {
+
+                console.error(
+                    'Error refreshing effective stats:',
+                    effectiveStatsResult.error
+                );
+
+                return;
+
+            }
+
+
+            if (characterResult.error) {
+
+                console.error(
+                    'Error refreshing current Health / Mana:',
+                    characterResult.error
+                );
+
+                return;
+
+            }
+
+
+            const effectiveStats =
+                Array.isArray(
+                    effectiveStatsResult.data
+                )
+                    ? effectiveStatsResult.data[0]
+                    : effectiveStatsResult.data;
+
+
+            if (!effectiveStats) {
+                return;
+            }
+
+
+            applyEffectiveStats({
+                ...effectiveStats,
+
+                current_health:
+                    characterResult.data?.current_health ??
+                    effectiveStats.effective_max_health ??
+                    0,
+
+                current_mana:
+                    characterResult.data?.current_mana ??
+                    effectiveStats.effective_max_mana ??
+                    0,
+
+                effective_critical_chance:
+                    effectiveStats.effective_critical_chance ??
+                    characterResult.data?.critical_chance ??
+                    0
+            });
 
         }
 
@@ -1470,9 +1641,7 @@
                     }
 
 
-                    applyEffectiveStats(
-                        result.effectiveStats
-                    );
+                    await refreshCharacterEffectiveStats();
 
 
                     /*
@@ -2099,6 +2268,7 @@
                     dexterity,
                     intelligence,
                     defense,
+                    critical_chance,
                     bonus_health,
                     bonus_mana,
                     twohanded
@@ -2115,6 +2285,7 @@
                     strength,
                     dexterity,
                     intelligence,
+                    critical_chance,
                     bonus_health,
                     bonus_mana
                 `
@@ -2760,9 +2931,7 @@
                         }
 
 
-                        applyEffectiveStats(
-                            result.effectiveStats
-                        );
+                        await refreshCharacterEffectiveStats();
 
 
                         if (
@@ -3142,12 +3311,19 @@
                         if (details.strength) detailLines.push(`${escapeHtml(details.strength)} Strength`);
                         if (details.dexterity) detailLines.push(`${escapeHtml(details.dexterity)} Dexterity`);
                         if (details.intelligence) detailLines.push(`${escapeHtml(details.intelligence)} Intelligence`);
+                        if (details.critical_chance) detailLines.push(`${escapeHtml(details.critical_chance)}% Critical Chance`);
                         break;
 
                     case 'armors':
                         detailLines.push(
                             `${escapeHtml(details.armor_type)} (${escapeHtml(details.equipment_slot)}) - Defense: ${escapeHtml(details.defense)}`
                         );
+
+                        if (details.strength) detailLines.push(`${escapeHtml(details.strength)} Strength`);
+                        if (details.dexterity) detailLines.push(`${escapeHtml(details.dexterity)} Dexterity`);
+                        if (details.intelligence) detailLines.push(`${escapeHtml(details.intelligence)} Intelligence`);
+                        if (details.critical_chance) detailLines.push(`${escapeHtml(details.critical_chance)}% Critical Chance`);
+
                         break;
 
                     case 'consumables':
@@ -3209,6 +3385,626 @@
         }
 
 
+
+        /* ========================================= */
+        /* ACTIVE QUESTS                              */
+        /* ========================================= */
+
+        async function loadCharacterQuests(
+            characterId
+        ) {
+
+            const questList =
+                document.getElementById(
+                    'characterQuestList'
+                );
+
+
+            if (!questList) {
+                return;
+            }
+
+
+            questList.innerHTML = '';
+
+
+            const {
+                data: characterQuests,
+                error
+            } = await supabaseClient
+                .from('character_quests')
+                .select(`
+                    quest_id,
+                    character_id,
+                    current_objective_count,
+                    quests (
+                        id,
+                        name,
+                        description,
+                        objective_count,
+                        gold_reward,
+                        experience_reward
+                    )
+                `)
+                .eq('character_id', characterId)
+                .order('created_at', {
+                    ascending: true
+                });
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading character quests:',
+                    error
+                );
+
+
+                questList.innerHTML = `
+                    <div class="empty-quest-message">
+                        Could not load quests.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            const activeQuests =
+                (characterQuests || [])
+                    .filter(
+                        characterQuest =>
+                            characterQuest.quests
+                    );
+
+
+            if (activeQuests.length === 0) {
+
+                questList.innerHTML = `
+                    <div class="empty-quest-message">
+                        No Active Quests
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            activeQuests.forEach(
+                characterQuest => {
+
+                    renderCharacterQuestCard(
+                        questList,
+                        characterQuest
+                    );
+
+                }
+            );
+
+        }
+
+
+        function renderCharacterQuestCard(
+            container,
+            characterQuest
+        ) {
+
+            const quest =
+                characterQuest.quests;
+
+
+            const currentObjectiveCount =
+                Number(
+                    characterQuest.current_objective_count ??
+                    0
+                );
+
+
+            const objectiveCount =
+                Number(
+                    quest.objective_count ??
+                    0
+                );
+
+
+            const objectiveComplete =
+                objectiveCount > 0 &&
+                currentObjectiveCount >=
+                    objectiveCount;
+
+
+            const card =
+                document.createElement('div');
+
+
+            card.className =
+                'character-quest-card';
+
+
+            card.innerHTML = `
+
+                <div class="character-quest-card-header">
+
+                    <h3>
+                        ${escapeQuestHtml(quest.name)}
+                    </h3>
+
+                    <span class="character-quest-progress
+                        ${objectiveComplete ? 'complete' : ''}">
+                        ${currentObjectiveCount} / ${objectiveCount}
+                    </span>
+
+                </div>
+
+                ${
+                    quest.description
+                        ? `
+                            <p class="character-quest-description">
+                                ${escapeQuestHtml(
+                                    quest.description
+                                )}
+                            </p>
+                          `
+                        : ''
+                }
+
+                <div class="character-quest-rewards">
+
+                    <span>
+                        Gold:
+                        ${Number(
+                            quest.gold_reward ??
+                            0
+                        )}
+                    </span>
+
+                    <span>
+                        EXP:
+                        ${Number(
+                            quest.experience_reward ??
+                            0
+                        )}
+                    </span>
+
+                </div>
+
+                <div class="character-quest-footer">
+
+                    <div class="quest-reward-items"
+                         data-quest-reward-items>
+                    </div>
+
+                    <div class="character-quest-actions">
+                    </div>
+
+                </div>
+
+            `;
+
+
+            const actions =
+                card.querySelector(
+                    '.character-quest-actions'
+                );
+
+
+            const abandonButton =
+                document.createElement('button');
+
+
+            abandonButton.className =
+                'character-abandon-quest-btn';
+
+
+            abandonButton.textContent =
+                'Abandon Quest';
+
+
+            abandonButton.addEventListener(
+                'click',
+                () => abandonCharacterQuest(
+                    characterQuest,
+                    card
+                )
+            );
+
+
+            actions.appendChild(
+                abandonButton
+            );
+
+
+            container.appendChild(
+                card
+            );
+
+
+            renderQuestRewardItems(
+                card.querySelector(
+                    '[data-quest-reward-items]'
+                ),
+                quest.id
+            );
+
+        }
+
+
+        /* ========================================= */
+        /* QUEST REWARD ITEMS                          */
+        /* ========================================= */
+
+        async function renderQuestRewardItems(
+            container,
+            questId
+        ) {
+
+            if (!container) {
+                return;
+            }
+
+
+            const {
+                data: rewardRows,
+                error
+            } = await supabaseClient
+                .from('quest_reward_items')
+                .select(`
+                    item_count,
+                    items (
+                        item_id,
+                        name,
+                        description,
+                        item_type,
+                        rarity,
+                        required_level,
+                        sell_price,
+                        icon_path,
+                        stackable,
+                        max_stack_size
+                    )
+                `)
+                .eq('quest_id', questId);
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading quest reward items:',
+                    error
+                );
+
+                return;
+            }
+
+
+            const rewards =
+                (rewardRows || [])
+                    .filter(row => row.items);
+
+
+            if (rewards.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+
+            const detailsByItemId = {};
+
+
+            for (
+                const [itemType, config]
+                of Object.entries(ITEM_TYPE_TABLES)
+            ) {
+
+                const itemIds =
+                    rewards
+                        .filter(
+                            row =>
+                                row.items.item_type ===
+                                itemType
+                        )
+                        .map(
+                            row =>
+                                row.items.item_id
+                        );
+
+
+                if (itemIds.length === 0) {
+                    continue;
+                }
+
+
+                const {
+                    data: typeData,
+                    error: typeError
+                } = await supabaseClient
+                    .from(config.table)
+                    .select(config.select)
+                    .in(
+                        'item_id',
+                        itemIds
+                    );
+
+
+                if (typeError) {
+
+                    console.error(
+                        `Error loading quest reward ${config.table}:`,
+                        typeError
+                    );
+
+                    continue;
+                }
+
+
+                (typeData || []).forEach(
+                    detail => {
+
+                        detailsByItemId[
+                            detail.item_id
+                        ] = detail;
+
+                    }
+                );
+
+            }
+
+
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+
+            rewards.forEach(row => {
+
+                const item =
+                    row.items;
+
+
+                const quantity =
+                    Number(
+                        row.item_count ??
+                        1
+                    );
+
+
+                const details =
+                    detailsByItemId[
+                        item.item_id
+                    ];
+
+
+                const rarityColor =
+                    RARITY_COLORS[
+                        (
+                            item.rarity ||
+                            ''
+                        ).toLowerCase()
+                    ];
+
+
+                const slot =
+                    document.createElement('div');
+
+
+                slot.className =
+                    'quest-reward-item-slot';
+
+
+                if (rarityColor) {
+                    slot.style.borderColor =
+                        rarityColor;
+                }
+
+
+                slot.innerHTML = `
+                    <img
+                        src="${escapeQuestHtml(item.icon_path || '')}"
+                        alt="${escapeQuestHtml(item.name || '')}"
+                        class="quest-reward-item-image"
+                    >
+
+                    ${
+                        quantity > 1
+                            ? `
+                                <span class="quest-reward-item-count">
+                                    ${quantity}
+                                </span>
+                              `
+                            : ''
+                    }
+                `;
+
+
+                slot.addEventListener(
+                    'mouseenter',
+                    () => {
+
+                        const tooltipHtml =
+                            buildItemTooltip(
+                                item,
+                                details,
+                                quantity,
+                                rarityColor
+                            );
+
+
+                        showItemTooltip(
+                            slot,
+                            tooltipHtml
+                        );
+
+                    }
+                );
+
+
+                slot.addEventListener(
+                    'mouseleave',
+                    hideItemTooltip
+                );
+
+
+                container.appendChild(
+                    slot
+                );
+
+            });
+
+        }
+
+
+        async function abandonCharacterQuest(
+            characterQuest,
+            card
+        ) {
+
+            const button =
+                card.querySelector(
+                    '.character-abandon-quest-btn'
+                );
+
+
+            if (button) {
+                button.disabled = true;
+            }
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'abandon_quest',
+                {
+                    body: {
+                        quest_id:
+                            characterQuest.quest_id
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not abandon quest.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (response?.error) {
+                            errorMessage =
+                                response.error;
+                        }
+
+                    } catch (e) {
+
+                        console.error(
+                            'Could not parse abandon quest error:',
+                            e
+                        );
+
+                    }
+
+                }
+
+
+                console.error(
+                    errorMessage
+                );
+
+
+                if (button) {
+                    button.disabled = false;
+                }
+
+
+                return;
+            }
+
+
+            if (!data?.success) {
+
+                console.error(
+                    data?.error ||
+                    'Could not abandon quest.'
+                );
+
+
+                if (button) {
+                    button.disabled = false;
+                }
+
+
+                return;
+            }
+
+
+            card.remove();
+
+
+            const questList =
+                document.getElementById(
+                    'characterQuestList'
+                );
+
+
+            if (
+                questList &&
+                !questList.querySelector(
+                    '.character-quest-card'
+                )
+            ) {
+
+                questList.innerHTML = `
+                    <div class="empty-quest-message">
+                        No Active Quests
+                    </div>
+                `;
+
+            }
+
+        }
+
+
+        function escapeQuestHtml(
+            value
+        ) {
+
+            return String(
+                value ??
+                ''
+            )
+                .replaceAll(
+                    '&',
+                    '&amp;'
+                )
+                .replaceAll(
+                    '<',
+                    '&lt;'
+                )
+                .replaceAll(
+                    '>',
+                    '&gt;'
+                )
+                .replaceAll(
+                    '"',
+                    '&quot;'
+                )
+                .replaceAll(
+                    "'",
+                    '&#039;'
+                );
+
+        }
+
+
         /* ========================================= */
         /* CHARACTER DISPLAY                          */
         /* ========================================= */
@@ -3238,7 +4034,9 @@
 
             const currentHealth =
                 Number(
-                    character.health ||
+                    character.current_health ??
+                    character.effective_max_health ??
+                    character.max_health ??
                     0
                 );
 
@@ -3254,7 +4052,9 @@
 
             const currentMana =
                 Number(
-                    character.mana ||
+                    character.current_mana ??
+                    character.effective_max_mana ??
+                    character.max_mana ??
                     0
                 );
 
@@ -3307,6 +4107,14 @@
                 );
 
 
+            const critChance =
+                Number(
+                    character.effective_critical_chance ??
+                    character.critical_chance ??
+                    0
+                );
+
+
             /* ========================================= */
             /* CLASS ICON                                 */
             /* ========================================= */
@@ -3351,24 +4159,65 @@
             /* EXPERIENCE                                 */
             /* ========================================= */
 
-            const xpForNextLevel =
-                Math.max(
-                    100,
-                    (level + 1) * 100
+            /*
+             * level_experience stores the amount required to go
+             * FROM the current level TO the row's level.
+             *
+             * Example:
+             * level = 5 means EXP needed for 4 -> 5.
+             */
+            const {
+                data: nextLevelExperience,
+                error: nextLevelExperienceError
+            } = await supabaseClient
+                .from('level_experience')
+                .select('exp_to_reach_level')
+                .eq(
+                    'level',
+                    level + 1
+                )
+                .maybeSingle();
+
+
+            if (nextLevelExperienceError) {
+
+                console.error(
+                    'Error loading next level EXP requirement:',
+                    nextLevelExperienceError
                 );
+
+            }
+
+
+            const hasNextLevel =
+                Boolean(
+                    nextLevelExperience &&
+                    nextLevelExperience.exp_to_reach_level != null
+                );
+
+
+            const xpForNextLevel =
+                hasNextLevel
+                    ? Number(
+                        nextLevelExperience.exp_to_reach_level
+                    )
+                    : 0;
 
 
             const xpProgress =
-                Math.min(
-                    100,
-                    Math.max(
-                        0,
-                        (
-                            currentExperience /
-                            xpForNextLevel
-                        ) * 100
+                hasNextLevel &&
+                xpForNextLevel > 0
+                    ? Math.min(
+                        100,
+                        Math.max(
+                            0,
+                            (
+                                currentExperience /
+                                xpForNextLevel
+                            ) * 100
+                        )
                     )
-                );
+                    : 100;
 
 
             /* ========================================= */
@@ -3425,6 +4274,11 @@
                 {
                     value: 'defenseValue',
                     amount: defense
+                },
+
+                {
+                    value: 'critChanceValue',
+                    amount: `${critChance}%`
                 }
 
             ];
@@ -3478,7 +4332,9 @@
             document.getElementById(
                 'currentExperienceText'
             ).textContent =
-                `${currentExperience} / ${xpForNextLevel}`;
+                hasNextLevel
+                    ? `${currentExperience} / ${xpForNextLevel}`
+                    : 'MAX';
 
 
             document.getElementById(
@@ -3490,11 +4346,13 @@
             document.getElementById(
                 'xpToNextText'
             ).textContent =
-                `${Math.max(
-                    0,
-                    xpForNextLevel -
-                    currentExperience
-                )} XP`;
+                hasNextLevel
+                    ? `${Math.max(
+                        0,
+                        xpForNextLevel -
+                        currentExperience
+                    )} XP`
+                    : 'Max Level';
 
 
             /* ========================================= */
@@ -3580,9 +4438,18 @@
                 );
 
 
+            const criticalChance =
+                Number(
+                    effectiveStats.effective_critical_chance ??
+                    0
+                );
+
+
             const currentHealth =
                 Number(
+                    effectiveStats.current_health ??
                     effectiveStats.health ??
+                    effectiveStats.effective_max_health ??
                     0
                 );
 
@@ -3596,7 +4463,9 @@
 
             const currentMana =
                 Number(
+                    effectiveStats.current_mana ??
                     effectiveStats.mana ??
+                    effectiveStats.effective_max_mana ??
                     0
                 );
 
@@ -3632,6 +4501,12 @@
                 );
 
 
+            const criticalChanceElement =
+                document.getElementById(
+                    'critChanceValue'
+                );
+
+
             if (strengthElement) {
                 strengthElement.textContent =
                     strength;
@@ -3653,6 +4528,12 @@
             if (defenseElement) {
                 defenseElement.textContent =
                     defense;
+            }
+
+
+            if (criticalChanceElement) {
+                criticalChanceElement.textContent =
+                    `${criticalChance}%`;
             }
 
 

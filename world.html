@@ -237,7 +237,7 @@
                 error: characterError
             } = await supabaseClient
                 .from('characters')
-                .select('level')
+                .select('id, level')
                 .eq('user_id', user.id)
                 .maybeSingle();
 
@@ -927,7 +927,156 @@
             }
 
 
+            /*
+             * Quest objective nodes are only visible while:
+             *
+             * 1. The character currently has the related quest.
+             * 2. current_objective_count is still below 1.
+             *
+             * Once current_objective_count reaches 1, the pickup
+             * objective is complete and its node disappears.
+             */
+
+            const questObjectiveNodeIds = areaNodes
+                .filter(node => node.node_type === 'questobjectives')
+                .map(node => node.entity_id)
+                .filter(id => id != null);
+
+
+            const questObjectiveById = new Map();
+            const activeQuestProgressByQuestId = new Map();
+
+
+            if (questObjectiveNodeIds.length > 0) {
+
+                const {
+                    data: questObjectives,
+                    error: questObjectivesError
+                } = await supabaseClient
+                    .from('questobjectives')
+                    .select('id, quest_id')
+                    .in('id', questObjectiveNodeIds);
+
+
+                if (questObjectivesError) {
+
+                    console.error(
+                        'Error loading quest objectives:',
+                        questObjectivesError
+                    );
+
+                    return;
+                }
+
+
+                (questObjectives || []).forEach(questObjective => {
+
+                    questObjectiveById.set(
+                        String(questObjective.id),
+                        questObjective
+                    );
+
+                });
+
+
+                const questIds = [
+                    ...new Set(
+                        (questObjectives || [])
+                            .map(questObjective => questObjective.quest_id)
+                            .filter(questId => questId != null)
+                    )
+                ];
+
+
+                if (questIds.length > 0) {
+
+                    const {
+                        data: characterQuests,
+                        error: characterQuestsError
+                    } = await supabaseClient
+                        .from('character_quests')
+                        .select('quest_id, current_objective_count')
+                        .eq('character_id', currentCharacter.id)
+                        .in('quest_id', questIds);
+
+
+                    if (characterQuestsError) {
+
+                        console.error(
+                            'Error loading character quest progress:',
+                            characterQuestsError
+                        );
+
+                        return;
+                    }
+
+
+                    (characterQuests || []).forEach(characterQuest => {
+
+                        activeQuestProgressByQuestId.set(
+                            String(characterQuest.quest_id),
+                            Number(characterQuest.current_objective_count ?? 0)
+                        );
+
+                    });
+
+                }
+
+            }
+
+
             areaNodes.forEach(node => {
+
+                if (node.node_type === 'questobjectives') {
+
+                    const questObjective =
+                        questObjectiveById.get(String(node.entity_id));
+
+
+                    /*
+                     * No matching quest objective means the node cannot
+                     * safely be associated with a quest, so don't render it.
+                     */
+                    if (!questObjective) {
+                        return;
+                    }
+
+
+                    const questId =
+                        String(questObjective.quest_id);
+
+
+                    /*
+                     * Keep the related quest id on this rendered node.
+                     * The generic quest update function works with quest_id
+                     * instead of quest_objective_id so it can also be reused
+                     * by kill quests and other quest types later.
+                     */
+                    node.quest_id = questObjective.quest_id;
+
+
+                    /*
+                     * The quest must currently exist in character_quests.
+                     */
+                    if (!activeQuestProgressByQuestId.has(questId)) {
+                        return;
+                    }
+
+
+                    const currentObjectiveCount =
+                        activeQuestProgressByQuestId.get(questId);
+
+
+                    /*
+                     * Pickup quests have one objective.
+                     * Hide the node after that objective is completed.
+                     */
+                    if (currentObjectiveCount >= 1) {
+                        return;
+                    }
+
+                }
+
 
                 const marker =
                     document.createElement('div');
@@ -962,7 +1111,7 @@
 
                 marker.addEventListener(
                     'click',
-                    () => openAreaNode(node)
+                    () => openAreaNode(node, marker)
                 );
 
 
@@ -1021,13 +1170,670 @@
            OPEN AREA NODE
            ========================================================= */
 
-        function openAreaNode(node) {
+        async function openAreaNode(node, marker = null) {
 
             hideAreaNodeTooltip();
 
 
             if (node.node_type === 'npcs') {
                 openNpcDialog(node.entity_id);
+                return;
+            }
+
+
+            if (node.node_type === 'questobjectives') {
+
+                await completeQuestObjective(node, marker);
+
+            }
+
+        }
+
+
+        /* =========================================================
+           COMPLETE QUEST OBJECTIVE
+           ========================================================= */
+
+        async function completeQuestObjective(node, marker) {
+
+            /*
+             * Do not update character_quests directly from the browser.
+             * The Edge Function authenticates the user, finds that user's
+             * character and active quest, and increments the objective
+             * count server-side. Clickable questobjective nodes send 1.
+             */
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'update_quest_objective',
+                {
+                    body: {
+                        quest_id: node.quest_id,
+                        count: 1
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not complete quest objective.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context.clone().json();
+
+
+                        if (response?.error) {
+                            errorMessage = response.error;
+                        }
+
+                    } catch (e) {
+
+                        console.error(
+                            'Could not parse Edge Function error:',
+                            e
+                        );
+
+                    }
+
+                }
+
+
+                console.error(errorMessage);
+
+                return;
+            }
+
+
+            if (!data?.success) {
+
+                console.error(
+                    data?.error ||
+                    'Could not complete quest objective.'
+                );
+
+                return;
+            }
+
+
+            /*
+             * The objective is now complete for this character only.
+             * Remove the marker from this browser immediately.
+             */
+            if (marker) {
+                marker.remove();
+            }
+
+
+            console.log(
+                `Quest ${data.quest_id} objective updated by ${data.count_added}.`
+            );
+
+        }
+
+
+        /* =========================================================
+           QUEST REWARD ITEM DISPLAY
+           ========================================================= */
+
+        const QUEST_REWARD_RARITY_COLORS = {
+            common: '#888',
+            uncommon: '#00aa00',
+            rare: '#0066ff',
+            epic: '#aa00ff',
+            legendary: '#ffaa00',
+            unique: '#FF0000'
+        };
+
+
+        const QUEST_REWARD_ITEM_TYPE_TABLES = {
+
+            weapons: {
+                table: 'weapons',
+                select: `
+                    item_id,
+                    weapon_type,
+                    damage,
+                    attack_speed,
+                    strength,
+                    dexterity,
+                    intelligence,
+                    defense,
+                    bonus_health,
+                    bonus_mana,
+                    twohanded
+                `
+            },
+
+            armors: {
+                table: 'armors',
+                select: `
+                    item_id,
+                    armor_type,
+                    defense,
+                    equipment_slot,
+                    strength,
+                    dexterity,
+                    intelligence,
+                    bonus_health,
+                    bonus_mana
+                `
+            },
+
+            consumables: {
+                table: 'consumables',
+                select: `
+                    item_id,
+                    effect_type,
+                    effect_value
+                `
+            },
+
+            materials: {
+                table: 'materials',
+                select: `
+                    item_id,
+                    material_type
+                `
+            }
+
+        };
+
+
+        let activeQuestRewardTooltip =
+            null;
+
+
+        async function renderWorldQuestRewardItems(
+            container,
+            questId
+        ) {
+
+            if (!container) {
+                return;
+            }
+
+
+            const {
+                data: rewardRows,
+                error
+            } = await supabaseClient
+                .from('quest_reward_items')
+                .select(`
+                    item_count,
+                    items (
+                        item_id,
+                        name,
+                        description,
+                        item_type,
+                        rarity,
+                        required_level,
+                        sell_price,
+                        icon_path,
+                        stackable,
+                        max_stack_size
+                    )
+                `)
+                .eq('quest_id', questId);
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading quest reward items:',
+                    error
+                );
+
+                return;
+            }
+
+
+            const rewards =
+                (rewardRows || [])
+                    .filter(row => row.items);
+
+
+            if (rewards.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+
+            const detailsByItemId = {};
+
+
+            for (
+                const [itemType, config]
+                of Object.entries(
+                    QUEST_REWARD_ITEM_TYPE_TABLES
+                )
+            ) {
+
+                const itemIds =
+                    rewards
+                        .filter(
+                            row =>
+                                row.items.item_type ===
+                                itemType
+                        )
+                        .map(
+                            row =>
+                                row.items.item_id
+                        );
+
+
+                if (itemIds.length === 0) {
+                    continue;
+                }
+
+
+                const {
+                    data: typeData,
+                    error: typeError
+                } = await supabaseClient
+                    .from(config.table)
+                    .select(config.select)
+                    .in(
+                        'item_id',
+                        itemIds
+                    );
+
+
+                if (typeError) {
+
+                    console.error(
+                        `Error loading quest reward ${config.table}:`,
+                        typeError
+                    );
+
+                    continue;
+                }
+
+
+                (typeData || []).forEach(
+                    detail => {
+
+                        detailsByItemId[
+                            detail.item_id
+                        ] = detail;
+
+                    }
+                );
+
+            }
+
+
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+
+            rewards.forEach(row => {
+
+                const item =
+                    row.items;
+
+
+                const quantity =
+                    Number(
+                        row.item_count ??
+                        1
+                    );
+
+
+                const details =
+                    detailsByItemId[
+                        item.item_id
+                    ];
+
+
+                const rarityColor =
+                    QUEST_REWARD_RARITY_COLORS[
+                        (
+                            item.rarity ||
+                            ''
+                        ).toLowerCase()
+                    ];
+
+
+                const slot =
+                    document.createElement('div');
+
+
+                slot.className =
+                    'quest-reward-item-slot';
+
+
+                if (rarityColor) {
+                    slot.style.borderColor =
+                        rarityColor;
+                }
+
+
+                slot.innerHTML = `
+                    <img
+                        src="${escapeHtml(item.icon_path || '')}"
+                        alt="${escapeHtml(item.name || '')}"
+                        class="quest-reward-item-image"
+                    >
+
+                    ${
+                        quantity > 1
+                            ? `
+                                <span class="quest-reward-item-count">
+                                    ${quantity}
+                                </span>
+                              `
+                            : ''
+                    }
+                `;
+
+
+                slot.addEventListener(
+                    'mouseenter',
+                    () => {
+
+                        showWorldQuestRewardTooltip(
+                            slot,
+                            buildWorldQuestRewardTooltip(
+                                item,
+                                details,
+                                quantity,
+                                rarityColor
+                            )
+                        );
+
+                    }
+                );
+
+
+                slot.addEventListener(
+                    'mouseleave',
+                    hideWorldQuestRewardTooltip
+                );
+
+
+                container.appendChild(
+                    slot
+                );
+
+            });
+
+        }
+
+
+        function buildWorldQuestRewardTooltip(
+            item,
+            details,
+            quantity,
+            rarityColor
+        ) {
+
+            const detailLines = [];
+
+
+            if (item.description) {
+                detailLines.push(
+                    escapeHtml(item.description)
+                );
+            }
+
+
+            if (details) {
+
+                switch (item.item_type) {
+
+                    case 'weapons':
+
+                        if (details.damage) {
+                            detailLines.push(
+                                `${escapeHtml(details.damage)} Damage`
+                            );
+                        }
+
+                        if (details.strength) {
+                            detailLines.push(
+                                `${escapeHtml(details.strength)} Strength`
+                            );
+                        }
+
+                        if (details.dexterity) {
+                            detailLines.push(
+                                `${escapeHtml(details.dexterity)} Dexterity`
+                            );
+                        }
+
+                        if (details.intelligence) {
+                            detailLines.push(
+                                `${escapeHtml(details.intelligence)} Intelligence`
+                            );
+                        }
+
+                        if (details.defense) {
+                            detailLines.push(
+                                `${escapeHtml(details.defense)} Defense`
+                            );
+                        }
+
+                        break;
+
+
+                    case 'armors':
+
+                        if (details.armor_type) {
+                            detailLines.push(
+                                `${escapeHtml(details.armor_type)} (${escapeHtml(details.equipment_slot || '')})`
+                            );
+                        }
+
+                        if (details.defense) {
+                            detailLines.push(
+                                `${escapeHtml(details.defense)} Defense`
+                            );
+                        }
+
+                        if (details.strength) {
+                            detailLines.push(
+                                `${escapeHtml(details.strength)} Strength`
+                            );
+                        }
+
+                        if (details.dexterity) {
+                            detailLines.push(
+                                `${escapeHtml(details.dexterity)} Dexterity`
+                            );
+                        }
+
+                        if (details.intelligence) {
+                            detailLines.push(
+                                `${escapeHtml(details.intelligence)} Intelligence`
+                            );
+                        }
+
+                        break;
+
+
+                    case 'consumables':
+
+                        if (details.effect_type) {
+                            detailLines.push(
+                                `${escapeHtml(details.effect_type)}: +${escapeHtml(details.effect_value)}`
+                            );
+                        }
+
+                        break;
+
+
+                    case 'materials':
+
+                        if (details.material_type) {
+                            detailLines.push(
+                                `Material: ${escapeHtml(details.material_type)}`
+                            );
+                        }
+
+                        break;
+
+                }
+
+            }
+
+
+            if (item.required_level) {
+                detailLines.push(
+                    `Requires Level ${escapeHtml(item.required_level)}`
+                );
+            }
+
+
+            if (item.stackable) {
+                detailLines.push(
+                    `Quantity: ${escapeHtml(quantity)} / ${escapeHtml(item.max_stack_size)}`
+                );
+            }
+
+
+            detailLines.push(
+                `Sell Price: ${escapeHtml(item.sell_price ?? 0)} Gold`
+            );
+
+
+            const safeColor =
+                rarityColor ||
+                '#f0f0f0';
+
+
+            return `
+                <div class="quest-reward-tooltip">
+
+                    <div class="quest-reward-tooltip-name"
+                         style="color: ${safeColor};">
+                        ${escapeHtml(item.name || 'Unknown Item')}
+                    </div>
+
+                    ${
+                        item.rarity
+                            ? `
+                                <div class="quest-reward-tooltip-rarity"
+                                     style="color: ${safeColor};">
+                                    ${escapeHtml(item.rarity)}
+                                </div>
+                              `
+                            : ''
+                    }
+
+                    <div class="quest-reward-tooltip-details">
+                        ${detailLines.join('<br>')}
+                    </div>
+
+                </div>
+            `;
+
+        }
+
+
+        function showWorldQuestRewardTooltip(
+            slot,
+            tooltipHtml
+        ) {
+
+            hideWorldQuestRewardTooltip();
+
+
+            const wrapper =
+                document.createElement('div');
+
+
+            wrapper.innerHTML =
+                tooltipHtml.trim();
+
+
+            const tooltip =
+                wrapper.firstElementChild;
+
+
+            if (!tooltip) {
+                return;
+            }
+
+
+            document.body.appendChild(
+                tooltip
+            );
+
+
+            activeQuestRewardTooltip =
+                tooltip;
+
+
+            const slotRect =
+                slot.getBoundingClientRect();
+
+
+            const tooltipRect =
+                tooltip.getBoundingClientRect();
+
+
+            let left =
+                slotRect.left +
+                slotRect.width / 2 -
+                tooltipRect.width / 2;
+
+
+            let top =
+                slotRect.top -
+                tooltipRect.height -
+                10;
+
+
+            const padding = 8;
+
+
+            left =
+                Math.max(
+                    padding,
+                    Math.min(
+                        left,
+                        window.innerWidth -
+                            tooltipRect.width -
+                            padding
+                    )
+                );
+
+
+            if (top < padding) {
+                top =
+                    slotRect.bottom +
+                    10;
+            }
+
+
+            tooltip.style.left =
+                `${left}px`;
+
+
+            tooltip.style.top =
+                `${top}px`;
+
+        }
+
+
+        function hideWorldQuestRewardTooltip() {
+
+            if (activeQuestRewardTooltip) {
+
+                activeQuestRewardTooltip.remove();
+
+                activeQuestRewardTooltip =
+                    null;
+
             }
 
         }
@@ -1074,6 +1880,8 @@
             await loadActiveQuestIds();
 
             await loadNpcQuests(npcId);
+
+            await loadNpcTurnInQuests(npcId);
 
 
             document
@@ -1147,22 +1955,101 @@
             }
 
 
+            /*
+             * Load this character's completed quest ids.
+             *
+             * We only need the quest_id values here because the decision
+             * whether a completed quest may still be shown depends on
+             * quests.is_repeatable.
+             */
+            const {
+                data: completedQuests,
+                error: completedQuestsError
+            } = await supabaseClient
+                .from('character_completed_quests')
+                .select('quest_id')
+                .eq('character_id', currentCharacter.id);
+
+
+            if (completedQuestsError) {
+
+                console.error(
+                    'Error loading completed quests:',
+                    completedQuestsError
+                );
+
+                return;
+            }
+
+
+            const completedQuestIds =
+                new Set(
+                    (completedQuests || [])
+                        .map(completedQuest => completedQuest.quest_id)
+                );
+
+
+            /*
+             * Hide quests that:
+             *
+             * - have already been completed by this character
+             * - AND are not repeatable
+             *
+             * Repeatable quests are still allowed to appear again.
+             */
+            const availableNpcQuests =
+                npcQuests
+                    .filter(npcQuest => npcQuest.quests)
+                    .filter(npcQuest => {
+
+                        const quest =
+                            npcQuest.quests;
+
+
+                        const alreadyCompleted =
+                            completedQuestIds.has(quest.id);
+
+
+                        if (
+                            alreadyCompleted &&
+                            quest.is_repeatable === false
+                        ) {
+                            return false;
+                        }
+
+
+                        return true;
+
+                    });
+
+
+            if (availableNpcQuests.length === 0) {
+                questPanel.classList.add('hidden');
+                return;
+            }
+
+
             questPanel.classList.remove('hidden');
 
 
             const title =
                 document.createElement('div');
 
-            title.className = 'npc-quest-panel-title';
-            title.textContent = 'Quests';
+            title.className =
+                'npc-quest-panel-title';
+
+            title.textContent =
+                'Quests';
 
             questPanel.appendChild(title);
 
 
-            npcQuests
-                .filter(npcQuest => npcQuest.quests)
+            availableNpcQuests
                 .forEach(npcQuest => {
-                    renderNpcQuestCard(questPanel, npcQuest.quests);
+                    renderNpcQuestCard(
+                        questPanel,
+                        npcQuest.quests
+                    );
                 });
 
         }
@@ -1172,46 +2059,107 @@
            RENDER NPC QUEST CARD
            ========================================================= */
 
-        function renderNpcQuestCard(container, quest) {
+        function renderNpcQuestCard(
+            container,
+            quest
+        ) {
 
             const card =
                 document.createElement('div');
 
 
-            card.className = 'npc-quest-card';
+            card.className =
+                'npc-quest-card';
 
 
             const levelMet =
                 currentCharacter.level >=
-                Number(quest.level_requirement ?? 0);
+                Number(
+                    quest.level_requirement ??
+                    0
+                );
+
 
             const alreadyActive =
-                activeQuestIds.has(quest.id);
+                activeQuestIds.has(
+                    quest.id
+                );
 
 
             card.innerHTML = `
 
-                <h3>${escapeHtml(quest.name)}</h3>
+                <div class="npc-quest-card-header">
 
-                <p>${escapeHtml(quest.description || '')}</p>
+                    <h3>
+                        ${escapeHtml(quest.name)}
+                    </h3>
 
-                <div class="npc-quest-reward">
-                    Gold: ${quest.gold_reward ?? 0} | EXP: ${quest.experience_reward ?? 0}
                 </div>
 
-                <div class="npc-quest-status"></div>
+                <p class="npc-quest-description">
+                    ${escapeHtml(quest.description || '')}
+                </p>
+
+                <div class="npc-quest-reward">
+
+                    <span>
+                        Gold:
+                        ${quest.gold_reward ?? 0}
+                    </span>
+
+                    <span>
+                        EXP:
+                        ${quest.experience_reward ?? 0}
+                    </span>
+
+                </div>
+
+                <div class="npc-quest-footer">
+
+                    <div class="quest-reward-items"
+                         data-quest-reward-items>
+                    </div>
+
+                    <div class="npc-quest-status">
+                    </div>
+
+                </div>
 
             `;
 
 
             const statusElement =
-                card.querySelector('.npc-quest-status');
+                card.querySelector(
+                    '.npc-quest-status'
+                );
 
 
             if (alreadyActive) {
 
-                statusElement.textContent =
-                    'Quest already active.';
+                const abandonButton =
+                    document.createElement('button');
+
+
+                abandonButton.className =
+                    'abandon-quest-btn';
+
+
+                abandonButton.textContent =
+                    'Abandon Quest';
+
+
+                abandonButton.addEventListener(
+                    'click',
+                    () => abandonNpcQuest(
+                        quest,
+                        card
+                    )
+                );
+
+
+                statusElement.appendChild(
+                    abandonButton
+                );
 
             } else if (!levelMet) {
 
@@ -1223,20 +2171,160 @@
                 const acceptButton =
                     document.createElement('button');
 
-                acceptButton.className = 'accept-quest-btn';
-                acceptButton.textContent = 'Accept Quest';
+
+                acceptButton.className =
+                    'accept-quest-btn';
+
+
+                acceptButton.textContent =
+                    'Accept Quest';
+
 
                 acceptButton.addEventListener(
                     'click',
-                    () => acceptNpcQuest(quest, card)
+                    () => acceptNpcQuest(
+                        quest,
+                        card
+                    )
                 );
 
-                statusElement.appendChild(acceptButton);
+
+                statusElement.appendChild(
+                    acceptButton
+                );
 
             }
 
 
-            container.appendChild(card);
+            container.appendChild(
+                card
+            );
+
+
+            renderWorldQuestRewardItems(
+                card.querySelector(
+                    '[data-quest-reward-items]'
+                ),
+                quest.id
+            );
+
+        }
+
+
+
+        /* =========================================================
+           ABANDON NPC QUEST
+           ========================================================= */
+
+        async function abandonNpcQuest(
+            quest,
+            card
+        ) {
+
+            const statusElement =
+                card.querySelector('.npc-quest-status');
+
+
+            const abandonButton =
+                statusElement.querySelector('button');
+
+
+            if (abandonButton) {
+                abandonButton.disabled = true;
+            }
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'abandon_quest',
+                {
+                    body: {
+                        quest_id: quest.id
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not abandon quest.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context.clone().json();
+
+
+                        if (response?.error) {
+                            errorMessage =
+                                response.error;
+                        }
+
+                    } catch (e) {
+
+                        console.error(
+                            'Could not parse abandon quest error:',
+                            e
+                        );
+
+                    }
+
+                }
+
+
+                statusElement.textContent =
+                    errorMessage;
+
+                return;
+            }
+
+
+            if (!data?.success) {
+
+                statusElement.textContent =
+                    data?.error ||
+                    'Could not abandon quest.';
+
+                return;
+            }
+
+
+            /*
+             * Keep the local active quest cache in sync.
+             */
+            activeQuestIds.delete(
+                quest.id
+            );
+
+
+            /*
+             * Re-render the card immediately so the quest becomes
+             * available to accept again without closing the NPC dialog.
+             */
+            card.remove();
+
+
+            const questPanel =
+                document.getElementById(
+                    'npcQuestPanel'
+                );
+
+
+            renderNpcQuestCard(
+                questPanel,
+                quest
+            );
+
+
+            console.log(
+                `Quest ${quest.id} abandoned successfully.`
+            );
 
         }
 
@@ -1321,6 +2409,333 @@
             activeQuestIds.add(quest.id);
 
             statusElement.textContent = 'Quest accepted!';
+
+        }
+
+
+
+        /* =========================================================
+           LOAD NPC TURN-IN QUESTS
+           ========================================================= */
+
+        async function loadNpcTurnInQuests(npcId) {
+
+            const questPanel =
+                document.getElementById('npcQuestPanel');
+
+
+            /*
+             * Load active character quests together with their quest data.
+             * Only quests that:
+             *
+             * - belong to the current character
+             * - are fully complete
+             * - have this NPC as turn_in_npc
+             *
+             * will be rendered as turn-in cards.
+             */
+            const {
+                data: characterQuests,
+                error
+            } = await supabaseClient
+                .from('character_quests')
+                .select(`
+                    quest_id,
+                    character_id,
+                    current_objective_count,
+                    quests (
+                        id,
+                        name,
+                        gold_reward,
+                        experience_reward,
+                        objective_count,
+                        turn_in_npc
+                    )
+                `)
+                .eq('character_id', currentCharacter.id);
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading NPC turn-in quests:',
+                    error
+                );
+
+                return;
+            }
+
+
+            const turnInQuests =
+                (characterQuests || [])
+                    .filter(characterQuest => {
+
+                        const quest =
+                            characterQuest.quests;
+
+
+                        if (!quest) {
+                            return false;
+                        }
+
+
+                        const objectiveComplete =
+                            Number(characterQuest.current_objective_count ?? 0) >=
+                            Number(quest.objective_count ?? 0);
+
+
+                        const correctNpc =
+                            Number(quest.turn_in_npc) ===
+                            Number(npcId);
+
+
+                        return objectiveComplete && correctNpc;
+
+                    });
+
+
+            if (turnInQuests.length === 0) {
+                return;
+            }
+
+
+            const title =
+                document.createElement('div');
+
+            title.className =
+                'npc-quest-panel-title';
+
+            title.textContent =
+                'Ready to Turn In';
+
+            questPanel.appendChild(title);
+
+
+            turnInQuests.forEach(characterQuest => {
+
+                renderNpcTurnInQuestCard(
+                    questPanel,
+                    characterQuest
+                );
+
+            });
+
+
+            questPanel.classList.remove('hidden');
+
+        }
+
+
+        /* =========================================================
+           RENDER NPC TURN-IN QUEST CARD
+           ========================================================= */
+
+        function renderNpcTurnInQuestCard(
+            container,
+            characterQuest
+        ) {
+
+            const quest =
+                characterQuest.quests;
+
+
+            const card =
+                document.createElement('div');
+
+
+            card.className =
+                'npc-quest-card';
+
+
+            card.innerHTML = `
+
+                <div class="npc-quest-card-header">
+
+                    <h3>
+                        ${escapeHtml(quest.name)}
+                    </h3>
+
+                </div>
+
+                <div class="npc-quest-reward">
+
+                    <span>
+                        Gold:
+                        ${quest.gold_reward ?? 0}
+                    </span>
+
+                    <span>
+                        EXP:
+                        ${quest.experience_reward ?? 0}
+                    </span>
+
+                </div>
+
+                <div class="npc-quest-footer">
+
+                    <div class="quest-reward-items"
+                         data-quest-reward-items>
+                    </div>
+
+                    <div class="npc-quest-status">
+                    </div>
+
+                </div>
+
+            `;
+
+
+            const statusElement =
+                card.querySelector(
+                    '.npc-quest-status'
+                );
+
+
+            const turnInButton =
+                document.createElement('button');
+
+
+            turnInButton.className =
+                'accept-quest-btn';
+
+
+            turnInButton.textContent =
+                'Turn in';
+
+
+            turnInButton.addEventListener(
+                'click',
+                () => turnInQuest(
+                    characterQuest,
+                    card
+                )
+            );
+
+
+            statusElement.appendChild(
+                turnInButton
+            );
+
+
+            container.appendChild(
+                card
+            );
+
+
+            renderWorldQuestRewardItems(
+                card.querySelector(
+                    '[data-quest-reward-items]'
+                ),
+                quest.id
+            );
+
+        }
+
+
+        /* =========================================================
+           TURN IN QUEST
+           ========================================================= */
+
+        async function turnInQuest(
+            characterQuest,
+            card
+        ) {
+
+            const statusElement =
+                card.querySelector('.npc-quest-status');
+
+
+            const turnInButton =
+                statusElement.querySelector('button');
+
+
+            if (turnInButton) {
+                turnInButton.disabled = true;
+            }
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'turn_in_quest',
+                {
+                    body: {
+                        quest_id:
+                            characterQuest.quest_id,
+
+                        character_id:
+                            characterQuest.character_id
+                    }
+                }
+            );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not turn in quest.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context.clone().json();
+
+
+                        if (response?.error) {
+                            errorMessage = response.error;
+                        }
+
+                    } catch (e) {
+
+                        console.error(
+                            'Could not parse turn-in error:',
+                            e
+                        );
+
+                    }
+
+                }
+
+
+                statusElement.textContent =
+                    errorMessage;
+
+                return;
+            }
+
+
+            if (!data?.success) {
+
+                statusElement.textContent =
+                    data?.error ||
+                    'Could not turn in quest.';
+
+                return;
+            }
+
+
+            /*
+             * The quest has now been turned in.
+             * Remove the turn-in card immediately.
+             */
+            card.remove();
+
+
+            /*
+             * Keep the local active quest cache in sync as well.
+             */
+            activeQuestIds.delete(
+                characterQuest.quest_id
+            );
+
+
+            console.log(
+                `Quest ${characterQuest.quest_id} turned in successfully.`
+            );
 
         }
 
