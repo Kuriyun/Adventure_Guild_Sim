@@ -1318,3 +1318,1465 @@ body {
 
 }
 
+/* =========================================================
+   COMBAT OVERLAY
+   ========================================================= */
+
+.combat-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(5, 7, 15, 0.92);
+    backdrop-filter: blur(5px);
+}
+
+.combat-window {
+    width: min(900px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding: 24px;
+    background: linear-gradient(135deg, #151a2d 0%, #20273a 100%);
+    border: 2px solid #d4af37;
+    border-radius: 14px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.78);
+}
+
+.combat-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.combat-header h2 {
+    margin: 0 0 5px;
+    color: #d4af37;
+    font-size: 24px;
+}
+
+.combat-enemy-level {
+    color: #9d9d9d;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.combat-enemy-section {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(260px, 0.85fr);
+    gap: 28px;
+    align-items: center;
+    margin-top: 22px;
+}
+
+.combat-enemy-image-frame {
+    width: 100%;
+    min-height: 290px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(circle, rgba(61, 68, 82, 0.45) 0%, rgba(15, 18, 25, 0.95) 70%);
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    border-radius: 10px;
+}
+
+.combat-enemy-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 360px;
+    object-fit: contain;
+}
+
+.combat-enemy-stats,
+.combat-player-vitals {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.combat-vital-label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: #c9c9c9;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.combat-vital-bar {
+    width: 100%;
+    height: 25px;
+    overflow: hidden;
+    background: linear-gradient(90deg, #0f1219 0%, #1a1f3a 100%);
+    border: 1px solid #3d4452;
+    border-radius: 6px;
+}
+
+.combat-vital-fill {
+    height: 100%;
+    transition: width 0.25s ease;
+}
+
+.combat-health-fill {
+    background: linear-gradient(90deg, #b51e1e 0%, #ff4d4d 100%);
+}
+
+.combat-mana-fill {
+    background: linear-gradient(90deg, #1d4ed8 0%, #60a5fa 100%);
+}
+
+.combat-divider {
+    height: 1px;
+    margin: 24px 0;
+    background: rgba(212, 175, 55, 0.25);
+}
+
+.combat-player-section {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
+    gap: 26px;
+    align-items: start;
+}
+
+.combat-player-heading {
+    grid-column: 1 / -1;
+    color: #d4af37;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.combat-skill-section-title {
+    margin-bottom: 9px;
+    color: #d4af37;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.combat-skill-slots {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(74px, 1fr));
+    gap: 9px;
+}
+
+.combat-skill-slot {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0d111d, #161c2d);
+    border: 2px solid #3d4452;
+    border-radius: 8px;
+}
+
+.combat-skill-slot.occupied {
+    border-color: rgba(212, 175, 55, 0.5);
+    cursor: pointer;
+}
+
+.combat-skill-slot.occupied:hover {
+    border-color: #d4af37;
+    box-shadow: 0 0 14px rgba(212, 175, 55, 0.25);
+}
+
+.combat-skill-icon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.combat-skill-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 11px 4px 4px;
+    background: linear-gradient(to top, rgba(10, 14, 39, 0.96), rgba(10, 14, 39, 0.72), transparent);
+    color: #f0f0f0;
+    font-size: 8px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.combat-skill-mana {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 3;
+    padding: 2px 4px;
+    background: rgba(10, 14, 39, 0.82);
+    border-radius: 4px;
+    color: #78a9ff;
+    font-size: 8px;
+    font-weight: bold;
+}
+
+.combat-skill-empty,
+.combat-skill-placeholder {
+    color: rgba(212, 175, 55, 0.35);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+@media (max-width: 760px) {
+    .combat-enemy-section,
+    .combat-player-section {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-player-heading {
+        grid-column: 1;
+    }
+
+    .combat-skill-slots {
+        grid-template-columns: repeat(2, minmax(74px, 1fr));
+    }
+}
+
+/* =========================================================
+   COMBAT SKILL TOOLTIP
+   Same presentation as character.html
+   ========================================================= */
+
+.skill-tooltip.floating-skill-tooltip {
+    position: fixed;
+    z-index: 100001;
+    width: 275px;
+    padding: 11px 12px;
+    border: 1px solid #d4af37;
+    border-radius: 7px;
+    background: rgba(10,14,39,.985);
+    color: #f0f0f0;
+    box-shadow: 0 9px 24px rgba(0,0,0,.58);
+    pointer-events: none;
+}
+
+.skill-tooltip-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.skill-tooltip-name {
+    color: #d4af37;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.skill-tooltip-type {
+    padding: 2px 6px;
+    border: 1px solid rgba(123,184,255,.5);
+    border-radius: 4px;
+    background: rgba(31,65,112,.55);
+    color: #9bc8ff;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.skill-tooltip-mana {
+    margin-bottom: 7px;
+    color: #78a9ff;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.skill-tooltip-description {
+    padding-top: 7px;
+    border-top: 1px solid rgba(61,68,82,.6);
+    color: #d0d0d0;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+
+
+.combat-footer {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+/* =========================================================
+   COMBAT INVENTORY BUTTON
+   ========================================================= */
+
+.combat-header {
+    display: flex;
+    align-items: flex-start;
+}
+
+
+.combat-inventory-btn {
+    padding: 9px 14px;
+
+    border:
+        1px solid
+        #d4af37;
+
+    border-radius: 7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3d4452 0%,
+            #4d5562 100%
+        );
+
+    color: #d4af37;
+
+    font-family:
+        'Georgia',
+        serif;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.combat-inventory-btn:hover {
+    box-shadow:
+        0 0 12px
+        rgba(212, 175, 55, 0.25);
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* =========================================================
+   COMBAT INVENTORY OVERLAY
+   ========================================================= */
+
+.combat-inventory-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 6000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(5, 7, 15, 0.72);
+
+    backdrop-filter:
+        blur(3px);
+}
+
+
+.combat-inventory-window {
+    width:
+        min(
+            760px,
+            calc(100vw - 48px)
+        );
+
+    max-height:
+        calc(100vh - 48px);
+
+    overflow-y: auto;
+
+    padding: 22px;
+
+    border:
+        2px solid
+        #d4af37;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #151a2d,
+            #20273a
+        );
+
+    box-shadow:
+        0 22px 65px
+        rgba(0, 0, 0, 0.72);
+}
+
+
+.combat-inventory-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding-bottom: 14px;
+
+    margin-bottom: 16px;
+
+    border-bottom:
+        1px solid
+        rgba(212, 175, 55, 0.25);
+}
+
+
+.combat-inventory-header h2 {
+    margin: 0 0 4px;
+
+    color: #d4af37;
+
+    font-size: 20px;
+}
+
+
+.combat-inventory-header p {
+    margin: 0;
+
+    color: #8b8b8b;
+
+    font-size: 11px;
+}
+
+
+.combat-inventory-close-btn {
+    width: 34px;
+
+    height: 34px;
+
+    border:
+        1px solid
+        #3d4452;
+
+    border-radius: 6px;
+
+    background:
+        #0f1219;
+
+    color:
+        #d4af37;
+
+    font-size:
+        23px;
+
+    cursor:
+        pointer;
+}
+
+
+.combat-inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 64px);
+    gap: 8px;
+    justify-content: start;
+    align-content: start;
+}
+
+
+.combat-inventory-slot {
+    position: relative;
+
+    width: 64px;
+
+    height: 64px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0f1219 0%,
+            #1a1f3a 100%
+        );
+
+    border:
+        2px solid
+        #3d4452;
+
+    border-radius: 8px;
+}
+
+
+.combat-inventory-slot.occupied {
+    cursor: pointer;
+}
+
+
+.combat-inventory-slot.occupied:hover {
+    border-color:
+        #d4af37;
+
+    box-shadow:
+        0 0 12px
+        rgba(212, 175, 55, 0.25);
+}
+
+
+.combat-inventory-item-image {
+    width: 60px;
+
+    height: 60px;
+
+    object-fit: contain;
+
+    pointer-events: none;
+}
+
+
+.combat-inventory-item-count {
+    position: absolute;
+
+    right: 3px;
+
+    bottom: 3px;
+
+    z-index: 3;
+
+    min-width: 17px;
+
+    padding: 1px 4px;
+
+    background:
+        rgba(10, 14, 39, 0.95);
+
+    border:
+        1px solid
+        #d4af37;
+
+    border-radius: 4px;
+
+    color:
+        #f0d968;
+
+    font-size:
+        9px;
+
+    font-weight:
+        bold;
+
+    text-align:
+        center;
+}
+
+
+
+
+
+
+
+.combat-inventory-empty {
+    grid-column: 1 / -1;
+    padding: 18px 10px;
+    color: #888;
+    font-size: 12px;
+    text-align: left;
+}
+
+/* =========================================================
+   COMBAT PLAYER IDENTITY
+   ========================================================= */
+
+.combat-player-identity {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 2px;
+    margin-bottom: 10px;
+}
+
+
+.combat-player-class-icon-frame {
+    width: 62px;
+    height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border: 2px solid #d4af37;
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #2d3142 0%,
+            #0f1219 100%
+        );
+
+    box-shadow:
+        inset 0 0 14px rgba(0, 0, 0, 0.7),
+        0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+
+.combat-player-class-icon {
+    width: 58px;
+    height: 58px;
+
+    display: block;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+
+.combat-player-level {
+    color: #d4af37;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    text-shadow:
+        0 1px 5px
+        rgba(0, 0, 0, 0.8);
+}
+
+
+/*
+ * Give the player's bars a little more vertical distance
+ * from the class icon / level row.
+ */
+.combat-player-vitals {
+    margin-top: 8px;
+}
+
+
+
+/* =========================================================
+   COMBAT PLAYER ALIGNMENT
+   Identity + vitals sit beside the skill grid
+   ========================================================= */
+
+.combat-player-section {
+    grid-template-columns: minmax(290px, 0.9fr) minmax(0, 1.5fr);
+    column-gap: 26px;
+    row-gap: 10px;
+    align-items: start;
+}
+
+.combat-player-heading {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+}
+
+.combat-player-left {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 4px;
+}
+
+.combat-player-identity {
+    grid-column: auto;
+    margin: 0;
+}
+
+.combat-player-vitals {
+    grid-column: auto;
+    margin-top: 0;
+}
+
+.combat-skill-section {
+    grid-column: 2;
+    align-self: start;
+    margin-top: 0;
+}
+
+@media (max-width: 760px) {
+    .combat-player-section {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-player-heading,
+    .combat-player-left,
+    .combat-skill-section {
+        grid-column: 1;
+    }
+}
+
+
+/* Inventory button now lives directly under the player's Mana bar */
+.combat-player-inventory-btn {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   COMBAT TURN FEEDBACK
+   ========================================================= */
+
+.combat-message {
+    min-height: 18px;
+    margin-top: 10px;
+    color: #b8b8b8;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.combat-message.success {
+    color: #6bd88b;
+}
+
+.combat-message.error {
+    color: #e06b67;
+}
+
+.combat-skill-slot.disabled {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+}
+
+.combat-skill-slot.combat-skill-pending {
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.45);
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   FLOATING COMBAT DAMAGE
+   ========================================================= */
+
+.combat-enemy-image-frame,
+.combat-player-class-icon-frame {
+    position: relative;
+}
+
+
+.combat-damage-layer {
+    position: absolute;
+    inset: 0;
+
+    z-index: 6;
+
+    overflow: visible;
+
+    pointer-events: none;
+}
+
+
+.combat-floating-damage {
+    --damage-offset-x: 0px;
+
+    position: absolute;
+
+    left: 50%;
+    top: 47%;
+
+    transform:
+        translate(
+            calc(-50% + var(--damage-offset-x)),
+            -50%
+        );
+
+    color: #ff6262;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    line-height: 1;
+
+    text-shadow:
+        0 2px 3px rgba(0, 0, 0, 1),
+        0 0 8px rgba(255, 50, 50, 0.55);
+
+    opacity: 0;
+
+    animation:
+        combatDamageFloat
+        0.85s
+        ease-out
+        forwards;
+}
+
+
+.combat-floating-damage.critical {
+    color: #ffd45a;
+
+    font-size: 34px;
+
+    text-shadow:
+        0 2px 3px rgba(0, 0, 0, 1),
+        0 0 12px rgba(255, 196, 50, 0.8);
+}
+
+
+.combat-player-damage-layer .combat-floating-damage {
+    top: 50%;
+
+    font-size: 22px;
+}
+
+
+.combat-player-damage-layer .combat-floating-damage.critical {
+    font-size: 27px;
+}
+
+
+@keyframes combatDamageFloat {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translate(
+                calc(-50% + var(--damage-offset-x)),
+                -25%
+            )
+            scale(0.75);
+    }
+
+    18% {
+        opacity: 1;
+
+        transform:
+            translate(
+                calc(-50% + var(--damage-offset-x)),
+                -55%
+            )
+            scale(1.12);
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(
+                calc(-50% + var(--damage-offset-x)),
+                -150%
+            )
+            scale(1);
+    }
+
+}
+
+
+/* Healing numbers */
+.combat-floating-damage.heal {
+    color: #57d879;
+
+    text-shadow:
+        0 2px 3px rgba(0, 0, 0, 1),
+        0 0 10px rgba(69, 196, 111, 0.65);
+}
+
+
+/* =========================================================
+   COMBAT REWARDS
+   ========================================================= */
+
+.combat-reward-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(5, 7, 15, 0.72);
+
+    backdrop-filter:
+        blur(4px);
+}
+
+.combat-reward-window {
+    width: min(520px, calc(100vw - 48px));
+
+    padding: 24px;
+
+    border: 2px solid #d4af37;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #151a2d,
+            #20273a
+        );
+
+    box-shadow:
+        0 22px 65px
+        rgba(0, 0, 0, 0.72);
+}
+
+.combat-reward-header {
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+
+    border-bottom:
+        1px solid
+        rgba(212, 175, 55, 0.25);
+}
+
+.combat-reward-header h2 {
+    margin: 0 0 5px;
+
+    color: #d4af37;
+
+    font-size: 22px;
+}
+
+.combat-reward-header p {
+    margin: 0;
+
+    color: #929292;
+
+    font-size: 11px;
+}
+
+.combat-reward-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.combat-reward-summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 14px;
+
+    border:
+        1px solid
+        rgba(212, 175, 55, 0.3);
+
+    border-radius: 8px;
+
+    background:
+        rgba(10, 14, 39, 0.55);
+}
+
+.combat-reward-label {
+    color: #aaa;
+
+    font-size: 12px;
+}
+
+.combat-reward-value {
+    color: #d4af37;
+
+    font-size: 15px;
+
+    font-weight: bold;
+}
+
+.combat-reward-items-section h3 {
+    margin: 0 0 10px;
+
+    color: #e0e0e0;
+
+    font-size: 14px;
+}
+
+.combat-reward-items {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-bottom: 16px;
+}
+
+.combat-reward-item {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 8px;
+
+    border: 1px solid #3d4452;
+    border-radius: 7px;
+
+    background:
+        rgba(10, 14, 39, 0.5);
+}
+
+.combat-reward-item-image,
+.combat-reward-item-placeholder {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    object-fit: contain;
+
+    border:
+        1px solid
+        rgba(212, 175, 55, 0.35);
+
+    border-radius: 6px;
+
+    background:
+        rgba(10, 14, 39, 0.9);
+}
+
+.combat-reward-item-placeholder {
+    color: #d4af37;
+}
+
+.combat-reward-item-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.combat-reward-item-name {
+    color: #e0e0e0;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.combat-reward-item-quantity {
+    color: #d4af37;
+
+    font-size: 10px;
+}
+
+.combat-reward-no-items {
+    margin-bottom: 16px;
+
+    padding: 12px;
+
+    color: #888;
+
+    font-size: 11px;
+
+    text-align: center;
+
+    border:
+        1px dashed
+        #3d4452;
+
+    border-radius: 7px;
+}
+
+.combat-reward-close-btn {
+    width: 100%;
+
+    padding: 10px 14px;
+
+    border: 1px solid #d4af37;
+    border-radius: 7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3d4452,
+            #4d5562
+        );
+
+    color: #d4af37;
+
+    font-family:
+        'Georgia',
+        serif;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.combat-reward-close-btn:hover {
+    box-shadow:
+        0 0 12px
+        rgba(212, 175, 55, 0.25);
+}
+
+
+/* =========================================================
+   COMBAT REWARD ITEM HOVER
+   ========================================================= */
+
+.combat-reward-item {
+    cursor: default;
+
+    transition:
+        border-color 0.08s ease,
+        box-shadow 0.08s ease,
+        transform 0.08s ease;
+}
+
+
+.combat-reward-item:hover {
+    box-shadow:
+        0 0 12px
+        rgba(212, 175, 55, 0.25);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* =========================================================
+   COMBAT DEATH WINDOW
+   ========================================================= */
+
+.combat-death-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 7100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(5, 7, 15, 0.78);
+
+    backdrop-filter:
+        blur(4px);
+}
+
+
+.combat-death-window {
+    width:
+        min(
+            500px,
+            calc(100vw - 48px)
+        );
+
+    padding: 24px;
+
+    border:
+        2px solid
+        #8f3f46;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #151824,
+            #241a20
+        );
+
+    box-shadow:
+        0 22px 65px
+        rgba(0, 0, 0, 0.72);
+}
+
+
+.combat-death-header {
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+
+    border-bottom:
+        1px solid
+        rgba(180, 76, 84, 0.28);
+}
+
+
+.combat-death-header h2 {
+    margin: 0 0 5px;
+
+    color: #d9656d;
+
+    font-size: 22px;
+}
+
+
+.combat-death-header p {
+    margin: 0;
+
+    color: #929292;
+
+    font-size: 11px;
+}
+
+
+.combat-death-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+}
+
+
+.combat-death-summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 14px;
+
+    border:
+        1px solid
+        rgba(180, 76, 84, 0.3);
+
+    border-radius: 8px;
+
+    background:
+        rgba(10, 14, 39, 0.48);
+}
+
+
+.combat-death-label {
+    color: #aaa;
+
+    font-size: 12px;
+}
+
+
+.combat-death-value {
+    color: #e06b67;
+
+    font-size: 15px;
+
+    font-weight: bold;
+}
+
+
+.combat-death-restored {
+    margin-bottom: 18px;
+
+    padding: 11px 12px;
+
+    color: #79c98b;
+
+    font-size: 11px;
+
+    text-align: center;
+
+    border:
+        1px solid
+        rgba(87, 216, 121, 0.25);
+
+    border-radius: 7px;
+
+    background:
+        rgba(87, 216, 121, 0.06);
+}
+
+
+.combat-death-close-btn {
+    width: 100%;
+
+    padding: 10px 14px;
+
+    border:
+        1px solid
+        #8f3f46;
+
+    border-radius: 7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3a333b,
+            #4a3a40
+        );
+
+    color: #e0e0e0;
+
+    font-family:
+        'Georgia',
+        serif;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.combat-death-close-btn:hover {
+    border-color:
+        #d9656d;
+
+    box-shadow:
+        0 0 12px
+        rgba(217, 101, 109, 0.2);
+}
+
+
+@media (max-width: 520px) {
+
+    .combat-death-summary {
+        grid-template-columns:
+            1fr;
+    }
+
+}
+
+
+/* =========================================================
+   COMBAT REWARD LEVEL UP
+   ========================================================= */
+
+.combat-reward-level-up {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    text-align: center;
+    border: 1px solid rgba(212, 175, 55, 0.55);
+    border-radius: 8px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(212, 175, 55, 0.10),
+            rgba(212, 175, 55, 0.04)
+        );
+}
+
+.combat-reward-level-up-title {
+    margin-bottom: 6px;
+    color: #d4af37;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.combat-reward-level-up-levels {
+    color: #e8e2cc;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   WORLD TOAST
+   ========================================================= */
+
+.world-toast {
+    position: fixed;
+
+    top: 18px;
+    right: 18px;
+
+    z-index: 12000;
+
+    max-width: 360px;
+
+    padding:
+        11px 14px;
+
+    border:
+        1px solid
+        rgba(212, 175, 55, 0.45);
+
+    border-radius:
+        8px;
+
+    background:
+        rgba(10, 14, 39, 0.97);
+
+    color:
+        #e0e0e0;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.4;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.42);
+
+    opacity: 0;
+
+    transform:
+        translateY(-8px);
+
+    pointer-events:
+        none;
+
+    transition:
+        opacity 0.16s ease,
+        transform 0.16s ease;
+}
+
+
+.world-toast.visible {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+.world-toast.error {
+    border-color:
+        rgba(224, 107, 103, 0.55);
+
+    color:
+        #f0c4c2;
+}
+
+
+.world-toast.hidden {
+    display: block !important;
+
+    visibility: hidden;
+}

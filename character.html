@@ -9,9 +9,354 @@
 
     <link rel="stylesheet" href="game-style.css">
     <link rel="stylesheet" href="character.css">
+
+    <style>
+        /* =====================================================
+           INVENTORY DISCARD
+           ===================================================== */
+
+        .inventory-context-menu {
+            position: fixed;
+            z-index: 100000;
+
+            min-width: 130px;
+
+            padding: 5px;
+
+            border: 1px solid rgba(212, 175, 55, 0.45);
+            border-radius: 7px;
+
+            background: rgba(10, 14, 39, 0.985);
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, 0.55);
+        }
+
+
+        .inventory-context-menu.hidden,
+        .discard-item-overlay.hidden {
+            display: none !important;
+        }
+
+
+        .inventory-context-menu button {
+            width: 100%;
+
+            padding: 8px 10px;
+
+            border: 0;
+            border-radius: 5px;
+
+            background: transparent;
+
+            color: #e8e8e8;
+
+            font-family: 'Georgia', serif;
+            font-size: 12px;
+
+            text-align: left;
+
+            cursor: pointer;
+        }
+
+
+        .inventory-context-menu button:hover {
+            background:
+                rgba(190, 70, 70, 0.18);
+
+            color:
+                #ef8b86;
+        }
+
+
+        .discard-item-overlay {
+            position: fixed;
+            inset: 0;
+
+            z-index: 100001;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 24px;
+
+            background:
+                rgba(5, 7, 15, 0.72);
+
+            backdrop-filter:
+                blur(3px);
+        }
+
+
+        .discard-item-dialog {
+            width:
+                min(
+                    420px,
+                    calc(100vw - 48px)
+                );
+
+            padding: 22px;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.55);
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #151a2d,
+                    #20273a
+                );
+
+            box-shadow:
+                0 20px 60px
+                rgba(0, 0, 0, 0.65);
+        }
+
+
+        .discard-item-dialog h3 {
+            margin:
+                0 0 8px;
+
+            color:
+                #d4af37;
+
+            font-size:
+                18px;
+        }
+
+
+        .discard-item-dialog p {
+            margin:
+                0 0 16px;
+
+            color:
+                #aaa;
+
+            font-size:
+                12px;
+
+            line-height:
+                1.45;
+        }
+
+
+        .discard-quantity-row {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 18px;
+        }
+
+
+        .discard-quantity-row.hidden {
+            display: none;
+        }
+
+
+        .discard-quantity-row label {
+            color:
+                #cfcfcf;
+
+            font-size:
+                12px;
+        }
+
+
+        .discard-quantity-row input {
+            width: 80px;
+
+            padding: 7px 8px;
+
+            border:
+                1px solid
+                #4a5260;
+
+            border-radius:
+                5px;
+
+            background:
+                #0e1325;
+
+            color:
+                #e0e0e0;
+
+            font-family:
+                'Georgia',
+                serif;
+        }
+
+
+        .discard-quantity-max {
+            color:
+                #8f8f8f;
+
+            font-size:
+                11px;
+        }
+
+
+        .discard-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+
+            gap: 8px;
+        }
+
+
+        .discard-dialog-actions button {
+            padding:
+                8px 14px;
+
+            border-radius:
+                6px;
+
+            font-family:
+                'Georgia',
+                serif;
+
+            font-size:
+                12px;
+
+            cursor:
+                pointer;
+        }
+
+
+        .discard-cancel-btn {
+            border:
+                1px solid
+                #4a5260;
+
+            background:
+                #252b39;
+
+            color:
+                #ddd;
+        }
+
+
+        .discard-confirm-btn {
+            border:
+                1px solid
+                #9d4d4d;
+
+            background:
+                rgba(140, 55, 55, 0.24);
+
+            color:
+                #ef8b86;
+        }
+
+
+        .discard-confirm-btn:hover {
+            background:
+                rgba(170, 65, 65, 0.34);
+        }
+
+
+        .discard-confirm-btn:disabled {
+            opacity:
+                0.55;
+
+            cursor:
+                default;
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- =====================================================
+         INVENTORY DISCARD CONTEXT MENU
+         ===================================================== -->
+
+    <div
+        id="inventoryContextMenu"
+        class="inventory-context-menu hidden">
+
+        <button
+            id="inventoryDiscardMenuButton"
+            type="button">
+            Discard
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         INVENTORY DISCARD CONFIRMATION
+         ===================================================== -->
+
+    <div
+        id="discardItemOverlay"
+        class="discard-item-overlay hidden">
+
+        <div
+            class="discard-item-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="discardItemTitle">
+
+            <h3 id="discardItemTitle">
+                Discard Item
+            </h3>
+
+            <p id="discardItemMessage">
+            </p>
+
+
+            <div
+                id="discardQuantityRow"
+                class="discard-quantity-row hidden">
+
+                <label for="discardQuantityInput">
+                    Quantity
+                </label>
+
+                <input
+                    id="discardQuantityInput"
+                    type="number"
+                    min="1"
+                    step="1">
+
+                <span
+                    id="discardQuantityMax"
+                    class="discard-quantity-max">
+                </span>
+
+            </div>
+
+
+            <div class="discard-dialog-actions">
+
+                <button
+                    id="discardCancelButton"
+                    class="discard-cancel-btn"
+                    type="button">
+                    Cancel
+                </button>
+
+                <button
+                    id="discardConfirmButton"
+                    class="discard-confirm-btn"
+                    type="button">
+                    Discard
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
 
     <div id="mainCharacterView" class="game-container hidden">
 
@@ -599,7 +944,6 @@
             <div class="skill-selection-section">
                 <div class="skill-selection-section-header">
                     <h3>Equipped Skills</h3>
-                    <span>8 Slots</span>
                 </div>
                 <div id="skillLoadoutSlots" class="skill-loadout-slots">
                     <div class="skill-loadout-slot" data-skill-slot="1"></div>
@@ -629,6 +973,8 @@
         let draggedSlot = null;
         let draggedEquipmentSlot = null;
         let currentCharacterId = null;
+
+        let discardInventoryTarget = null;
 
         let currentCharacterClassId = null;
         let currentCharacterLevel = 1;
@@ -2665,6 +3011,535 @@
 
 
         /* ========================================= */
+        /* INVENTORY DISCARD                          */
+        /* ========================================= */
+
+        function hideInventoryContextMenu() {
+
+            document
+                .getElementById(
+                    'inventoryContextMenu'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+        }
+
+
+        function showInventoryContextMenu(
+            clientX,
+            clientY
+        ) {
+
+            const menu =
+                document.getElementById(
+                    'inventoryContextMenu'
+                );
+
+
+            if (!menu) {
+                return;
+            }
+
+
+            menu.classList.remove(
+                'hidden'
+            );
+
+
+            /*
+             * First position it where the user clicked.
+             * Then clamp it to the viewport so it never opens
+             * partially outside the screen.
+             */
+            menu.style.left =
+                `${clientX}px`;
+
+            menu.style.top =
+                `${clientY}px`;
+
+
+            const rect =
+                menu.getBoundingClientRect();
+
+
+            const left =
+                Math.max(
+                    8,
+                    Math.min(
+                        clientX,
+                        window.innerWidth -
+                        rect.width -
+                        8
+                    )
+                );
+
+
+            const top =
+                Math.max(
+                    8,
+                    Math.min(
+                        clientY,
+                        window.innerHeight -
+                        rect.height -
+                        8
+                    )
+                );
+
+
+            menu.style.left =
+                `${left}px`;
+
+            menu.style.top =
+                `${top}px`;
+
+        }
+
+
+        function openDiscardConfirmation() {
+
+            hideInventoryContextMenu();
+
+
+            if (
+                !discardInventoryTarget
+            ) {
+                return;
+            }
+
+
+            const item =
+                discardInventoryTarget.item;
+
+
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        discardInventoryTarget.quantity ??
+                        1
+                    )
+                );
+
+
+            const message =
+                document.getElementById(
+                    'discardItemMessage'
+                );
+
+
+            const quantityRow =
+                document.getElementById(
+                    'discardQuantityRow'
+                );
+
+
+            const quantityInput =
+                document.getElementById(
+                    'discardQuantityInput'
+                );
+
+
+            const quantityMax =
+                document.getElementById(
+                    'discardQuantityMax'
+                );
+
+
+            const isStack =
+                Boolean(
+                    item?.stackable
+                ) &&
+                quantity >
+                1;
+
+
+            if (message) {
+
+                message.textContent =
+                    isStack
+                        ? `How many ${item.name} do you want to discard?`
+                        : `Discard ${item.name}? This cannot be undone.`;
+
+            }
+
+
+            quantityRow
+                ?.classList.toggle(
+                    'hidden',
+                    !isStack
+                );
+
+
+            if (
+                quantityInput
+            ) {
+
+                quantityInput.min =
+                    '1';
+
+                quantityInput.max =
+                    String(
+                        quantity
+                    );
+
+                quantityInput.value =
+                    '1';
+
+            }
+
+
+            if (
+                quantityMax
+            ) {
+
+                quantityMax.textContent =
+                    `/ ${quantity}`;
+
+            }
+
+
+            document
+                .getElementById(
+                    'discardItemOverlay'
+                )
+                ?.classList.remove(
+                    'hidden'
+                );
+
+
+            if (
+                isStack
+            ) {
+
+                setTimeout(
+                    () =>
+                        quantityInput
+                            ?.select(),
+                    0
+                );
+
+            }
+
+        }
+
+
+        function closeDiscardConfirmation() {
+
+            document
+                .getElementById(
+                    'discardItemOverlay'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+        }
+
+
+        async function confirmDiscardInventoryItem() {
+
+            if (
+                !discardInventoryTarget ||
+                !currentCharacterId
+            ) {
+                return;
+            }
+
+
+            const quantity =
+                Math.max(
+                    1,
+                    Number(
+                        discardInventoryTarget.quantity ??
+                        1
+                    )
+                );
+
+
+            const item =
+                discardInventoryTarget.item;
+
+
+            let discardQuantity =
+                1;
+
+
+            if (
+                item?.stackable &&
+                quantity >
+                1
+            ) {
+
+                const input =
+                    document.getElementById(
+                        'discardQuantityInput'
+                    );
+
+
+                discardQuantity =
+                    Math.floor(
+                        Number(
+                            input?.value ??
+                            1
+                        )
+                    );
+
+
+                if (
+                    !Number.isInteger(
+                        discardQuantity
+                    ) ||
+                    discardQuantity <
+                    1 ||
+                    discardQuantity >
+                    quantity
+                ) {
+
+                    if (input) {
+
+                        input.value =
+                            String(
+                                Math.max(
+                                    1,
+                                    Math.min(
+                                        quantity,
+                                        Number(
+                                            input.value ??
+                                            1
+                                        )
+                                    )
+                                )
+                            );
+
+                    }
+
+
+                    return;
+
+                }
+
+            }
+
+
+            const confirmButton =
+                document.getElementById(
+                    'discardConfirmButton'
+                );
+
+
+            if (
+                confirmButton
+            ) {
+
+                confirmButton.disabled =
+                    true;
+
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.functions.invoke(
+                    'discard_inventory_item',
+                    {
+                        body: {
+                            inventory_id:
+                                discardInventoryTarget.inventoryId,
+
+                            quantity:
+                                discardQuantity
+                        }
+                    }
+                );
+
+
+            if (
+                confirmButton
+            ) {
+
+                confirmButton.disabled =
+                    false;
+
+            }
+
+
+            if (error) {
+
+                console.error(
+                    'Could not discard item:',
+                    error
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !data?.success
+            ) {
+
+                console.error(
+                    data?.error ||
+                    'Could not discard item.'
+                );
+
+                return;
+
+            }
+
+
+            closeDiscardConfirmation();
+
+
+            discardInventoryTarget =
+                null;
+
+
+            /*
+             * Reload only the inventory. This keeps the rest
+             * of the character page untouched.
+             */
+            await loadInventory(
+                currentCharacterId
+            );
+
+        }
+
+
+        document
+            .getElementById(
+                'inventoryDiscardMenuButton'
+            )
+            ?.addEventListener(
+                'click',
+                openDiscardConfirmation
+            );
+
+
+        document
+            .getElementById(
+                'discardCancelButton'
+            )
+            ?.addEventListener(
+                'click',
+                () => {
+
+                    closeDiscardConfirmation();
+
+                    discardInventoryTarget =
+                        null;
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                'discardConfirmButton'
+            )
+            ?.addEventListener(
+                'click',
+                confirmDiscardInventoryItem
+            );
+
+
+        document
+            .getElementById(
+                'discardItemOverlay'
+            )
+            ?.addEventListener(
+                'click',
+                event => {
+
+                    if (
+                        event.target?.id ===
+                        'discardItemOverlay'
+                    ) {
+
+                        closeDiscardConfirmation();
+
+                        discardInventoryTarget =
+                            null;
+
+                    }
+
+                }
+            );
+
+
+        document.addEventListener(
+            'click',
+            event => {
+
+                const menu =
+                    document.getElementById(
+                        'inventoryContextMenu'
+                    );
+
+
+                if (
+                    menu &&
+                    !menu.classList.contains(
+                        'hidden'
+                    ) &&
+                    !menu.contains(
+                        event.target
+                    )
+                ) {
+
+                    hideInventoryContextMenu();
+
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            event => {
+
+                if (
+                    event.key !==
+                    'Escape'
+                ) {
+                    return;
+                }
+
+
+                hideInventoryContextMenu();
+
+
+                const overlay =
+                    document.getElementById(
+                        'discardItemOverlay'
+                    );
+
+
+                if (
+                    overlay &&
+                    !overlay.classList.contains(
+                        'hidden'
+                    )
+                ) {
+
+                    closeDiscardConfirmation();
+
+                    discardInventoryTarget =
+                        null;
+
+                }
+
+            }
+        );
+
+
+        /* ========================================= */
         /* INVENTORY DRAG AND DROP                    */
         /* ========================================= */
 
@@ -2677,6 +3552,65 @@
 
 
             inventorySlots.forEach(slot => {
+
+
+                /* ========================================= */
+                /* RIGHT-CLICK DISCARD MENU                  */
+                /* ========================================= */
+
+                slot.oncontextmenu = function (
+                    event
+                ) {
+
+                    /*
+                     * Always stop the browser context menu on
+                     * inventory slots.
+                     */
+                    event.preventDefault();
+
+
+                    if (
+                        !slot.dataset.item
+                    ) {
+
+                        hideInventoryContextMenu();
+                        return;
+
+                    }
+
+
+                    hideItemTooltip();
+
+
+                    const slotData =
+                        JSON.parse(
+                            slot.dataset.item
+                        );
+
+
+                    discardInventoryTarget = {
+                        slot,
+
+                        inventoryId:
+                            slotData.inventoryId,
+
+                        item:
+                            slotData.item,
+
+                        quantity:
+                            Number(
+                                slotData.quantity ??
+                                1
+                            )
+                    };
+
+
+                    showInventoryContextMenu(
+                        event.clientX,
+                        event.clientY
+                    );
+
+                };
 
                 /* ========================================= */
                 /* TOOLTIP                                   */
@@ -3480,6 +4414,59 @@
             return 0;
         }
 
+        function getEquippedWeaponDamage() {
+
+            let weaponDamage = 0;
+
+            for (
+                const equipmentType
+                of ['main_weapon', 'offhand']
+            ) {
+
+                const slot =
+                    document.querySelector(
+                        `.equipment-grid .equipment-slot[data-equipment-type="${equipmentType}"]`
+                    );
+
+                if (!slot?.dataset.item) {
+                    continue;
+                }
+
+                try {
+
+                    const slotData =
+                        JSON.parse(
+                            slot.dataset.item
+                        );
+
+                    if (
+                        slotData.item?.item_type !==
+                        'weapons'
+                    ) {
+                        continue;
+                    }
+
+                    weaponDamage +=
+                        Number(
+                            slotData.details?.damage ??
+                            0
+                        );
+
+                } catch (error) {
+
+                    console.error(
+                        'Could not read equipped weapon damage:',
+                        error
+                    );
+
+                }
+
+            }
+
+            return weaponDamage;
+        }
+
+
         function calculateSkillDamage(skill) {
             let damage = Number(skill.base_damage ?? 0);
 
@@ -3487,6 +4474,28 @@
                 damage +=
                     getSkillStatValue(scaling.stat) *
                     Number(scaling.scaling ?? 0);
+            }
+
+            const skillType =
+                String(
+                    skill.skill_type ??
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+            /*
+             * Only damage skills receive weapon damage.
+             * Main Weapon + Offhand weapon damage are summed,
+             * then 50% of that total is added.
+             */
+            if (
+                skillType ===
+                'damage'
+            ) {
+                damage +=
+                    getEquippedWeaponDamage() *
+                    0.50;
             }
 
             return Math.round(damage);
@@ -4049,7 +5058,8 @@
                         description,
                         objective_count,
                         gold_reward,
-                        experience_reward
+                        experience_reward,
+                        level_requirement
                     )
                 `)
                 .eq('character_id', characterId)
@@ -4189,6 +5199,14 @@
                         ${Number(
                             quest.experience_reward ??
                             0
+                        )}
+                    </span>
+
+                    <span class="character-quest-level">
+                        Level:
+                        ${Number(
+                            quest.level_requirement ??
+                            1
                         )}
                     </span>
 

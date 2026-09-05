@@ -1928,7 +1928,7 @@
 }
 
 .skill-selection-window {
-    width: min(1120px, calc(100vw - 48px));
+    width: min(980px, calc(100vw - 48px));
     max-height: calc(100vh - 48px);
     overflow-y: auto;
     padding: 22px;
@@ -1997,7 +1997,7 @@
 
 .available-skills-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
     min-height: 100px;
     padding: 10px;
@@ -2057,7 +2057,7 @@
 
 .available-skill-level {
     color: #999;
-    font-size: 9px;
+    font-size: 11px;
 }
 
 .skill-loadout-slots {
@@ -2070,14 +2070,13 @@
     position: relative;
     aspect-ratio: 1/1;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    padding: 6px;
+    padding: 0;
     border: 2px solid #3d4452;
     border-radius: 8px;
     background: linear-gradient(135deg,#0d111d,#161c2d);
+    overflow: hidden;
 }
 
 .skill-loadout-slot.occupied {
@@ -2092,25 +2091,55 @@
 
 .skill-slot-number {
     position: absolute;
-    top: 3px;
+    top: 4px;
     left: 5px;
-    color: rgba(212,175,55,.55);
-    font-size: 9px;
+    z-index: 3;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: rgba(10,14,39,.72);
+    color: #d4af37;
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;
 }
 
 .skill-loadout-icon {
-    width: 48px;
-    height: 48px;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.skill-loadout-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .skill-loadout-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
     width: 100%;
-    color: #ccc;
-    font-size: 8px;
+    padding: 5px 4px 4px;
+    background:
+        linear-gradient(
+            to top,
+            rgba(10,14,39,.96) 0%,
+            rgba(10,14,39,.78) 65%,
+            transparent 100%
+        );
+    color: #f0f0f0;
+    font-size: 9px;
+    font-weight: bold;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    pointer-events: none;
 }
 
 .skill-tooltip.floating-skill-tooltip {
@@ -2201,3 +2230,11 @@
     font-weight: bold;
 }
 
+
+/* Quest level shown on the far right of the reward row */
+.character-quest-level {
+    margin-left: auto;
+    color: #d4af37;
+    font-weight: bold;
+    white-space: nowrap;
+}

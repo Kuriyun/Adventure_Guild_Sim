@@ -12,6 +12,15 @@
 
 <body>
 
+    <div
+        id="worldToast"
+        class="world-toast hidden"
+        role="status"
+        aria-live="polite">
+    </div>
+
+
+
     <div class="world-container">
 
         <!-- Header -->
@@ -202,6 +211,308 @@
     </div>
 
 
+
+    <!-- COMBAT OVERLAY -->
+    <div id="combatOverlay" class="combat-overlay hidden">
+        <div class="combat-window">
+            <div class="combat-header">
+                <div>
+                    <h2 id="combatEnemyName">Enemy</h2>
+                    <span id="combatEnemyLevel" class="combat-enemy-level">Level 1</span>
+                </div>
+            </div>
+
+            <div class="combat-enemy-section">
+                <div class="combat-enemy-image-frame">
+                    <img id="combatEnemyImage" class="combat-enemy-image" src="" alt="Enemy">
+
+                    <div
+                        id="combatEnemyDamageLayer"
+                        class="combat-damage-layer">
+                    </div>
+                </div>
+
+                <div class="combat-enemy-stats">
+                    <div class="combat-vital-block">
+                        <div class="combat-vital-label-row">
+                            <span>Health</span>
+                            <span id="combatEnemyHealthText">0 / 0</span>
+                        </div>
+                        <div class="combat-vital-bar">
+                            <div id="combatEnemyHealthFill" class="combat-vital-fill combat-health-fill" style="width:100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="combat-vital-block">
+                        <div class="combat-vital-label-row">
+                            <span>Mana</span>
+                            <span id="combatEnemyManaText">0 / 0</span>
+                        </div>
+                        <div class="combat-vital-bar">
+                            <div id="combatEnemyManaFill" class="combat-vital-fill combat-mana-fill" style="width:100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="combat-divider"></div>
+
+            <div class="combat-player-section">
+
+                <div class="combat-player-heading">
+                    You
+                </div>
+
+
+                <div class="combat-player-left">
+
+                    <div class="combat-player-identity">
+
+                        <div class="combat-player-class-icon-frame">
+                            <img
+                                id="combatPlayerClassIcon"
+                                class="combat-player-class-icon"
+                                src=""
+                                alt="Class Icon">
+
+                            <div
+                                id="combatPlayerDamageLayer"
+                                class="combat-damage-layer combat-player-damage-layer">
+                            </div>
+                        </div>
+
+                        <div
+                            id="combatPlayerLevel"
+                            class="combat-player-level">
+                            Level 1
+                        </div>
+
+                    </div>
+
+
+                    <div class="combat-player-vitals">
+
+                        <div class="combat-vital-block">
+                            <div class="combat-vital-label-row">
+                                <span>Health</span>
+                                <span id="combatPlayerHealthText">0 / 0</span>
+                            </div>
+
+                            <div class="combat-vital-bar">
+                                <div
+                                    id="combatPlayerHealthFill"
+                                    class="combat-vital-fill combat-health-fill"
+                                    style="width:100%">
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="combat-vital-block">
+                            <div class="combat-vital-label-row">
+                                <span>Mana</span>
+                                <span id="combatPlayerManaText">0 / 0</span>
+                            </div>
+
+                            <div class="combat-vital-bar">
+                                <div
+                                    id="combatPlayerManaFill"
+                                    class="combat-vital-fill combat-mana-fill"
+                                    style="width:100%">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        id="openCombatInventoryButton"
+                        class="combat-inventory-btn combat-player-inventory-btn"
+                        type="button">
+                        Inventory
+                    </button>
+
+                </div>
+
+
+                <div class="combat-skill-section">
+                    <div class="combat-skill-section-title">
+                        Skills
+                    </div>
+
+                    <div
+                        id="combatSkillSlots"
+                        class="combat-skill-slots">
+                    </div>
+
+                    <div
+                        id="combatMessage"
+                        class="combat-message">
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         COMBAT DEATH OVERLAY
+         ===================================================== -->
+
+    <div id="combatDeathOverlay" class="combat-death-overlay hidden">
+
+        <div class="combat-death-window">
+
+            <div class="combat-death-header">
+                <h2>You Have Fallen</h2>
+                <p>Your character has recovered, but defeat has a price.</p>
+            </div>
+
+
+            <div class="combat-death-summary">
+
+                <div class="combat-death-summary-item">
+                    <span class="combat-death-label">EXP Lost</span>
+                    <span id="combatDeathExperienceLost" class="combat-death-value">
+                        0
+                    </span>
+                </div>
+
+                <div class="combat-death-summary-item">
+                    <span class="combat-death-label">Health Lost</span>
+                    <span id="combatDeathHealthLost" class="combat-death-value">
+                        0
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="combat-death-restored">
+                Health and Mana have been fully restored.
+            </div>
+
+
+            <button
+                id="closeCombatDeathButton"
+                class="combat-death-close-btn"
+                type="button">
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         COMBAT REWARD OVERLAY
+         ===================================================== -->
+
+    <div id="combatRewardOverlay" class="combat-reward-overlay hidden">
+
+        <div class="combat-reward-window">
+
+            <div class="combat-reward-header">
+                <h2>Victory Rewards</h2>
+                <p>The rewards have been added to your character.</p>
+            </div>
+
+            <div class="combat-reward-summary">
+
+                <div class="combat-reward-summary-item">
+                    <span class="combat-reward-label">EXP</span>
+                    <span id="combatRewardExperience" class="combat-reward-value">0</span>
+                </div>
+
+                <div class="combat-reward-summary-item">
+                    <span class="combat-reward-label">Gold</span>
+                    <span id="combatRewardGold" class="combat-reward-value">0</span>
+                </div>
+
+            </div>
+
+            <div
+                id="combatRewardLevelUp"
+                class="combat-reward-level-up hidden">
+
+                <div class="combat-reward-level-up-title">
+                    You have leveled up!
+                </div>
+
+                <div
+                    id="combatRewardLevelUpLevels"
+                    class="combat-reward-level-up-levels">
+                </div>
+
+            </div>
+
+
+            <div class="combat-reward-items-section">
+
+                <h3>Items</h3>
+
+                <div id="combatRewardItems" class="combat-reward-items"></div>
+
+                <div id="combatRewardNoItems" class="combat-reward-no-items hidden">
+                    No items dropped.
+                </div>
+
+            </div>
+
+            <button
+                id="closeCombatRewardButton"
+                class="combat-reward-close-btn"
+                type="button">
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         COMBAT INVENTORY OVERLAY
+         ===================================================== -->
+
+    <div id="combatInventoryOverlay" class="combat-inventory-overlay hidden">
+
+        <div class="combat-inventory-window">
+
+            <div class="combat-inventory-header">
+
+                <div>
+                    <h2>Inventory</h2>
+                    <p>
+                        Consumables available during combat.
+                    </p>
+                </div>
+
+                <button
+                    id="closeCombatInventoryButton"
+                    class="combat-inventory-close-btn"
+                    type="button">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="combatInventoryGrid"
+                class="combat-inventory-grid">
+            </div>
+
+        </div>
+
+    </div>
+
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
@@ -212,6 +523,10 @@
         let currentCharacter = null;
         let currentLocation = null;
         let currentSublocation = null;
+        let currentCombat = null;
+        let currentCombatEffectiveStats = null;
+        let currentCombatWeaponDamage = 0;
+        let activeCombatSkillTooltip = null;
 
 
         /* =========================================================
@@ -237,7 +552,7 @@
                 error: characterError
             } = await supabaseClient
                 .from('characters')
-                .select('id, level')
+                .select('id, level, class_id, current_health, current_mana, max_health, max_mana')
                 .eq('user_id', user.id)
                 .maybeSingle();
 
@@ -261,7 +576,165 @@
 
             currentCharacter = character;
 
+
+            /*
+             * Always load the world first.
+             *
+             * If the character has an active combat session, the
+             * combat overlay is then restored on top of the fully
+             * initialized world.
+             *
+             * Previously we returned immediately when combat was
+             * resumed, which meant loadLocations() never ran and
+             * the world behind the combat overlay stayed empty.
+             */
             await loadLocations();
+
+
+            await resumeActiveCombat();
+        }
+
+
+
+        /*
+         * Reload the character after server-side changes such as
+         * gaining a level during combat.
+         *
+         * The world page otherwise keeps the character object that
+         * was loaded when the page first opened, which would make
+         * the next combat display stale level / HP / Mana values.
+         */
+        async function refreshCurrentCharacter() {
+
+            if (!currentCharacter?.id) {
+                return false;
+            }
+
+
+            const {
+                data: character,
+                error
+            } = await supabaseClient
+                .from('characters')
+                .select(`
+                    id,
+                    level,
+                    class_id,
+                    current_health,
+                    current_mana,
+                    max_health,
+                    max_mana
+                `)
+                .eq(
+                    'id',
+                    currentCharacter.id
+                )
+                .maybeSingle();
+
+
+            if (
+                error ||
+                !character
+            ) {
+
+                console.error(
+                    'Could not refresh character:',
+                    error
+                );
+
+                return false;
+            }
+
+
+            currentCharacter =
+                character;
+
+
+            return true;
+        }
+
+
+
+        /* =========================================================
+           RESUME ACTIVE COMBAT
+           ========================================================= */
+
+        async function resumeActiveCombat() {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.functions.invoke(
+                    'start_combat',
+                    {
+                        body: {}
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    'Could not check for active combat:',
+                    error
+                );
+
+                return false;
+
+            }
+
+
+            /*
+             * No active combat exists.
+             *
+             * Continue loading the world normally.
+             */
+            if (
+                !data?.success ||
+                !data?.combat
+            ) {
+
+                return false;
+
+            }
+
+
+            currentCombat = {
+
+                ...data.combat,
+
+                node:
+                    null,
+
+                enemy_health:
+                    Number(
+                        data.combat.enemy?.current_health ??
+                        data.combat.enemy?.max_health ??
+                        0
+                    ),
+
+                enemy_mana:
+                    Number(
+                        data.combat.enemy?.current_mana ??
+                        data.combat.enemy?.max_mana ??
+                        0
+                    )
+
+            };
+
+
+            console.log(
+                'Resuming active combat:',
+                currentCombat
+            );
+
+
+            await renderCombatOverlay();
+
+
+            return true;
+
         }
 
 
@@ -1182,9 +1655,13 @@
 
 
             if (node.node_type === 'questobjectives') {
-
                 await completeQuestObjective(node, marker);
+                return;
+            }
 
+            if (node.node_type === 'enemies') {
+                await openCombatOverlay(node.entity_id, node);
+                return;
             }
 
         }
@@ -1278,6 +1755,2232 @@
             );
 
         }
+
+
+
+        /* =========================================================
+           COMBAT
+           ========================================================= */
+
+        function getRandomInteger(min, max) {
+            min = Math.ceil(Number(min));
+            max = Math.floor(Number(max));
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function scaleEnemyValue(baseValue, enemyLevel, minLevel) {
+            const levelsAboveMinimum = Math.max(0, Number(enemyLevel) - Number(minLevel));
+            return Math.round(Number(baseValue ?? 0) * (1 + levelsAboveMinimum * 0.10));
+        }
+
+        function updateCombatBar(textId, fillId, currentValue, maxValue) {
+            const current = Math.max(0, Number(currentValue ?? 0));
+            const maximum = Math.max(0, Number(maxValue ?? 0));
+            const progress = maximum > 0 ? Math.max(0, Math.min(100, (current / maximum) * 100)) : 0;
+
+            const textElement = document.getElementById(textId);
+            const fillElement = document.getElementById(fillId);
+
+            if (textElement) textElement.textContent = `${current} / ${maximum}`;
+            if (fillElement) fillElement.style.width = `${progress}%`;
+        }
+
+        let worldToastTimeout =
+            null;
+
+
+        function showWorldToast(
+            message,
+            type = 'error'
+        ) {
+
+            const toast =
+                document.getElementById(
+                    'worldToast'
+                );
+
+
+            if (!toast) {
+                return;
+            }
+
+
+            if (
+                worldToastTimeout
+            ) {
+
+                clearTimeout(
+                    worldToastTimeout
+                );
+
+            }
+
+
+            toast.textContent =
+                message;
+
+
+            toast.className =
+                'world-toast';
+
+
+            if (type) {
+
+                toast.classList.add(
+                    type
+                );
+
+            }
+
+
+            requestAnimationFrame(
+                () => {
+
+                    toast.classList.add(
+                        'visible'
+                    );
+
+                }
+            );
+
+
+            worldToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            'visible'
+                        );
+
+
+                        setTimeout(
+                            () =>
+                                toast.classList.add(
+                                    'hidden'
+                                ),
+                            180
+                        );
+
+                    },
+                    2600
+                );
+
+        }
+
+
+        async function openCombatOverlay(
+            enemyId,
+            node
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.functions.invoke(
+                    'start_combat',
+                    {
+                        body: {
+                            enemy_id:
+                                enemyId
+                        }
+                    }
+                );
+
+
+            if (error) {
+
+                let errorMessage =
+                    'Could not start combat.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (response?.error) {
+
+                            errorMessage =
+                                response.error;
+
+                        }
+
+                    } catch (parseError) {
+
+                        console.error(
+                            'Could not parse start_combat error:',
+                            parseError
+                        );
+
+                    }
+
+                }
+
+
+                console.error(
+                    errorMessage
+                );
+
+
+                showWorldToast(
+                    errorMessage,
+                    'error'
+                );
+
+
+                return;
+
+            }
+
+
+            if (
+                !data?.success ||
+                !data?.combat
+            ) {
+
+                const errorMessage =
+                    data?.error ||
+                    'Could not start combat.';
+
+
+                console.error(
+                    errorMessage
+                );
+
+
+                showWorldToast(
+                    errorMessage,
+                    'error'
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * The Edge Function is authoritative for:
+             *
+             * - which enemy is active
+             * - the randomly rolled enemy level
+             * - scaled enemy stats
+             * - current enemy Health / Mana
+             *
+             * If the character already has an active combat,
+             * start_combat returns that existing session instead.
+             */
+            currentCombat = {
+
+                ...data.combat,
+
+                node:
+                    node,
+
+                enemy_health:
+                    Number(
+                        data.combat.enemy?.current_health ??
+                        data.combat.enemy?.max_health ??
+                        0
+                    ),
+
+                enemy_mana:
+                    Number(
+                        data.combat.enemy?.current_mana ??
+                        data.combat.enemy?.max_mana ??
+                        0
+                    )
+
+            };
+
+
+            console.log(
+                data.resumed
+                    ? 'Resumed existing combat:'
+                    : 'Started new combat:',
+                currentCombat
+            );
+
+
+            await renderCombatOverlay();
+
+        }
+
+        async function renderCombatOverlay() {
+            if (!currentCombat?.enemy) return;
+
+            const enemy = currentCombat.enemy;
+
+            document.getElementById('combatEnemyName').textContent = enemy.name || 'Enemy';
+            document.getElementById('combatEnemyLevel').textContent = `Level ${enemy.level}`;
+
+            const enemyImage = document.getElementById('combatEnemyImage');
+
+            if (enemy.image) {
+                enemyImage.src = enemy.image;
+                enemyImage.alt = enemy.name || 'Enemy';
+                enemyImage.classList.remove('hidden');
+            } else {
+                enemyImage.removeAttribute('src');
+                enemyImage.classList.add('hidden');
+            }
+
+            updateCombatBar(
+                'combatEnemyHealthText',
+                'combatEnemyHealthFill',
+                currentCombat.enemy_health ??
+                    enemy.current_health,
+                enemy.max_health
+            );
+
+
+            updateCombatBar(
+                'combatEnemyManaText',
+                'combatEnemyManaFill',
+                currentCombat.enemy_mana ??
+                    enemy.current_mana,
+                enemy.max_mana
+            );
+
+            await loadCombatPlayerIdentity();
+            await loadCombatPlayerVitals();
+            await loadCombatWeaponDamage();
+            await loadCombatSkills();
+
+            document.getElementById('combatOverlay').classList.remove('hidden');
+        }
+
+
+        async function loadCombatPlayerIdentity() {
+
+            if (!currentCharacter) {
+                return;
+            }
+
+
+            const levelElement =
+                document.getElementById(
+                    'combatPlayerLevel'
+                );
+
+
+            if (levelElement) {
+
+                levelElement.textContent =
+                    `Level ${Number(
+                        currentCharacter.level ??
+                        1
+                    )}`;
+
+            }
+
+
+            const classIcon =
+                document.getElementById(
+                    'combatPlayerClassIcon'
+                );
+
+
+            if (
+                !classIcon ||
+                !currentCharacter.class_id
+            ) {
+                return;
+            }
+
+
+            const {
+                data: classData,
+                error: classError
+            } = await supabaseClient
+                .from('classes')
+                .select('name')
+                .eq(
+                    'id',
+                    currentCharacter.class_id
+                )
+                .maybeSingle();
+
+
+            if (
+                classError ||
+                !classData
+            ) {
+
+                console.error(
+                    'Could not load character class for combat:',
+                    classError
+                );
+
+                return;
+
+            }
+
+
+            classIcon.src =
+                `classes/${classData.name}/ClassIcon/${classData.name}.png`;
+
+
+            classIcon.alt =
+                `${classData.name} Class Icon`;
+
+        }
+
+
+        async function loadCombatPlayerVitals() {
+            if (!currentCharacter) return;
+
+            const { data, error } = await supabaseClient.rpc(
+                'get_character_effective_stats',
+                { p_character_id: currentCharacter.id }
+            );
+
+            if (error) {
+                console.error('Could not load effective player stats for combat:', error);
+            }
+
+            const effectiveStats = Array.isArray(data) ? data[0] : data;
+
+            currentCombatEffectiveStats =
+                effectiveStats ||
+                null;
+
+            const currentHealth = Number(
+                currentCharacter.current_health ??
+                effectiveStats?.effective_max_health ??
+                currentCharacter.max_health ??
+                0
+            );
+
+            const maxHealth = Number(
+                effectiveStats?.effective_max_health ??
+                currentCharacter.max_health ??
+                currentHealth
+            );
+
+            const currentMana = Number(
+                currentCharacter.current_mana ??
+                effectiveStats?.effective_max_mana ??
+                currentCharacter.max_mana ??
+                0
+            );
+
+            const maxMana = Number(
+                effectiveStats?.effective_max_mana ??
+                currentCharacter.max_mana ??
+                currentMana
+            );
+
+            updateCombatBar('combatPlayerHealthText', 'combatPlayerHealthFill', currentHealth, maxHealth);
+            updateCombatBar('combatPlayerManaText', 'combatPlayerManaFill', currentMana, maxMana);
+        }
+
+        async function loadCombatWeaponDamage() {
+
+            currentCombatWeaponDamage = 0;
+
+            if (!currentCharacter?.id) {
+                return;
+            }
+
+            const {
+                data: equipmentRows,
+                error: equipmentError
+            } = await supabaseClient
+                .from('character_equipment')
+                .select(`
+                    item_id,
+                    equipment_slot,
+                    items (
+                        item_type
+                    )
+                `)
+                .eq(
+                    'character_id',
+                    currentCharacter.id
+                )
+                .in(
+                    'equipment_slot',
+                    [
+                        'main_weapon',
+                        'offhand'
+                    ]
+                );
+
+            if (equipmentError) {
+                console.error(
+                    'Could not load equipped weapons for combat:',
+                    equipmentError
+                );
+                return;
+            }
+
+            const weaponItemIds =
+                (equipmentRows || [])
+                    .filter(
+                        row =>
+                            row.items?.item_type ===
+                            'weapons'
+                    )
+                    .map(
+                        row =>
+                            row.item_id
+                    );
+
+            if (weaponItemIds.length === 0) {
+                return;
+            }
+
+            const {
+                data: weaponRows,
+                error: weaponError
+            } = await supabaseClient
+                .from('weapons')
+                .select(`
+                    item_id,
+                    damage
+                `)
+                .in(
+                    'item_id',
+                    weaponItemIds
+                );
+
+            if (weaponError) {
+                console.error(
+                    'Could not load weapon damage for combat:',
+                    weaponError
+                );
+                return;
+            }
+
+            const weaponDamageByItemId =
+                {};
+
+
+            for (
+                const weapon
+                of
+                weaponRows ||
+                []
+            ) {
+
+                weaponDamageByItemId[
+                    weapon.item_id
+                ] =
+                    Number(
+                        weapon.damage ??
+                        0
+                    );
+
+            }
+
+
+            /*
+             * Sum per EQUIPMENT ROW rather than per unique item_id.
+             *
+             * This matters when Main Weapon and Offhand contain
+             * two copies of the same weapon. The weapons table
+             * only contains one definition row for that item_id,
+             * but both equipped copies must contribute damage.
+             */
+            currentCombatWeaponDamage =
+                (equipmentRows || [])
+                    .filter(
+                        row =>
+                            row.items?.item_type ===
+                            'weapons'
+                    )
+                    .reduce(
+                        (
+                            total,
+                            equipment
+                        ) =>
+                            total +
+                            Number(
+                                weaponDamageByItemId[
+                                    equipment.item_id
+                                ] ??
+                                0
+                            ),
+                        0
+                    );
+        }
+
+
+        async function loadCombatSkills() {
+            const container = document.getElementById('combatSkillSlots');
+            if (!container || !currentCharacter) return;
+
+            container.innerHTML = '';
+
+            const { data: rows, error } = await supabaseClient
+                .from('character_equipped_skills')
+                .select(`
+                    slot_position,
+                    skills (
+                        id,
+                        name,
+                        skill_icon,
+                        mana_cost,
+                        base_damage,
+                        skill_type,
+                        description,
+                        skill_scalings (
+                            id,
+                            stat,
+                            scaling
+                        )
+                    )
+                `)
+                .eq('character_id', currentCharacter.id)
+                .order('slot_position', { ascending: true });
+
+            if (error) {
+                console.error('Could not load combat skills:', error);
+                return;
+            }
+
+            const skillsBySlot = new Map(
+                (rows || []).map(row => [Number(row.slot_position), row.skills])
+            );
+
+            for (let slotNumber = 1; slotNumber <= 8; slotNumber++) {
+                const skill = skillsBySlot.get(slotNumber);
+                const slot = document.createElement('div');
+                slot.className = 'combat-skill-slot';
+
+                if (skill) {
+                    slot.classList.add('occupied');
+
+                    slot.innerHTML = `
+                        ${skill.skill_icon
+                            ? `<img src="${escapeHtml(skill.skill_icon)}"
+                                    alt="${escapeHtml(skill.name)}"
+                                    class="combat-skill-icon">`
+                            : `<div class="combat-skill-placeholder">?</div>`}
+
+                        <div class="combat-skill-name">
+                            ${escapeHtml(skill.name)}
+                        </div>
+
+                        <div class="combat-skill-mana">
+                            ${Number(skill.mana_cost ?? 0)} MP
+                        </div>
+                    `;
+
+
+                    slot.addEventListener(
+                        'mouseenter',
+                        () =>
+                            showCombatSkillTooltip(
+                                slot,
+                                skill
+                            )
+                    );
+
+
+                    slot.addEventListener(
+                        'mouseleave',
+                        hideCombatSkillTooltip
+                    );
+
+                    slot.addEventListener(
+                        'click',
+                        () => useCombatSkill(skill, slot)
+                    );
+                } else {
+                    slot.innerHTML = `<div class="combat-skill-empty">${slotNumber}</div>`;
+                }
+
+                container.appendChild(slot);
+            }
+        }
+
+
+        let combatTurnPending = false;
+
+        function setCombatSkillsDisabled(disabled) {
+            document
+                .querySelectorAll('.combat-skill-slot.occupied')
+                .forEach(slot => {
+                    slot.classList.toggle('disabled', disabled);
+                });
+        }
+
+        function setCombatMessage(message, type = '') {
+            const element = document.getElementById('combatMessage');
+            if (!element) return;
+
+            element.textContent = message || '';
+            element.className = 'combat-message';
+
+            if (type) {
+                element.classList.add(type);
+            }
+        }
+
+        async function useCombatSkill(skill, slot) {
+            if (combatTurnPending || !currentCombat?.id || !skill) {
+                return;
+            }
+
+            combatTurnPending = true;
+            hideCombatSkillTooltip();
+            setCombatSkillsDisabled(true);
+            slot?.classList.add('combat-skill-pending');
+
+            setCombatMessage(`${skill.name}...`);
+
+            /* PLAYER ATTACK */
+            const playerResult = await invokeCombatTurn({
+                phase: 'player',
+                combat_id: currentCombat.id,
+                skill_id: skill.id
+            });
+
+            slot?.classList.remove('combat-skill-pending');
+
+            if (!playerResult) {
+                combatTurnPending = false;
+                setCombatSkillsDisabled(false);
+                return;
+            }
+
+            applyCombatResponse(playerResult);
+
+
+            if (
+                playerResult.player_action?.type ===
+                'damage'
+            ) {
+
+                showCombatDamage(
+                    'enemy',
+                    playerResult.player_action.amount,
+                    playerResult.player_action.critical
+                );
+
+            } else if (
+                playerResult.player_action?.type ===
+                'heal'
+            ) {
+
+                showCombatHeal(
+                    'player',
+                    playerResult.player_action.amount
+                );
+
+            }
+
+
+            let message =
+                buildCombatActionMessage(
+                    playerResult.player_action
+                );
+
+            setCombatMessage(message);
+
+            /*
+             * Player damage is already visible here.
+             * Only now do we start the one-second delay.
+             */
+            if (playerResult.combat.status === 'won') {
+                setCombatMessage(
+                    `${message} Victory!`,
+                    'success'
+                );
+
+                combatTurnPending = false;
+                setCombatSkillsDisabled(true);
+
+                await showCombatRewards(
+                    playerResult.rewards || {
+                        experience: 0,
+                        gold: 0,
+                        items: []
+                    }
+                );
+
+                return;
+            }
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 1000)
+            );
+
+            /* ENEMY ATTACK */
+            const enemyResult = await invokeCombatTurn({
+                phase: 'enemy',
+                combat_id: currentCombat.id
+            });
+
+            if (!enemyResult) {
+                combatTurnPending = false;
+                setCombatSkillsDisabled(false);
+                return;
+            }
+
+            applyCombatResponse(enemyResult);
+
+
+            if (
+                enemyResult.enemy_action?.type ===
+                'damage'
+            ) {
+
+                showCombatDamage(
+                    'player',
+                    enemyResult.enemy_action.amount,
+                    enemyResult.enemy_action.critical
+                );
+
+            } else if (
+                enemyResult.enemy_action?.type ===
+                'heal'
+            ) {
+
+                showCombatHeal(
+                    'enemy',
+                    enemyResult.enemy_action.amount
+                );
+
+            }
+
+
+            const enemyMessage =
+                buildCombatActionMessage(
+                    enemyResult.enemy_action
+                );
+
+            if (enemyMessage) {
+                message += ` ${enemyMessage}`;
+            }
+
+            if (enemyResult.combat.status === 'lost') {
+
+                const experienceLost =
+                    Number(
+                        enemyResult.death_penalty
+                            ?.experience_lost ??
+                        0
+                    );
+
+
+                const healthLost =
+                    Number(
+                        enemyResult.death_penalty
+                            ?.health_lost ??
+                        enemyResult.enemy_action
+                            ?.amount ??
+                        0
+                    );
+
+
+                setCombatMessage(
+                    'You were defeated.',
+                    'error'
+                );
+
+
+                showCombatDeathWindow({
+                    experienceLost,
+                    healthLost
+                });
+
+
+                combatTurnPending = false;
+                setCombatSkillsDisabled(true);
+                return;
+            }
+
+            setCombatMessage(message);
+
+            combatTurnPending = false;
+            setCombatSkillsDisabled(false);
+        }
+
+
+        async function invokeCombatTurn(body) {
+            const { data, error } =
+                await supabaseClient.functions.invoke(
+                    'combat_turn',
+                    { body }
+                );
+
+            if (error) {
+                let errorMessage =
+                    'Could not perform combat turn.';
+
+                if (error.context) {
+                    try {
+                        const response =
+                            await error.context
+                                .clone()
+                                .json();
+
+                        if (response?.error) {
+                            errorMessage =
+                                response.error;
+                        }
+                    } catch (parseError) {
+                        console.error(
+                            'Could not parse combat_turn error:',
+                            parseError
+                        );
+                    }
+                }
+
+                console.error(errorMessage);
+                setCombatMessage(
+                    errorMessage,
+                    'error'
+                );
+
+                return null;
+            }
+
+            if (!data?.success) {
+                setCombatMessage(
+                    data?.error ||
+                    'Could not perform combat turn.',
+                    'error'
+                );
+
+                return null;
+            }
+
+            return data;
+        }
+
+
+        function applyCombatResponse(data) {
+            currentCombat.status =
+                data.combat.status;
+
+            currentCombat.enemy_health =
+                Number(
+                    data.combat.enemy.current_health ??
+                    0
+                );
+
+            currentCombat.enemy_mana =
+                Number(
+                    data.combat.enemy.current_mana ??
+                    0
+                );
+
+            currentCombat.enemy = {
+                ...currentCombat.enemy,
+                ...data.combat.enemy
+            };
+
+            currentCharacter.current_health =
+                Number(
+                    data.combat.character.current_health ??
+                    0
+                );
+
+            currentCharacter.current_mana =
+                Number(
+                    data.combat.character.current_mana ??
+                    0
+                );
+
+            updateCombatBar(
+                'combatEnemyHealthText',
+                'combatEnemyHealthFill',
+                currentCombat.enemy_health,
+                currentCombat.enemy.max_health
+            );
+
+            updateCombatBar(
+                'combatEnemyManaText',
+                'combatEnemyManaFill',
+                currentCombat.enemy_mana,
+                currentCombat.enemy.max_mana
+            );
+
+            updateCombatBar(
+                'combatPlayerHealthText',
+                'combatPlayerHealthFill',
+                currentCharacter.current_health,
+                data.combat.character.max_health
+            );
+
+            updateCombatBar(
+                'combatPlayerManaText',
+                'combatPlayerManaFill',
+                currentCharacter.current_mana,
+                data.combat.character.max_mana
+            );
+        }
+
+
+
+        function showCombatDamage(
+            target,
+            amount,
+            critical = false
+        ) {
+
+            const layerId =
+                target ===
+                'enemy'
+                    ? 'combatEnemyDamageLayer'
+                    : 'combatPlayerDamageLayer';
+
+
+            const layer =
+                document.getElementById(
+                    layerId
+                );
+
+
+            if (!layer) {
+                return;
+            }
+
+
+            const damage =
+                document.createElement(
+                    'div'
+                );
+
+
+            damage.className =
+                'combat-floating-damage';
+
+
+            if (critical) {
+
+                damage.classList.add(
+                    'critical'
+                );
+
+            }
+
+
+            damage.textContent =
+                `-${Math.max(
+                    0,
+                    Number(
+                        amount ??
+                        0
+                    )
+                )}`;
+
+
+            /*
+             * A little horizontal variation makes repeated hits
+             * feel less mechanically stacked on one exact spot.
+             */
+            damage.style.setProperty(
+                '--damage-offset-x',
+                `${Math.round(
+                    Math.random() *
+                    24 -
+                    12
+                )}px`
+            );
+
+
+            layer.appendChild(
+                damage
+            );
+
+
+            damage.addEventListener(
+                'animationend',
+                () =>
+                    damage.remove(),
+                {
+                    once:
+                        true
+                }
+            );
+
+        }
+
+
+
+        function showCombatHeal(
+            target,
+            amount
+        ) {
+
+            const layerId =
+                target ===
+                'enemy'
+                    ? 'combatEnemyDamageLayer'
+                    : 'combatPlayerDamageLayer';
+
+
+            const layer =
+                document.getElementById(
+                    layerId
+                );
+
+
+            if (!layer) {
+                return;
+            }
+
+
+            const healing =
+                document.createElement(
+                    'div'
+                );
+
+
+            healing.className =
+                'combat-floating-damage heal';
+
+
+            healing.textContent =
+                `+${Math.max(
+                    0,
+                    Number(
+                        amount ??
+                        0
+                    )
+                )}`;
+
+
+            healing.style.setProperty(
+                '--damage-offset-x',
+                `${Math.round(
+                    Math.random() *
+                    24 -
+                    12
+                )}px`
+            );
+
+
+            layer.appendChild(
+                healing
+            );
+
+
+            healing.addEventListener(
+                'animationend',
+                () =>
+                    healing.remove(),
+                {
+                    once:
+                        true
+                }
+            );
+
+        }
+
+
+        function buildCombatActionMessage(action) {
+            if (!action) {
+                return '';
+            }
+
+            if (action.type === 'damage') {
+                let message =
+                    `${action.skill_name} dealt ${action.amount} damage`;
+
+                if (action.critical) {
+                    message += ' (Critical)';
+                }
+
+                return `${message}.`;
+            }
+
+            if (action.type === 'heal') {
+                return `${action.skill_name} restored ${action.amount} Health.`;
+            }
+
+            if (action.type === 'skip') {
+                return 'The enemy had no usable skill.';
+            }
+
+            return '';
+        }
+
+
+        async function showCombatRewards(
+            rewards
+        ) {
+
+            const expElement =
+                document.getElementById(
+                    'combatRewardExperience'
+                );
+
+
+            const goldElement =
+                document.getElementById(
+                    'combatRewardGold'
+                );
+
+
+            const levelUpElement =
+                document.getElementById(
+                    'combatRewardLevelUp'
+                );
+
+
+            const levelUpLevelsElement =
+                document.getElementById(
+                    'combatRewardLevelUpLevels'
+                );
+
+
+            const itemsContainer =
+                document.getElementById(
+                    'combatRewardItems'
+                );
+
+
+            const noItemsElement =
+                document.getElementById(
+                    'combatRewardNoItems'
+                );
+
+
+            if (expElement) {
+
+                expElement.textContent =
+                    `+${Number(
+                        rewards.experience ??
+                        0
+                    )}`;
+
+            }
+
+
+            if (goldElement) {
+
+                goldElement.textContent =
+                    `+${Number(
+                        rewards.gold ??
+                        0
+                    )}`;
+
+            }
+
+
+            if (
+                levelUpElement &&
+                levelUpLevelsElement
+            ) {
+
+                const levelUp =
+                    rewards.level_up;
+
+
+                const leveledUp =
+                    Boolean(
+                        levelUp?.leveled_up
+                    );
+
+
+                levelUpElement.classList.toggle(
+                    'hidden',
+                    !leveledUp
+                );
+
+
+                if (leveledUp) {
+
+                    levelUpLevelsElement.textContent =
+                        `Level ${Number(
+                            levelUp.from_level ??
+                            1
+                        )} → Level ${Number(
+                            levelUp.to_level ??
+                            1
+                        )}`;
+
+                } else {
+
+                    levelUpLevelsElement.textContent =
+                        '';
+
+                }
+
+            }
+
+
+            if (
+                itemsContainer &&
+                noItemsElement
+            ) {
+
+                itemsContainer.innerHTML =
+                    '';
+
+
+                const rewardItems =
+                    rewards.items ||
+                    [];
+
+
+                noItemsElement.classList.toggle(
+                    'hidden',
+                    rewardItems.length >
+                    0
+                );
+
+
+                /* =============================================
+                   LOAD ITEM TYPE-SPECIFIC DETAILS
+
+                   Reuses the same configuration as the quest
+                   reward tooltips elsewhere in world.html.
+                   ============================================= */
+
+                const detailsByItemId =
+                    {};
+
+
+                for (
+                    const [itemType, config]
+                    of Object.entries(
+                        QUEST_REWARD_ITEM_TYPE_TABLES
+                    )
+                ) {
+
+                    const itemIds =
+                        rewardItems
+                            .filter(
+                                reward =>
+                                    reward.item?.item_type ===
+                                    itemType
+                            )
+                            .map(
+                                reward =>
+                                    reward.item.item_id
+                            );
+
+
+                    if (
+                        itemIds.length ===
+                        0
+                    ) {
+                        continue;
+                    }
+
+
+                    const {
+                        data: typeData,
+                        error: typeError
+                    } =
+                        await supabaseClient
+                            .from(
+                                config.table
+                            )
+                            .select(
+                                config.select
+                            )
+                            .in(
+                                'item_id',
+                                itemIds
+                            );
+
+
+                    if (typeError) {
+
+                        console.error(
+                            `Could not load combat reward ${config.table}:`,
+                            typeError
+                        );
+
+                        continue;
+
+                    }
+
+
+                    for (
+                        const detail
+                        of
+                        typeData ||
+                        []
+                    ) {
+
+                        detailsByItemId[
+                            detail.item_id
+                        ] =
+                            detail;
+
+                    }
+
+                }
+
+
+                /* =============================================
+                   RENDER DROPPED ITEMS
+                   ============================================= */
+
+                for (
+                    const reward
+                    of
+                    rewardItems
+                ) {
+
+                    const item =
+                        reward.item ||
+                        {};
+
+
+                    const quantity =
+                        Number(
+                            reward.quantity ??
+                            1
+                        );
+
+
+                    const details =
+                        detailsByItemId[
+                            item.item_id
+                        ];
+
+
+                    const rarityColor =
+                        QUEST_REWARD_RARITY_COLORS[
+                            (
+                                item.rarity ||
+                                ''
+                            ).toLowerCase()
+                        ];
+
+
+                    const slot =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    slot.className =
+                        'combat-reward-item';
+
+
+                    if (
+                        rarityColor
+                    ) {
+
+                        slot.style.borderColor =
+                            rarityColor;
+
+                    }
+
+
+                    slot.innerHTML = `
+                        ${
+                            item.icon_path
+                                ? `
+                                    <img
+                                        src="${escapeHtml(item.icon_path)}"
+                                        alt="${escapeHtml(item.name || '')}"
+                                        class="combat-reward-item-image"
+                                    >
+                                  `
+                                : `
+                                    <div class="combat-reward-item-placeholder">
+                                        ?
+                                    </div>
+                                  `
+                        }
+
+                        <div class="combat-reward-item-info">
+
+                            <span class="combat-reward-item-name">
+                                ${escapeHtml(item.name || 'Unknown Item')}
+                            </span>
+
+                            <span class="combat-reward-item-quantity">
+                                x${quantity}
+                            </span>
+
+                        </div>
+                    `;
+
+
+                    /*
+                     * Build the tooltip once while the reward
+                     * window is being created instead of
+                     * rebuilding it on every mouseenter.
+                     */
+                    const rewardTooltipHtml =
+                        buildWorldQuestRewardTooltip(
+                            item,
+                            details,
+                            quantity,
+                            rarityColor
+                        );
+
+
+                    slot.addEventListener(
+                        'mouseenter',
+                        () => {
+
+                            showWorldQuestRewardTooltip(
+                                slot,
+                                rewardTooltipHtml
+                            );
+
+                        }
+                    );
+
+
+                    slot.addEventListener(
+                        'mouseleave',
+                        hideWorldQuestRewardTooltip
+                    );
+
+
+                    itemsContainer.appendChild(
+                        slot
+                    );
+
+                }
+
+            }
+
+
+            document
+                .getElementById(
+                    'combatRewardOverlay'
+                )
+                ?.classList.remove(
+                    'hidden'
+                );
+
+        }
+
+
+        async function closeCombatRewardsAndCombat() {
+
+            hideWorldQuestRewardTooltip();
+
+
+            document
+                .getElementById(
+                    'combatRewardOverlay'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+            document
+                .getElementById(
+                    'combatOverlay'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+
+            /*
+             * Combat rewards can level the character and can change
+             * HP/Mana. Reload those values before another fight is
+             * allowed to render.
+             */
+            await refreshCurrentCharacter();
+
+
+            currentCombat = null;
+            currentCombatEffectiveStats = null;
+            currentCombatWeaponDamage = 0;
+            combatTurnPending = false;
+        }
+
+
+        document
+            .getElementById(
+                'closeCombatRewardButton'
+            )
+            ?.addEventListener(
+                'click',
+                closeCombatRewardsAndCombat
+            );
+
+
+        function showCombatDeathWindow({
+            experienceLost = 0,
+            healthLost = 0
+        } = {}) {
+
+            const experienceElement =
+                document.getElementById(
+                    'combatDeathExperienceLost'
+                );
+
+
+            const healthElement =
+                document.getElementById(
+                    'combatDeathHealthLost'
+                );
+
+
+            if (experienceElement) {
+
+                experienceElement.textContent =
+                    `-${Math.max(
+                        0,
+                        Number(
+                            experienceLost ??
+                            0
+                        )
+                    )}`;
+
+            }
+
+
+            if (healthElement) {
+
+                healthElement.textContent =
+                    `-${Math.max(
+                        0,
+                        Number(
+                            healthLost ??
+                            0
+                        )
+                    )}`;
+
+            }
+
+
+            document
+                .getElementById(
+                    'combatDeathOverlay'
+                )
+                ?.classList.remove(
+                    'hidden'
+                );
+
+        }
+
+
+        function closeCombatDeathAndCombat() {
+
+            document
+                .getElementById(
+                    'combatDeathOverlay'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+
+            document
+                .getElementById(
+                    'combatOverlay'
+                )
+                ?.classList.add(
+                    'hidden'
+                );
+
+
+            currentCombat =
+                null;
+
+
+            combatTurnPending =
+                false;
+
+        }
+
+
+        document
+            .getElementById(
+                'closeCombatDeathButton'
+            )
+            ?.addEventListener(
+                'click',
+                closeCombatDeathAndCombat
+            );
+
+
+        function getCombatSkillStatValue(stat) {
+
+            const stats =
+                currentCombatEffectiveStats ||
+                {};
+
+
+            const key =
+                String(
+                    stat ||
+                    ''
+                ).toLowerCase();
+
+
+            if (key === 'strength') {
+                return Number(
+                    stats.effective_strength ??
+                    0
+                );
+            }
+
+
+            if (key === 'dexterity') {
+                return Number(
+                    stats.effective_dexterity ??
+                    0
+                );
+            }
+
+
+            if (key === 'intelligence') {
+                return Number(
+                    stats.effective_intelligence ??
+                    0
+                );
+            }
+
+
+            if (key === 'defense') {
+                return Number(
+                    stats.effective_defense ??
+                    0
+                );
+            }
+
+
+            if (key === 'max_health') {
+                return Number(
+                    stats.effective_max_health ??
+                    0
+                );
+            }
+
+
+            if (key === 'max_mana') {
+                return Number(
+                    stats.effective_max_mana ??
+                    0
+                );
+            }
+
+
+            return 0;
+
+        }
+
+
+        function calculateCombatSkillValue(skill) {
+
+            let value =
+                Number(
+                    skill.base_damage ??
+                    0
+                );
+
+
+            for (
+                const scaling
+                of
+                skill.skill_scalings ||
+                []
+            ) {
+
+                value +=
+                    getCombatSkillStatValue(
+                        scaling.stat
+                    ) *
+                    Number(
+                        scaling.scaling ??
+                        0
+                    );
+
+            }
+
+
+            const skillType =
+                String(
+                    skill.skill_type ??
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            if (
+                skillType ===
+                'damage'
+            ) {
+
+                value +=
+                    currentCombatWeaponDamage *
+                    0.50;
+
+            }
+
+
+            return Math.round(
+                value
+            );
+
+        }
+
+
+        function buildCombatSkillDescriptionHtml(skill) {
+
+            const description =
+                String(
+                    skill.description ??
+                    ''
+                );
+
+
+            const calculatedValue =
+                calculateCombatSkillValue(
+                    skill
+                );
+
+
+            const skillType =
+                String(
+                    skill.skill_type ??
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            let valueColor =
+                'inherit';
+
+
+            if (
+                skillType ===
+                'damage'
+            ) {
+
+                valueColor =
+                    '#d4af37';
+
+            } else if (
+                skillType ===
+                'heal'
+            ) {
+
+                valueColor =
+                    '#45c46f';
+
+            }
+
+
+            const calculatedValueHtml =
+                `<span style="color: ${valueColor}; font-weight: bold;">${calculatedValue}</span>`;
+
+
+            return description
+                .split(
+                    '<?p>'
+                )
+                .map(
+                    part =>
+                        escapeHtml(
+                            part
+                        )
+                )
+                .join(
+                    calculatedValueHtml
+                );
+
+        }
+
+
+        function buildCombatSkillTooltip(skill) {
+
+            return `
+                <div class="skill-tooltip floating-skill-tooltip">
+
+                    <div class="skill-tooltip-heading">
+
+                        <span class="skill-tooltip-name">
+                            ${escapeHtml(skill.name)}
+                        </span>
+
+                        <span class="skill-tooltip-type">
+                            ${escapeHtml(skill.skill_type)}
+                        </span>
+
+                    </div>
+
+
+                    <div class="skill-tooltip-mana">
+                        ${Number(skill.mana_cost ?? 0)} Mana
+                    </div>
+
+
+                    <div class="skill-tooltip-description">
+                        ${buildCombatSkillDescriptionHtml(skill)}
+                    </div>
+
+                </div>
+            `;
+
+        }
+
+
+        function hideCombatSkillTooltip() {
+
+            if (
+                activeCombatSkillTooltip
+            ) {
+
+                activeCombatSkillTooltip.remove();
+
+                activeCombatSkillTooltip =
+                    null;
+
+            }
+
+        }
+
+
+        function showCombatSkillTooltip(
+            element,
+            skill
+        ) {
+
+            hideCombatSkillTooltip();
+
+
+            const wrapper =
+                document.createElement(
+                    'div'
+                );
+
+
+            wrapper.innerHTML =
+                buildCombatSkillTooltip(
+                    skill
+                ).trim();
+
+
+            const tooltip =
+                wrapper.firstElementChild;
+
+
+            if (!tooltip) {
+                return;
+            }
+
+
+            document.body.appendChild(
+                tooltip
+            );
+
+
+            activeCombatSkillTooltip =
+                tooltip;
+
+
+            const elementRect =
+                element.getBoundingClientRect();
+
+
+            const tooltipRect =
+                tooltip.getBoundingClientRect();
+
+
+            let left =
+                elementRect.left +
+                (
+                    elementRect.width /
+                    2
+                ) -
+                (
+                    tooltipRect.width /
+                    2
+                );
+
+
+            let top =
+                elementRect.top -
+                tooltipRect.height -
+                10;
+
+
+            const padding =
+                8;
+
+
+            left =
+                Math.max(
+                    padding,
+                    Math.min(
+                        left,
+                        window.innerWidth -
+                        tooltipRect.width -
+                        padding
+                    )
+                );
+
+
+            if (
+                top <
+                padding
+            ) {
+
+                top =
+                    elementRect.bottom +
+                    10;
+
+            }
+
+
+            tooltip.style.left =
+                `${left}px`;
+
+
+            tooltip.style.top =
+                `${top}px`;
+
+        }
+
+
+        async function openCombatInventory() {
+
+            await loadCombatInventory();
+
+
+            document
+                .getElementById(
+                    'combatInventoryOverlay'
+                )
+                .classList.remove(
+                    'hidden'
+                );
+
+        }
+
+
+        function closeCombatInventory() {
+
+            document
+                .getElementById(
+                    'combatInventoryOverlay'
+                )
+                .classList.add(
+                    'hidden'
+                );
+
+        }
+
+
+        async function loadCombatInventory() {
+
+            const container =
+                document.getElementById(
+                    'combatInventoryGrid'
+                );
+
+
+            if (
+                !container ||
+                !currentCharacter
+            ) {
+                return;
+            }
+
+
+            container.innerHTML =
+                '';
+
+
+            const {
+                data: inventoryRows,
+                error
+            } = await supabaseClient
+                .from(
+                    'character_inventories'
+                )
+                .select(`
+                    inventory_id,
+                    quantity,
+                    slot_position,
+                    items!inner (
+                        item_id,
+                        name,
+                        description,
+                        item_type,
+                        rarity,
+                        icon_path,
+                        stackable,
+                        max_stack_size
+                    )
+                `)
+                .eq(
+                    'character_id',
+                    currentCharacter.id
+                )
+                .eq(
+                    'items.item_type',
+                    'consumables'
+                )
+                .order(
+                    'slot_position',
+                    {
+                        ascending:
+                            true
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    'Could not load combat inventory:',
+                    error
+                );
+
+                return;
+
+            }
+
+
+            const consumables =
+                (
+                    inventoryRows ||
+                    []
+                ).filter(
+                    row =>
+                        row.items
+                );
+
+
+            if (
+                consumables.length ===
+                0
+            ) {
+
+                container.innerHTML = `
+                    <div class="combat-inventory-empty">
+                        No consumables available.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            for (
+                const row
+                of
+                consumables
+            ) {
+
+                const item =
+                    row.items;
+
+
+                const slot =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                slot.className =
+                    'combat-inventory-slot occupied';
+
+
+                slot.dataset.inventoryId =
+                    row.inventory_id;
+
+
+                slot.dataset.itemId =
+                    item.item_id;
+
+
+                slot.dataset.itemType =
+                    item.item_type ||
+                    '';
+
+
+                slot.innerHTML = `
+                    ${
+                        item.icon_path
+                            ? `
+                                <img
+                                    src="${escapeHtml(item.icon_path)}"
+                                    alt="${escapeHtml(item.name)}"
+                                    class="combat-inventory-item-image"
+                                >
+                              `
+                            : ''
+                    }
+
+                    ${
+                        Number(row.quantity ?? 1) > 1
+                            ? `
+                                <span class="combat-inventory-item-count">
+                                    ${Number(row.quantity)}
+                                </span>
+                              `
+                            : ''
+                    }
+                `;
+
+
+                slot.title =
+                    item.name ||
+                    '';
+
+
+                container.appendChild(
+                    slot
+                );
+
+            }
+
+        }
+
+
+        document
+            .getElementById(
+                'openCombatInventoryButton'
+            )
+            ?.addEventListener(
+                'click',
+                openCombatInventory
+            );
+
+
+        document
+            .getElementById(
+                'closeCombatInventoryButton'
+            )
+            ?.addEventListener(
+                'click',
+                closeCombatInventory
+            );
+
+
+        document
+            .getElementById(
+                'combatInventoryOverlay'
+            )
+            ?.addEventListener(
+                'mousedown',
+                event => {
+
+                    if (
+                        event.target ===
+                        event.currentTarget
+                    ) {
+
+                        closeCombatInventory();
+
+                    }
+
+                }
+            );
 
 
         /* =========================================================
