@@ -527,14 +527,22 @@
             <div class="tab-content">
 
                 <!-- Skills -->
-                <div id="skills"
-                     class="tab-pane active">
+                <div id="skills" class="tab-pane active">
 
-                    <h2>Skills</h2>
+                    <div class="character-skills-header">
+                        <h2>Skills</h2>
+                        <button id="openSkillSelectionButton"
+                                class="select-skills-btn"
+                                type="button">
+                            Select Skills
+                        </button>
+                    </div>
 
-                    <div class="empty-quest-message"
-                         style="margin-top: 12px;">
-                        No Skills Available
+                    <div id="equippedSkillsList"
+                         class="equipped-skills-list">
+                        <div class="empty-skill-message">
+                            No Skills Equipped
+                        </div>
                     </div>
 
                 </div>
@@ -565,6 +573,48 @@
     </div>
 
 
+    <!-- Skill Selection -->
+    <div id="skillSelectionOverlay" class="skill-selection-overlay hidden">
+        <div class="skill-selection-window">
+            <div class="skill-selection-header">
+                <div>
+                    <h2>Select Skills</h2>
+                    <p>Drag class skills into one of the eight slots.</p>
+                </div>
+                <button id="closeSkillSelectionButton"
+                        class="skill-selection-close-btn"
+                        type="button">×</button>
+            </div>
+
+            <div class="skill-selection-section">
+                <div class="skill-selection-section-header">
+                    <h3>Class Skills</h3>
+                    <span>Drag an equipped skill here to unequip it.</span>
+                </div>
+                <div id="availableSkillsGrid" class="available-skills-grid"></div>
+            </div>
+
+            <div class="skill-selection-divider"></div>
+
+            <div class="skill-selection-section">
+                <div class="skill-selection-section-header">
+                    <h3>Equipped Skills</h3>
+                    <span>8 Slots</span>
+                </div>
+                <div id="skillLoadoutSlots" class="skill-loadout-slots">
+                    <div class="skill-loadout-slot" data-skill-slot="1"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="2"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="3"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="4"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="5"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="6"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="7"></div>
+                    <div class="skill-loadout-slot" data-skill-slot="8"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -579,6 +629,15 @@
         let draggedSlot = null;
         let draggedEquipmentSlot = null;
         let currentCharacterId = null;
+
+        let currentCharacterClassId = null;
+        let currentCharacterLevel = 1;
+        let currentCharacterEffectiveStats = null;
+        let characterClassSkills = [];
+        let characterEquippedSkills = [];
+        let draggedSkill = null;
+        let draggedSkillSourceSlot = null;
+        let activeSkillTooltip = null;
 
 
         /* ========================================= */
@@ -634,6 +693,8 @@
 
 
             currentCharacterId = character.id;
+            currentCharacterClassId = character.class_id;
+            currentCharacterLevel = Number(character.level ?? 1);
 
 
             /*
@@ -647,6 +708,8 @@
                     character.id
                 );
 
+
+            currentCharacterEffectiveStats = effectiveStats;
 
             const displayCharacter = {
                 ...character,
@@ -662,6 +725,7 @@
             await loadInventory(character.id);
             await loadEquipment(character.id);
             await loadCharacterQuests(character.id);
+            await loadCharacterSkills(character.id);
 
         }
 
@@ -785,6 +849,8 @@
                 return;
             }
 
+
+            currentCharacterEffectiveStats = effectiveStats;
 
             applyEffectiveStats({
                 ...effectiveStats,
@@ -3384,6 +3450,566 @@
 
         }
 
+
+
+
+        /* ========================================= */
+        /* SKILLS                                     */
+        /* ========================================= */
+
+        function escapeSkillHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function getSkillStatValue(stat) {
+            const s = currentCharacterEffectiveStats || {};
+            const key = String(stat || '').toLowerCase();
+
+            if (key === 'strength') return Number(s.effective_strength ?? 0);
+            if (key === 'dexterity') return Number(s.effective_dexterity ?? 0);
+            if (key === 'intelligence') return Number(s.effective_intelligence ?? 0);
+            if (key === 'defense') return Number(s.effective_defense ?? 0);
+            if (key === 'max_health') return Number(s.effective_max_health ?? 0);
+            if (key === 'max_mana') return Number(s.effective_max_mana ?? 0);
+
+            return 0;
+        }
+
+        function calculateSkillDamage(skill) {
+            let damage = Number(skill.base_damage ?? 0);
+
+            for (const scaling of skill.skill_scalings || []) {
+                damage +=
+                    getSkillStatValue(scaling.stat) *
+                    Number(scaling.scaling ?? 0);
+            }
+
+            return Math.round(damage);
+        }
+
+        function buildResolvedSkillDescriptionHtml(skill) {
+            const description =
+                String(
+                    skill.description ??
+                    ''
+                );
+
+
+            const calculatedValue =
+                calculateSkillDamage(
+                    skill
+                );
+
+
+            const skillType =
+                String(
+                    skill.skill_type ??
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            let valueColor =
+                'inherit';
+
+
+            if (
+                skillType ===
+                'damage'
+            ) {
+
+                valueColor =
+                    '#d4af37';
+
+            } else if (
+                skillType ===
+                'heal'
+            ) {
+
+                valueColor =
+                    '#45c46f';
+
+            }
+
+
+            /*
+             * Escape the normal description text first, then insert
+             * only the calculated placeholder value as styled HTML.
+             *
+             * The color is inline intentionally so this value cannot
+             * be overridden by another tooltip/text rule.
+             */
+            const calculatedValueHtml =
+                `<span style="color: ${valueColor}; font-weight: bold;">${calculatedValue}</span>`;
+
+
+            return description
+                .split(
+                    '<?p>'
+                )
+                .map(
+                    part =>
+                        escapeSkillHtml(
+                            part
+                        )
+                )
+                .join(
+                    calculatedValueHtml
+                );
+        }
+
+        function buildSkillTooltip(skill) {
+            return `
+                <div class="skill-tooltip floating-skill-tooltip">
+                    <div class="skill-tooltip-heading">
+                        <span class="skill-tooltip-name">
+                            ${escapeSkillHtml(skill.name)}
+                        </span>
+                        <span class="skill-tooltip-type">
+                            ${escapeSkillHtml(skill.skill_type)}
+                        </span>
+                    </div>
+
+                    <div class="skill-tooltip-mana">
+                        ${Number(skill.mana_cost ?? 0)} Mana
+                    </div>
+
+                    <div class="skill-tooltip-description">
+                        ${buildResolvedSkillDescriptionHtml(skill)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function hideSkillTooltip() {
+            activeSkillTooltip?.remove();
+            activeSkillTooltip = null;
+        }
+
+        function showSkillTooltip(element, skill) {
+            hideSkillTooltip();
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = buildSkillTooltip(skill).trim();
+            const tooltip = wrapper.firstElementChild;
+
+            if (!tooltip) return;
+
+            document.body.appendChild(tooltip);
+            activeSkillTooltip = tooltip;
+
+            const r = element.getBoundingClientRect();
+            const t = tooltip.getBoundingClientRect();
+
+            let left = r.left + r.width / 2 - t.width / 2;
+            let top = r.top - t.height - 10;
+
+            left = Math.max(
+                8,
+                Math.min(left, window.innerWidth - t.width - 8)
+            );
+
+            if (top < 8) {
+                top = r.bottom + 10;
+            }
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }
+
+        function getSkillById(id) {
+            return characterClassSkills.find(
+                skill => Number(skill.id) === Number(id)
+            ) || null;
+        }
+
+        function getEquippedSkillAtSlot(slot) {
+            return characterEquippedSkills.find(
+                row => Number(row.slot_position) === Number(slot)
+            ) || null;
+        }
+
+        function isSkillEquipped(id) {
+            return characterEquippedSkills.some(
+                row => Number(row.skill_id) === Number(id)
+            );
+        }
+
+        async function loadCharacterSkills(characterId) {
+            const [skillsResult, equippedResult] = await Promise.all([
+                supabaseClient
+                    .from('skills')
+                    .select(`
+                        id,
+                        class_id,
+                        name,
+                        mana_cost,
+                        base_damage,
+                        required_level,
+                        skill_type,
+                        description,
+                        skill_icon,
+                        skill_scalings (
+                            id,
+                            stat,
+                            scaling
+                        )
+                    `)
+                    .eq('class_id', currentCharacterClassId)
+                    .order('required_level', { ascending: true })
+                    .order('id', { ascending: true }),
+
+                supabaseClient
+                    .from('character_equipped_skills')
+                    .select('id, character_id, skill_id, slot_position')
+                    .eq('character_id', characterId)
+                    .order('slot_position', { ascending: true })
+            ]);
+
+            if (skillsResult.error) {
+                console.error('Could not load skills:', skillsResult.error);
+                return;
+            }
+
+            if (equippedResult.error) {
+                console.error('Could not load equipped skills:', equippedResult.error);
+                return;
+            }
+
+            const allClassSkills =
+                skillsResult.data ||
+                [];
+
+
+            /*
+             * Show:
+             *
+             * 1. Every skill the character has already unlocked by level.
+             * 2. Exactly ONE upcoming skill.
+             *
+             * Everything after that next skill remains hidden.
+             */
+            const unlockedSkills =
+                allClassSkills.filter(
+                    skill =>
+                        currentCharacterLevel >=
+                        Number(
+                            skill.required_level ??
+                            1
+                        )
+                );
+
+
+            const nextFutureSkill =
+                allClassSkills.find(
+                    skill =>
+                        Number(
+                            skill.required_level ??
+                            1
+                        ) >
+                        currentCharacterLevel
+                ) ||
+                null;
+
+
+            characterClassSkills =
+                nextFutureSkill
+                    ? [
+                        ...unlockedSkills,
+                        nextFutureSkill
+                    ]
+                    : unlockedSkills;
+
+
+            characterEquippedSkills =
+                equippedResult.data ||
+                [];
+
+
+            renderEquippedSkillsList();
+            renderSkillWindow();
+        }
+
+        function renderEquippedSkillsList() {
+            const container = document.getElementById('equippedSkillsList');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            const rows = [...characterEquippedSkills]
+                .sort((a, b) => Number(a.slot_position) - Number(b.slot_position));
+
+            if (rows.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-skill-message">No Skills Equipped</div>';
+                return;
+            }
+
+            for (const row of rows) {
+                const skill = getSkillById(row.skill_id);
+                if (!skill) continue;
+
+                const item = document.createElement('div');
+                item.className = 'equipped-skill-row';
+                item.innerHTML = `
+                    <div class="equipped-skill-icon">
+                        ${skill.skill_icon
+                            ? `<img src="${escapeSkillHtml(skill.skill_icon)}"
+                                    alt="${escapeSkillHtml(skill.name)}">`
+                            : '<span class="skill-icon-placeholder">?</span>'}
+                    </div>
+                    <div class="equipped-skill-name">
+                        ${escapeSkillHtml(skill.name)}
+                    </div>
+                    <div class="equipped-skill-slot-label">
+                        ${Number(row.slot_position)}
+                    </div>
+                `;
+
+                const icon = item.querySelector('.equipped-skill-icon');
+
+                icon?.addEventListener(
+                    'mouseenter',
+                    () => showSkillTooltip(icon, skill)
+                );
+                icon?.addEventListener('mouseleave', hideSkillTooltip);
+
+                container.appendChild(item);
+            }
+        }
+
+        function renderSkillWindow() {
+            renderAvailableSkills();
+            renderSkillSlots();
+        }
+
+        function renderAvailableSkills() {
+            const grid = document.getElementById('availableSkillsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            for (const skill of characterClassSkills) {
+                const unlocked =
+                    currentCharacterLevel >= Number(skill.required_level ?? 1);
+
+                const card = document.createElement('div');
+                card.className = 'available-skill-card';
+                card.dataset.skillId = String(skill.id);
+                card.draggable = unlocked;
+
+                if (!unlocked) card.classList.add('locked');
+                if (isSkillEquipped(skill.id)) card.classList.add('equipped');
+
+                card.innerHTML = `
+                    <div class="available-skill-icon">
+                        ${skill.skill_icon
+                            ? `<img src="${escapeSkillHtml(skill.skill_icon)}"
+                                    alt="${escapeSkillHtml(skill.name)}">`
+                            : '<span class="skill-icon-placeholder">?</span>'}
+                    </div>
+                    <div class="available-skill-info">
+                        <span class="available-skill-name">
+                            ${escapeSkillHtml(skill.name)}
+                        </span>
+                        <span class="available-skill-level">
+                            ${unlocked
+                                ? `Level ${Number(skill.required_level)}`
+                                : `Requires Level ${Number(skill.required_level)}`}
+                        </span>
+                    </div>
+                `;
+
+                card.addEventListener(
+                    'mouseenter',
+                    () => showSkillTooltip(card, skill)
+                );
+                card.addEventListener('mouseleave', hideSkillTooltip);
+
+                card.addEventListener('dragstart', event => {
+                    if (!unlocked) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    draggedSkill = skill;
+                    draggedSkillSourceSlot = null;
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', String(skill.id));
+                });
+
+                card.addEventListener('dragend', clearSkillDragState);
+                grid.appendChild(card);
+            }
+
+            grid.ondragover = event => {
+                if (!draggedSkill || draggedSkillSourceSlot == null) return;
+                event.preventDefault();
+                grid.classList.add('drag-over');
+            };
+
+            grid.ondragleave = () => grid.classList.remove('drag-over');
+
+            grid.ondrop = async event => {
+                event.preventDefault();
+                grid.classList.remove('drag-over');
+
+                if (!draggedSkill || draggedSkillSourceSlot == null) return;
+
+                if (await updateEquippedSkill({
+                    action: 'unequip',
+                    source_slot: draggedSkillSourceSlot
+                })) {
+                    await loadCharacterSkills(currentCharacterId);
+                }
+
+                clearSkillDragState();
+            };
+        }
+
+        function renderSkillSlots() {
+            document.querySelectorAll('.skill-loadout-slot')
+                .forEach(slot => {
+                    const slotNumber = Number(slot.dataset.skillSlot);
+                    const equipped = getEquippedSkillAtSlot(slotNumber);
+                    const skill = equipped ? getSkillById(equipped.skill_id) : null;
+
+                    slot.className = 'skill-loadout-slot';
+                    slot.innerHTML =
+                        `<span class="skill-slot-number">${slotNumber}</span>`;
+
+                    if (skill) {
+                        slot.classList.add('occupied');
+                        slot.draggable = true;
+                        slot.innerHTML += `
+                            <div class="skill-loadout-icon">
+                                ${skill.skill_icon
+                                    ? `<img src="${escapeSkillHtml(skill.skill_icon)}"
+                                            alt="${escapeSkillHtml(skill.name)}">`
+                                    : '<span class="skill-icon-placeholder">?</span>'}
+                            </div>
+                            <span class="skill-loadout-name">
+                                ${escapeSkillHtml(skill.name)}
+                            </span>
+                        `;
+
+                        slot.onmouseenter =
+                            () => showSkillTooltip(slot, skill);
+                        slot.onmouseleave = hideSkillTooltip;
+
+                        slot.ondragstart = event => {
+                            draggedSkill = skill;
+                            draggedSkillSourceSlot = slotNumber;
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData('text/plain', String(skill.id));
+                        };
+                    } else {
+                        slot.draggable = false;
+                        slot.onmouseenter = null;
+                        slot.onmouseleave = null;
+                        slot.ondragstart = null;
+                    }
+
+                    slot.ondragover = event => {
+                        if (!draggedSkill) return;
+                        event.preventDefault();
+                        slot.classList.add('drag-valid');
+                    };
+
+                    slot.ondragleave =
+                        () => slot.classList.remove('drag-valid');
+
+                    slot.ondrop = async event => {
+                        event.preventDefault();
+                        slot.classList.remove('drag-valid');
+
+                        if (!draggedSkill) return;
+
+                        if (draggedSkillSourceSlot === slotNumber) {
+                            clearSkillDragState();
+                            return;
+                        }
+
+                        if (await updateEquippedSkill({
+                            action: 'equip',
+                            skill_id: Number(draggedSkill.id),
+                            source_slot: draggedSkillSourceSlot,
+                            target_slot: slotNumber
+                        })) {
+                            await loadCharacterSkills(currentCharacterId);
+                        }
+
+                        clearSkillDragState();
+                    };
+
+                    slot.ondragend = clearSkillDragState;
+                });
+        }
+
+        function clearSkillDragState() {
+            draggedSkill = null;
+            draggedSkillSourceSlot = null;
+
+            document.querySelectorAll(
+                '.skill-loadout-slot, .available-skills-grid'
+            ).forEach(element => {
+                element.classList.remove('drag-valid', 'drag-over');
+            });
+        }
+
+        async function updateEquippedSkill(payload) {
+            const { data, error } =
+                await supabaseClient.functions.invoke(
+                    'update_equipped_skill',
+                    { body: payload }
+                );
+
+            if (error || !data?.success) {
+                console.error('Skill loadout error:', error || data);
+                alert(data?.error || 'Could not update equipped skills.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function openSkillSelectionWindow() {
+            renderSkillWindow();
+            document.getElementById('skillSelectionOverlay')
+                ?.classList.remove('hidden');
+        }
+
+        function closeSkillSelectionWindow() {
+            hideSkillTooltip();
+            clearSkillDragState();
+            document.getElementById('skillSelectionOverlay')
+                ?.classList.add('hidden');
+        }
+
+        document.getElementById('openSkillSelectionButton')
+            ?.addEventListener('click', openSkillSelectionWindow);
+
+        document.getElementById('closeSkillSelectionButton')
+            ?.addEventListener('click', closeSkillSelectionWindow);
+
+        document.getElementById('skillSelectionOverlay')
+            ?.addEventListener('mousedown', event => {
+                if (event.target === event.currentTarget) {
+                    closeSkillSelectionWindow();
+                }
+            });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeSkillSelectionWindow();
+            }
+        });
 
 
         /* ========================================= */
