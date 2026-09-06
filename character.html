@@ -1362,6 +1362,112 @@
 
 
 
+        async function attachConsumableStatusEffect(
+            details
+        ) {
+
+            if (
+                !details ||
+                details.effect_type !==
+                    'Status Effect' ||
+                details.status_effect_id ==
+                    null
+            ) {
+
+                return details;
+
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'status_effects'
+                    )
+                    .select(
+                        'stat, modifier_type, base_value'
+                    )
+                    .eq(
+                        'id',
+                        details.status_effect_id
+                    )
+                    .maybeSingle();
+
+
+            if (
+                !error
+            ) {
+
+                details.status_effect =
+                    data ||
+                    null;
+
+            }
+
+
+            return details;
+
+        }
+
+
+        function buildCharacterConsumableEffectHtml(
+            details
+        ) {
+
+            if (
+                details?.effect_type ===
+                    'Status Effect' &&
+                details?.status_effect
+            ) {
+
+                const statusEffect =
+                    details.status_effect;
+
+
+                const suffix =
+                    String(
+                        statusEffect.modifier_type ||
+                        ''
+                    )
+                        .toLowerCase() ===
+                    'percentage'
+                        ? '%'
+                        : '';
+
+
+                return `
+                    <div class="item-tooltip-stat-row">
+                        <span>
+                            Status Effect ${escapePetHtml(statusEffect.stat || '')}
+                        </span>
+
+                        <span>
+                            ${escapePetHtml(statusEffect.base_value ?? 0)}${suffix}
+                        </span>
+                    </div>
+                `;
+
+            }
+
+
+            return `
+                <div class="item-tooltip-stat-row">
+                    <span>
+                        ${escapePetHtml(details?.effect_type || '')}
+                    </span>
+
+                    <span>
+                        ${escapePetHtml(details?.effect_value ?? '')}
+                    </span>
+                </div>
+            `;
+
+        }
+
+
         function escapePetHtml(value) {
 
             return String(
@@ -4222,7 +4328,8 @@
                 select: `
                     item_id,
                     effect_type,
-                    effect_value
+                    effect_value,
+                    status_effect_id
                 `
             },
 
@@ -4349,6 +4456,120 @@
                     ] = detail;
 
                 });
+
+            }
+
+
+            /* ========================================= */
+            /* LOAD CONSUMABLE STATUS EFFECT DETAILS     */
+            /* ========================================= */
+
+            const consumableStatusEffectIds =
+                [
+                    ...new Set(
+                        Object.values(
+                            detailsByItemId
+                        )
+                            .filter(
+                                detail =>
+                                    detail?.effect_type ===
+                                        'Status Effect' &&
+                                    detail?.status_effect_id !=
+                                        null
+                            )
+                            .map(
+                                detail =>
+                                    Number(
+                                        detail.status_effect_id
+                                    )
+                            )
+                            .filter(
+                                id =>
+                                    Number.isFinite(
+                                        id
+                                    )
+                            )
+                    )
+                ];
+
+
+            if (
+                consumableStatusEffectIds.length >
+                0
+            ) {
+
+                const {
+                    data: statusEffectRows,
+                    error: statusEffectError
+                } =
+                    await supabaseClient
+                        .from(
+                            'status_effects'
+                        )
+                        .select(
+                            'id, stat, modifier_type, base_value'
+                        )
+                        .in(
+                            'id',
+                            consumableStatusEffectIds
+                        );
+
+
+                if (
+                    statusEffectError
+                ) {
+
+                    console.error(
+                        'Error loading consumable status effects:',
+                        statusEffectError
+                    );
+
+                } else {
+
+                    const statusEffectById =
+                        new Map(
+                            (
+                                statusEffectRows ||
+                                []
+                            ).map(
+                                row => [
+                                    Number(
+                                        row.id
+                                    ),
+                                    row
+                                ]
+                            )
+                        );
+
+
+                    for (
+                        const detail
+                        of
+                        Object.values(
+                            detailsByItemId
+                        )
+                    ) {
+
+                        if (
+                            detail?.effect_type ===
+                                'Status Effect' &&
+                            detail?.status_effect_id !=
+                                null
+                        ) {
+
+                            detail.status_effect =
+                                statusEffectById.get(
+                                    Number(
+                                        detail.status_effect_id
+                                    )
+                                ) ||
+                                null;
+
+                        }
+
+                    }
+
+                }
 
             }
 
@@ -5841,9 +6062,50 @@
                         break;
 
                     case 'consumables':
-                        detailLines.push(
-                            `${escapeHtml(details.effect_type)}: +${escapeHtml(details.effect_value)}`
-                        );
+
+                        if (
+                            details.effect_type ===
+                                'Status Effect' &&
+                            details.status_effect
+                        ) {
+
+                            const statusEffect =
+                                details.status_effect;
+
+
+                            const suffix =
+                                String(
+                                    statusEffect.modifier_type ||
+                                    ''
+                                )
+                                    .toLowerCase() ===
+                                'percentage'
+                                    ? '%'
+                                    : '';
+
+
+                            detailLines.push(
+                                `Status Effect ${escapeHtml(
+                                    statusEffect.stat ||
+                                    ''
+                                )}: ${escapeHtml(
+                                    statusEffect.base_value ??
+                                    0
+                                )}${suffix}`
+                            );
+
+                        } else {
+
+                            detailLines.push(
+                                `${escapeHtml(
+                                    details.effect_type
+                                )}: ${escapeHtml(
+                                    details.effect_value
+                                )}`
+                            );
+
+                        }
+
                         break;
 
                     case 'materials':

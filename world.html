@@ -8,6 +8,592 @@
     <title>World - Dark Fantasy RPG</title>
 
     <link rel="stylesheet" href="world.css">
+
+    <style>
+        /* =====================================================
+           SHOP OVERLAY
+           ===================================================== */
+
+        .shop-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(2, 5, 18, 0.84);
+            backdrop-filter: blur(5px);
+        }
+
+        .shop-overlay.hidden {
+            display: none !important;
+        }
+
+        .shop-window {
+            width: min(1080px, 96vw);
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(212, 175, 55, 0.68);
+            border-radius: 16px;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(212, 175, 55, 0.10),
+                    transparent 34%
+                ),
+                linear-gradient(
+                    145deg,
+                    rgba(15, 20, 48, 0.99),
+                    rgba(7, 10, 28, 0.99)
+                );
+            box-shadow:
+                0 24px 70px rgba(0, 0, 0, 0.55),
+                inset 0 0 30px rgba(212, 175, 55, 0.04);
+        }
+
+        .shop-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 24px 26px 18px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.26);
+        }
+
+        .shop-header-copy {
+            min-width: 0;
+        }
+
+        .shop-header h2 {
+            margin: 0 0 7px;
+            color: #f0d77d;
+            font-size: 1.65rem;
+        }
+
+        .shop-description {
+            margin: 0;
+            max-width: 700px;
+            color: #bfc4d7;
+            line-height: 1.5;
+        }
+
+        .shop-header-side {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .shop-gold {
+            white-space: nowrap;
+            padding: 9px 13px;
+            border: 1px solid rgba(212, 175, 55, 0.40);
+            border-radius: 10px;
+            background: rgba(212, 175, 55, 0.08);
+            color: #f1d56b;
+            font-weight: 700;
+        }
+
+        .shop-close {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(212, 175, 55, 0.42);
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.035);
+            color: #e9e9ef;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .shop-close:hover {
+            border-color: #d4af37;
+            color: #d4af37;
+        }
+
+        .shop-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .shop-tab {
+            padding: 9px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.025);
+            color: #c8ccda;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .shop-tab:hover,
+        .shop-tab.active {
+            border-color: rgba(212, 175, 55, 0.72);
+            background: rgba(212, 175, 55, 0.10);
+            color: #f0d77d;
+        }
+
+        .shop-content {
+            overflow-y: auto;
+            padding: 22px 24px 28px;
+        }
+
+        .shop-panel.hidden {
+            display: none !important;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                3,
+                minmax(0, 1fr)
+            );
+            gap: 14px;
+        }
+
+        .shop-item-card {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            gap: 13px;
+            padding: 13px;
+            min-height: 116px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .shop-item-card.is-unavailable {
+            opacity: 0.58;
+        }
+
+        .shop-item-image-frame {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-self: start;
+            border: 1px solid rgba(212, 175, 55, 0.32);
+            border-radius: 9px;
+            background: rgba(0, 0, 0, 0.22);
+            overflow: hidden;
+        }
+
+        .shop-item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .shop-item-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .shop-item-name {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .shop-item-description {
+            color: #aeb3c6;
+            font-size: 0.82rem;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .shop-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px 10px;
+            color: #d8dbea;
+            font-size: 0.82rem;
+        }
+
+        .shop-item-price {
+            color: #f1d56b;
+            font-weight: 700;
+        }
+
+        .shop-item-limit {
+            color: #b7c8ef;
+        }
+
+        .shop-item-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .shop-quantity {
+            width: 70px;
+            padding: 8px 7px;
+            border: 1px solid rgba(212, 175, 55, 0.30);
+            border-radius: 7px;
+            background: rgba(0, 0, 0, 0.24);
+            color: #ececf4;
+            font-family: inherit;
+        }
+
+        .shop-action-button {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(212, 175, 55, 0.58);
+            border-radius: 7px;
+            background: rgba(212, 175, 55, 0.11);
+            color: #f0d77d;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .shop-action-button:hover:not(:disabled) {
+            background: rgba(212, 175, 55, 0.20);
+        }
+
+        .shop-action-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.48;
+        }
+
+        .shop-empty {
+            padding: 30px 16px;
+            text-align: center;
+            color: #9fa5ba;
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+
+
+        /* =====================================================
+           COMPACT SHOP CARDS + HOVER TOOLTIP
+           ===================================================== */
+
+        .shop-item-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            min-height: 74px;
+            padding: 10px 12px;
+        }
+
+        .shop-item-card .shop-item-description,
+        .shop-item-card .shop-item-meta,
+        .shop-item-card .shop-quantity {
+            display: none !important;
+        }
+
+        .shop-item-card .shop-item-image-frame {
+            position: relative;
+            display: flex !important;
+            width: 58px;
+            height: 58px;
+            flex: 0 0 58px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.22);
+        }
+
+        .shop-item-card .shop-item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .shop-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shop-item-name {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .shop-item-info {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .shop-item-actions {
+            flex: 0 0 auto;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shop-visible-price {
+            color: #f1d56b;
+            font-size: 0.86rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .shop-owned-quantity {
+            position: absolute;
+            right: 3px;
+            bottom: 2px;
+            z-index: 2;
+            min-width: 18px;
+            padding: 1px 4px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.72);
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .shop-item-actions {
+            grid-column: auto;
+            margin-top: 0;
+            flex: 0 0 auto;
+        }
+
+        .shop-action-button {
+            min-width: 0;
+            width: auto;
+            flex: 0 0 auto;
+            padding: 7px 11px;
+            white-space: nowrap;
+        }
+
+        .shop-item-tooltip {
+            position: fixed;
+            z-index: 10050;
+            width: min(320px, calc(100vw - 24px));
+            pointer-events: none;
+            padding: 13px 14px;
+            border: 1px solid rgba(212, 175, 55, 0.55);
+            border-radius: 10px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(14, 18, 43, 0.99),
+                    rgba(6, 9, 25, 0.99)
+                );
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+            color: #e6e8f0;
+            font-size: 0.86rem;
+            line-height: 1.4;
+        }
+
+        .shop-item-tooltip.hidden {
+            display: none !important;
+        }
+
+        .shop-item-tooltip-name {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .shop-item-tooltip-rarity {
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+            opacity: 0.9;
+        }
+
+        .shop-item-tooltip-description {
+            margin-bottom: 9px;
+            color: #bfc4d7;
+        }
+
+        .shop-item-tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 4px;
+        }
+
+        .shop-item-tooltip-row strong {
+            color: #f0d77d;
+        }
+
+
+        /* =====================================================
+           SHOP QUANTITY / CONFIRMATION MODAL
+           ===================================================== */
+
+        .shop-quantity-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10040;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(2, 5, 18, 0.72);
+            backdrop-filter: blur(3px);
+        }
+
+        .shop-quantity-overlay.hidden {
+            display: none !important;
+        }
+
+        .shop-quantity-dialog {
+            width: min(390px, 94vw);
+            padding: 22px;
+            border: 1px solid rgba(212, 175, 55, 0.62);
+            border-radius: 14px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(15, 20, 48, 0.995),
+                    rgba(7, 10, 28, 0.995)
+                );
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.58);
+        }
+
+        .shop-quantity-dialog h3 {
+            margin: 0 0 8px;
+            color: #f0d77d;
+        }
+
+        .shop-quantity-dialog p {
+            margin: 0 0 16px;
+            color: #bfc4d7;
+        }
+
+        .shop-quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .shop-quantity-control label {
+            color: #d8dbea;
+        }
+
+        .shop-quantity-dialog-input {
+            width: 92px;
+            padding: 9px 10px;
+            border: 1px solid rgba(212, 175, 55, 0.38);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.22);
+            color: #ececf4;
+            font-family: inherit;
+        }
+
+        .shop-quantity-max {
+            padding: 8px 10px;
+            border: 1px solid rgba(212, 175, 55, 0.46);
+            border-radius: 8px;
+            background: rgba(212, 175, 55, 0.09);
+            color: #f0d77d;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .shop-quantity-max:hover:not(:disabled) {
+            background: rgba(212, 175, 55, 0.17);
+        }
+
+        .shop-quantity-max:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .shop-quantity-summary {
+            margin-bottom: 17px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(212, 175, 55, 0.07);
+            color: #ececf4;
+        }
+
+        .shop-quantity-dialog-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .shop-quantity-dialog-actions button {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .shop-quantity-cancel {
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            color: #d8dbea;
+        }
+
+        .shop-quantity-confirm {
+            border: 1px solid rgba(212, 175, 55, 0.62);
+            background: rgba(212, 175, 55, 0.13);
+            color: #f0d77d;
+            font-weight: 700;
+        }
+
+
+        @media (max-width: 980px) {
+            .shop-grid {
+                grid-template-columns: repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+            }
+        }
+
+        @media (max-width: 700px) {
+            .shop-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shop-overlay {
+                padding: 10px;
+            }
+
+            .shop-header {
+                padding: 18px;
+            }
+
+            .shop-header-side {
+                align-items: flex-end;
+                flex-direction: column-reverse;
+            }
+
+            .shop-tabs {
+                padding: 10px 14px;
+                overflow-x: auto;
+            }
+
+            .shop-content {
+                padding: 16px;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -539,6 +1125,195 @@
     </div>
 
 
+
+    <!-- =====================================================
+         SHOP OVERLAY
+         ===================================================== -->
+
+    <div
+        id="shopOverlay"
+        class="shop-overlay hidden">
+
+        <div class="shop-window">
+
+            <div class="shop-header">
+
+                <div class="shop-header-copy">
+                    <h2 id="shopName">
+                        Shop
+                    </h2>
+
+                    <p
+                        id="shopDescription"
+                        class="shop-description">
+                    </p>
+                </div>
+
+                <div class="shop-header-side">
+
+                    <div
+                        id="shopGold"
+                        class="shop-gold">
+                        Gold: 0
+                    </div>
+
+                    <button
+                        id="shopClose"
+                        class="shop-close"
+                        type="button">
+                        ✕
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="shop-tabs">
+
+                <button
+                    class="shop-tab active"
+                    type="button"
+                    data-shop-tab="buy">
+                    Buy
+                </button>
+
+                <button
+                    class="shop-tab"
+                    type="button"
+                    data-shop-tab="sell">
+                    Sell
+                </button>
+
+                <button
+                    class="shop-tab"
+                    type="button"
+                    data-shop-tab="buyback">
+                    Buy Back
+                </button>
+
+            </div>
+
+
+            <div class="shop-content">
+
+                <div
+                    id="shopBuyPanel"
+                    class="shop-panel"
+                    data-shop-panel="buy">
+
+                    <div
+                        id="shopBuyGrid"
+                        class="shop-grid">
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="shopSellPanel"
+                    class="shop-panel hidden"
+                    data-shop-panel="sell">
+
+                    <div
+                        id="shopSellGrid"
+                        class="shop-grid">
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="shopBuybackPanel"
+                    class="shop-panel hidden"
+                    data-shop-panel="buyback">
+
+                    <div
+                        id="shopBuybackGrid"
+                        class="shop-grid">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- SHOP ITEM HOVER TOOLTIP -->
+    <div
+        id="shopItemTooltip"
+        class="shop-item-tooltip hidden">
+    </div>
+
+
+    <!-- SHOP QUANTITY / CONFIRMATION -->
+    <div
+        id="shopQuantityOverlay"
+        class="shop-quantity-overlay hidden">
+
+        <div class="shop-quantity-dialog">
+
+            <h3 id="shopQuantityTitle">
+                Confirm
+            </h3>
+
+            <p id="shopQuantityItemName">
+            </p>
+
+            <div class="shop-quantity-control">
+
+                <label for="shopQuantityInput">
+                    Quantity:
+                </label>
+
+                <input
+                    id="shopQuantityInput"
+                    class="shop-quantity-dialog-input"
+                    type="number"
+                    min="1"
+                    value="1">
+
+                <button
+                    id="shopQuantityMax"
+                    class="shop-quantity-max"
+                    type="button">
+                    Max
+                </button>
+
+            </div>
+
+            <div
+                id="shopQuantitySummary"
+                class="shop-quantity-summary">
+            </div>
+
+            <div class="shop-quantity-dialog-actions">
+
+                <button
+                    id="shopQuantityCancel"
+                    class="shop-quantity-cancel"
+                    type="button">
+                    Cancel
+                </button>
+
+                <button
+                    id="shopQuantityConfirm"
+                    class="shop-quantity-confirm"
+                    type="button">
+                    Confirm
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
@@ -553,6 +1328,13 @@
         let currentCombatEffectiveStats = null;
         let currentCombatWeaponDamage = 0;
         let activeCombatSkillTooltip = null;
+
+        let activeShopId = null;
+        let activeShopState = null;
+        let activeShopTab = 'buy';
+        let shopTransactionRunning = false;
+
+        let activeShopAction = null;
 
 
         /* =========================================================
@@ -1704,7 +2486,2244 @@
                 return;
             }
 
+
+            if (node.node_type === 'shops') {
+                await openShop(
+                    node.entity_id
+                );
+                return;
+            }
+
         }
+
+
+
+        /* =========================================================
+           SHOPS
+           ========================================================= */
+
+        async function openShop(
+            shopId
+        ) {
+
+            activeShopId =
+                Number(
+                    shopId
+                );
+
+
+            activeShopTab =
+                'buy';
+
+
+            document
+                .getElementById(
+                    'shopOverlay'
+                )
+                .classList.remove(
+                    'hidden'
+                );
+
+
+            document
+                .getElementById(
+                    'shopName'
+                )
+                .textContent =
+                    'Loading...';
+
+
+            document
+                .getElementById(
+                    'shopDescription'
+                )
+                .textContent =
+                    '';
+
+
+            setShopTab(
+                'buy'
+            );
+
+
+            await refreshShop();
+
+        }
+
+
+        async function refreshShop() {
+
+            if (
+                !activeShopId
+            ) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .functions
+                    .invoke(
+                        'get_shop',
+                        {
+                            body: {
+                                shop_id:
+                                    activeShopId
+                            }
+                        }
+                    );
+
+
+            if (
+                error ||
+                !data?.success
+            ) {
+
+                let message =
+                    data?.error ||
+                    'Could not load the shop.';
+
+
+                if (
+                    error?.context
+                ) {
+
+                    try {
+
+                        const body =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (
+                            body?.error
+                        ) {
+
+                            message =
+                                body.error;
+
+                        }
+
+                    } catch {
+                        // Keep fallback message.
+                    }
+
+                }
+
+
+                showWorldToast(
+                    message
+                );
+
+
+                closeShop();
+
+                return;
+
+            }
+
+
+            activeShopState =
+                data;
+
+
+            console.log(
+                '[Shop] Loaded state:',
+                {
+                    shop:
+                        data.shop,
+
+                    items:
+                        data.items,
+
+                    pets:
+                        data.pets,
+
+                    petDebug:
+                        data.debug_shop_pets
+                }
+            );
+
+
+            renderShop();
+
+        }
+
+
+        function renderShop() {
+
+            if (
+                !activeShopState
+            ) {
+                return;
+            }
+
+
+            const shop =
+                activeShopState.shop ||
+                {};
+
+
+            document
+                .getElementById(
+                    'shopName'
+                )
+                .textContent =
+                    shop.name ||
+                    'Shop';
+
+
+            document
+                .getElementById(
+                    'shopDescription'
+                )
+                .textContent =
+                    shop.description ||
+                    '';
+
+
+            document
+                .getElementById(
+                    'shopGold'
+                )
+                .textContent =
+                    `Gold: ${Number(
+                        activeShopState.gold ??
+                        0
+                    )}`;
+
+
+            renderShopBuyItems();
+
+            renderShopSellItems();
+
+            renderShopBuybacks();
+
+            setShopTab(
+                activeShopTab
+            );
+
+        }
+
+
+        function setShopTab(
+            tab
+        ) {
+
+            activeShopTab =
+                tab;
+
+
+            document
+                .querySelectorAll(
+                    '[data-shop-tab]'
+                )
+                .forEach(
+                    button => {
+
+                        button.classList.toggle(
+                            'active',
+                            button.dataset.shopTab ===
+                                tab
+                        );
+
+                    }
+                );
+
+
+            document
+                .querySelectorAll(
+                    '[data-shop-panel]'
+                )
+                .forEach(
+                    panel => {
+
+                        panel.classList.toggle(
+                            'hidden',
+                            panel.dataset.shopPanel !==
+                                tab
+                        );
+
+                    }
+                );
+
+        }
+
+
+        function buildConsumableEffectLine(
+            consumable
+        ) {
+
+            if (
+                consumable?.effect_type ===
+                    'Status Effect' &&
+                consumable?.status_effect
+            ) {
+
+                const statusEffect =
+                    consumable.status_effect;
+
+
+                const suffix =
+                    String(
+                        statusEffect.modifier_type ||
+                        ''
+                    )
+                        .toLowerCase() ===
+                    'percentage'
+                        ? '%'
+                        : '';
+
+
+                return {
+                    label:
+                        `Status Effect ${statusEffect.stat || ''}`,
+
+                    value:
+                        `${statusEffect.base_value ?? 0}${suffix}`
+                };
+
+            }
+
+
+            return {
+                label:
+                    consumable?.effect_type ||
+                    '',
+
+                value:
+                    consumable?.effect_value ??
+                    ''
+            };
+
+        }
+
+
+        function normalizeConsumableStatusEffect(
+            consumable
+        ) {
+
+            if (
+                !consumable
+            ) {
+                return consumable;
+            }
+
+
+            const nested =
+                consumable.status_effects;
+
+
+            consumable.status_effect =
+                Array.isArray(
+                    nested
+                )
+                    ? (
+                        nested[0] ||
+                        null
+                    )
+                    : (
+                        nested ||
+                        consumable.status_effect ||
+                        null
+                    );
+
+
+            return consumable;
+
+        }
+
+
+        function getShopRarityColor(
+            rarity
+        ) {
+
+            const colors = {
+                common:
+                    '#888',
+
+                uncommon:
+                    '#00aa00',
+
+                rare:
+                    '#0066ff',
+
+                epic:
+                    '#aa00ff',
+
+                legendary:
+                    '#ffaa00',
+
+                unique:
+                    '#ff0000'
+            };
+
+
+            return (
+                colors[
+                    String(
+                        rarity ||
+                        'common'
+                    )
+                        .trim()
+                        .toLowerCase()
+                ] ||
+                colors.common
+            );
+
+        }
+
+
+        function createShopItemCard({
+            item,
+            price,
+            quantity = null,
+            limitText = '',
+            buttonText,
+            buttonDisabled = false,
+            maxQuantity = 1,
+            actionType = 'buy',
+            showOwnedQuantity = false,
+            details = null,
+            onAction
+        }) {
+
+            const card =
+                document.createElement(
+                    'div'
+                );
+
+
+            card.className =
+                'shop-item-card';
+
+
+            if (
+                buttonDisabled
+            ) {
+
+                card.classList.add(
+                    'is-unavailable'
+                );
+
+            }
+
+
+            const rarityColor =
+                getShopRarityColor(
+                    item?.rarity
+                );
+
+
+            /*
+             * Keep the outer shop item card at Common rarity color.
+             * Only the icon frame uses the item's actual rarity.
+             */
+            card.style.borderColor =
+                getShopRarityColor(
+                    'common'
+                );
+
+
+            const safeMax =
+                Math.max(
+                    1,
+                    Math.floor(
+                        Number(
+                            maxQuantity ??
+                            1
+                        )
+                    )
+                );
+
+
+            const imagePath =
+                item?.icon_path ||
+                item?.image ||
+                '';
+
+
+            card.innerHTML = `
+
+                <div
+                    class="shop-item-image-frame"
+                    style="border-color: ${rarityColor};">
+
+                    ${
+                        imagePath
+                            ? `
+                                <img
+                                    class="shop-item-image"
+                                    src="${escapeHtml(imagePath)}"
+                                    alt="${escapeHtml(item?.name || '')}"
+                                >
+                              `
+                            : ''
+                    }
+
+                    ${
+                        showOwnedQuantity &&
+                        quantity != null
+                            ? `
+                                <div class="shop-owned-quantity">
+                                    ${Number(quantity)}
+                                </div>
+                              `
+                            : ''
+                    }
+
+                </div>
+
+
+                <div class="shop-item-info">
+
+                    <div
+                        class="shop-item-name"
+                        style="color: ${rarityColor};">
+                        ${escapeHtml(
+                            item?.name ||
+                            'Unknown Item'
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="shop-item-actions">
+
+                    ${
+                        actionType === 'buy' ||
+                        actionType === 'sell'
+                            ? `
+                                <span class="shop-visible-price">
+                                    ${Number(price ?? 0)} Gold
+                                </span>
+                              `
+                            : ''
+                    }
+
+                    <button
+                        class="shop-action-button"
+                        type="button"
+                        ${buttonDisabled ? 'disabled' : ''}>
+                        ${escapeHtml(buttonText)}
+                    </button>
+
+                </div>
+            `;
+
+
+            card.addEventListener(
+                'mouseenter',
+                event => {
+
+                    showShopItemTooltip(
+                        event,
+                        {
+                            item,
+                            price,
+                            quantity,
+                            limitText,
+                            actionType,
+                            details
+                        }
+                    );
+
+                }
+            );
+
+
+            card.addEventListener(
+                'mousemove',
+                moveShopItemTooltip
+            );
+
+
+            card.addEventListener(
+                'mouseleave',
+                hideShopItemTooltip
+            );
+
+
+            const button =
+                card.querySelector(
+                    '.shop-action-button'
+                );
+
+
+            button.addEventListener(
+                'click',
+                event => {
+
+                    event.stopPropagation();
+
+
+                    if (
+                        buttonDisabled
+                    ) {
+                        return;
+                    }
+
+
+                    openShopQuantityDialog({
+                        item,
+                        price,
+                        maxQuantity:
+                            safeMax,
+                        actionType,
+                        onConfirm:
+                            onAction
+                    });
+
+                }
+            );
+
+
+            return card;
+
+        }
+
+
+        function showShopItemTooltip(
+            event,
+            {
+                item,
+                quantity,
+                limitText,
+                actionType,
+                details
+            }
+        ) {
+
+            const tooltip =
+                document.getElementById(
+                    'shopItemTooltip'
+                );
+
+
+            const rarity =
+                String(
+                    item?.rarity ||
+                    'common'
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const rarityColor =
+                getShopRarityColor(
+                    rarity
+                );
+
+
+            const statRows =
+                [];
+
+
+            const pushStat =
+                (
+                    label,
+                    value,
+                    suffix = ''
+                ) => {
+
+                    if (
+                        value == null ||
+                        value === ''
+                    ) {
+                        return;
+                    }
+
+
+                    const numeric =
+                        Number(
+                            value
+                        );
+
+
+                    if (
+                        Number.isFinite(
+                            numeric
+                        ) &&
+                        numeric ===
+                            0
+                    ) {
+                        return;
+                    }
+
+
+                    statRows.push(
+                        `
+                            <div class="shop-item-tooltip-row">
+                                <span>${escapeHtml(label)}</span>
+                                <strong>${escapeHtml(value)}${escapeHtml(suffix)}</strong>
+                            </div>
+                        `
+                    );
+
+                };
+
+
+            switch (
+                String(
+                    item?.item_type ||
+                    ''
+                )
+                    .trim()
+                    .toLowerCase()
+            ) {
+
+                case 'weapons':
+
+                    if (
+                        details?.weapon_type
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>Weapon Type</span>
+                                    <strong>${escapeHtml(details.weapon_type)}</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+
+                    pushStat(
+                        'Damage',
+                        details?.damage
+                    );
+
+                    pushStat(
+                        'Attack Speed',
+                        details?.attack_speed
+                    );
+
+                    pushStat(
+                        'Strength',
+                        details?.strength
+                    );
+
+                    pushStat(
+                        'Dexterity',
+                        details?.dexterity
+                    );
+
+                    pushStat(
+                        'Intelligence',
+                        details?.intelligence
+                    );
+
+                    pushStat(
+                        'Defense',
+                        details?.defense
+                    );
+
+                    pushStat(
+                        'Critical Chance',
+                        details?.critical_chance,
+                        '%'
+                    );
+
+                    pushStat(
+                        'Bonus Health',
+                        details?.bonus_health
+                    );
+
+                    pushStat(
+                        'Bonus Mana',
+                        details?.bonus_mana
+                    );
+
+
+                    if (
+                        details?.twohanded ===
+                        true
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>Hands</span>
+                                    <strong>Two-Handed</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+                    break;
+
+
+                case 'armors':
+
+                    if (
+                        details?.armor_type
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>Armor Type</span>
+                                    <strong>${escapeHtml(details.armor_type)}</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+
+                    if (
+                        details?.equipment_slot
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>Slot</span>
+                                    <strong>${escapeHtml(details.equipment_slot)}</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+
+                    pushStat(
+                        'Defense',
+                        details?.defense
+                    );
+
+                    pushStat(
+                        'Strength',
+                        details?.strength
+                    );
+
+                    pushStat(
+                        'Dexterity',
+                        details?.dexterity
+                    );
+
+                    pushStat(
+                        'Intelligence',
+                        details?.intelligence
+                    );
+
+                    break;
+
+
+                case 'consumables':
+
+                    if (
+                        details?.effect_type ===
+                            'Status Effect' &&
+                        details?.status_effect
+                    ) {
+
+                        const statusEffect =
+                            details.status_effect;
+
+
+                        const suffix =
+                            String(
+                                statusEffect.modifier_type ||
+                                ''
+                            )
+                                .toLowerCase() ===
+                            'percentage'
+                                ? '%'
+                                : '';
+
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>
+                                        Status Effect ${escapeHtml(statusEffect.stat || '')}
+                                    </span>
+
+                                    <strong>
+                                        ${escapeHtml(statusEffect.base_value ?? 0)}${suffix}
+                                    </strong>
+                                </div>
+                            `
+                        );
+
+                    } else if (
+                        details?.effect_type
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>${escapeHtml(details.effect_type)}</span>
+                                    <strong>${escapeHtml(details.effect_value ?? 0)}</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+                    break;
+
+
+                case 'materials':
+
+                    if (
+                        details?.material_type
+                    ) {
+
+                        statRows.push(
+                            `
+                                <div class="shop-item-tooltip-row">
+                                    <span>Material Type</span>
+                                    <strong>${escapeHtml(details.material_type)}</strong>
+                                </div>
+                            `
+                        );
+
+                    }
+
+                    break;
+
+            }
+
+
+            tooltip.innerHTML = `
+
+                <div
+                    class="shop-item-tooltip-name"
+                    style="color: ${rarityColor};">
+                    ${escapeHtml(
+                        item?.name ||
+                        'Unknown Item'
+                    )}
+                </div>
+
+                <div
+                    class="shop-item-tooltip-rarity"
+                    style="color: ${rarityColor};">
+                    ${escapeHtml(rarity)}
+                </div>
+
+                ${
+                    item?.description
+                        ? `
+                            <div class="shop-item-tooltip-description">
+                                ${escapeHtml(item.description)}
+                            </div>
+                          `
+                        : ''
+                }
+
+                ${statRows.join('')}
+
+                ${
+                    Number(
+                        item?.required_level ??
+                        0
+                    ) >
+                    0
+                        ? `
+                            <div class="shop-item-tooltip-row">
+                                <span>Required Level</span>
+                                <strong>${Number(item.required_level)}</strong>
+                            </div>
+                          `
+                        : ''
+                }
+
+                ${
+                    quantity != null &&
+                    (
+                        actionType ===
+                            'sell' ||
+                        actionType ===
+                            'buyback'
+                    )
+                        ? `
+                            <div class="shop-item-tooltip-row">
+                                <span>Quantity</span>
+                                <strong>${Number(quantity)}</strong>
+                            </div>
+                          `
+                        : ''
+                }
+
+                ${
+                    limitText &&
+                    actionType ===
+                        'buy'
+                        ? `
+                            <div class="shop-item-tooltip-row">
+                                <span>Status</span>
+                                <strong>${escapeHtml(limitText)}</strong>
+                            </div>
+                          `
+                        : ''
+                }
+
+            `;
+
+
+            tooltip.classList.remove(
+                'hidden'
+            );
+
+
+            moveShopItemTooltip(
+                event
+            );
+
+        }
+
+
+        function moveShopItemTooltip(
+            event
+        ) {
+
+            const tooltip =
+                document.getElementById(
+                    'shopItemTooltip'
+                );
+
+
+            if (
+                tooltip.classList.contains(
+                    'hidden'
+                )
+            ) {
+                return;
+            }
+
+
+            const offset =
+                14;
+
+
+            const rect =
+                tooltip.getBoundingClientRect();
+
+
+            let left =
+                event.clientX +
+                offset;
+
+
+            let top =
+                event.clientY +
+                offset;
+
+
+            if (
+                left +
+                rect.width >
+                window.innerWidth -
+                8
+            ) {
+
+                left =
+                    event.clientX -
+                    rect.width -
+                    offset;
+
+            }
+
+
+            if (
+                top +
+                rect.height >
+                window.innerHeight -
+                8
+            ) {
+
+                top =
+                    event.clientY -
+                    rect.height -
+                    offset;
+
+            }
+
+
+            tooltip.style.left =
+                `${Math.max(8, left)}px`;
+
+
+            tooltip.style.top =
+                `${Math.max(8, top)}px`;
+
+        }
+
+
+        function hideShopItemTooltip() {
+
+            document
+                .getElementById(
+                    'shopItemTooltip'
+                )
+                .classList.add(
+                    'hidden'
+                );
+
+        }
+
+
+        function openShopQuantityDialog({
+            item,
+            price,
+            maxQuantity,
+            actionType,
+            onConfirm
+        }) {
+
+            hideShopItemTooltip();
+
+
+            const overlay =
+                document.getElementById(
+                    'shopQuantityOverlay'
+                );
+
+
+            const input =
+                document.getElementById(
+                    'shopQuantityInput'
+                );
+
+
+            const title =
+                document.getElementById(
+                    'shopQuantityTitle'
+                );
+
+
+            const name =
+                document.getElementById(
+                    'shopQuantityItemName'
+                );
+
+
+            const confirmButton =
+                document.getElementById(
+                    'shopQuantityConfirm'
+                );
+
+
+            const maxButton =
+                document.getElementById(
+                    'shopQuantityMax'
+                );
+
+
+            const safeMax =
+                Math.max(
+                    1,
+                    Math.floor(
+                        Number(
+                            maxQuantity ??
+                            1
+                        )
+                    )
+                );
+
+
+            let verb =
+                'Buy';
+
+
+            if (
+                actionType ===
+                'sell'
+            ) {
+
+                verb =
+                    'Sell';
+
+            } else if (
+                actionType ===
+                'buyback'
+            ) {
+
+                verb =
+                    'Buy Back';
+
+            } else if (
+                actionType ===
+                'pet'
+            ) {
+
+                verb =
+                    'Buy Pet';
+
+            }
+
+
+            title.textContent =
+                verb;
+
+
+            name.textContent =
+                item?.name ||
+                'Unknown Item';
+
+
+            confirmButton.textContent =
+                verb;
+
+
+            input.min =
+                '1';
+
+
+            input.max =
+                String(
+                    safeMax
+                );
+
+
+            input.value =
+                '1';
+
+
+            /*
+             * Pets and non-stackables naturally have maxQuantity = 1.
+             * Keep the field visible, but disabled, so the behavior is
+             * consistent across all three shop tabs.
+             */
+            input.disabled =
+                safeMax <=
+                1;
+
+
+            /*
+             * The Max shortcut is intended for selling inventory
+             * stacks. Keep it hidden for Buy / Buy Back / Pets.
+             */
+            maxButton.style.display =
+                actionType ===
+                    'sell'
+                    ? ''
+                    : 'none';
+
+
+            maxButton.disabled =
+                actionType !==
+                    'sell' ||
+                safeMax <=
+                    1;
+
+
+            activeShopAction = {
+                item,
+                price:
+                    Number(
+                        price ??
+                        0
+                    ),
+                maxQuantity:
+                    safeMax,
+                actionType,
+                onConfirm
+            };
+
+
+            updateShopQuantitySummary();
+
+
+            overlay.classList.remove(
+                'hidden'
+            );
+
+
+            if (
+                !input.disabled
+            ) {
+
+                input.focus();
+
+                input.select();
+
+            }
+
+        }
+
+
+        function updateShopQuantitySummary() {
+
+            if (
+                !activeShopAction
+            ) {
+                return;
+            }
+
+
+            const input =
+                document.getElementById(
+                    'shopQuantityInput'
+                );
+
+
+            let quantity =
+                Math.floor(
+                    Number(
+                        input.value ||
+                        1
+                    )
+                );
+
+
+            quantity =
+                Math.max(
+                    1,
+                    Math.min(
+                        activeShopAction.maxQuantity,
+                        quantity
+                    )
+                );
+
+
+            input.value =
+                String(
+                    quantity
+                );
+
+
+            const total =
+                activeShopAction.price *
+                quantity;
+
+
+            document
+                .getElementById(
+                    'shopQuantitySummary'
+                )
+                .textContent =
+                    `Total: ${total} Gold`;
+
+        }
+
+
+        function closeShopQuantityDialog() {
+
+            document
+                .getElementById(
+                    'shopQuantityOverlay'
+                )
+                .classList.add(
+                    'hidden'
+                );
+
+
+            activeShopAction =
+                null;
+
+        }
+
+
+        async function confirmShopQuantityAction() {
+
+            if (
+                !activeShopAction
+            ) {
+                return;
+            }
+
+
+            const input =
+                document.getElementById(
+                    'shopQuantityInput'
+                );
+
+
+            const quantity =
+                Math.max(
+                    1,
+                    Math.min(
+                        activeShopAction.maxQuantity,
+                        Math.floor(
+                            Number(
+                                input.value ||
+                                1
+                            )
+                        )
+                    )
+                );
+
+
+            const action =
+                activeShopAction;
+
+
+            closeShopQuantityDialog();
+
+
+            await action.onConfirm(
+                quantity
+            );
+
+        }
+
+
+        document
+            .getElementById(
+                'shopQuantityInput'
+            )
+            .addEventListener(
+                'input',
+                updateShopQuantitySummary
+            );
+
+
+        document
+            .getElementById(
+                'shopQuantityMax'
+            )
+            .addEventListener(
+                'click',
+                () => {
+
+                    if (
+                        !activeShopAction ||
+                        activeShopAction.actionType !==
+                            'sell'
+                    ) {
+                        return;
+                    }
+
+
+                    const input =
+                        document.getElementById(
+                            'shopQuantityInput'
+                        );
+
+
+                    input.value =
+                        String(
+                            activeShopAction.maxQuantity
+                        );
+
+
+                    updateShopQuantitySummary();
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                'shopQuantityCancel'
+            )
+            .addEventListener(
+                'click',
+                closeShopQuantityDialog
+            );
+
+
+        document
+            .getElementById(
+                'shopQuantityConfirm'
+            )
+            .addEventListener(
+                'click',
+                confirmShopQuantityAction
+            );
+
+
+        document
+            .getElementById(
+                'shopQuantityOverlay'
+            )
+            .addEventListener(
+                'click',
+                event => {
+
+                    if (
+                        event.target.id ===
+                        'shopQuantityOverlay'
+                    ) {
+
+                        closeShopQuantityDialog();
+
+                    }
+
+                }
+            );
+
+
+
+        function renderShopBuyItems() {
+
+            const grid =
+                document.getElementById(
+                    'shopBuyGrid'
+                );
+
+
+            grid.innerHTML =
+                '';
+
+
+            const rows =
+                activeShopState?.items ||
+                [];
+
+
+            for (
+                const row
+                of
+                rows
+            ) {
+
+                const item =
+                    row.items;
+
+
+                const purchaseLimit =
+                    row.purchase_limit == null
+                        ? null
+                        : Number(
+                            row.purchase_limit
+                        );
+
+
+                const purchased =
+                    Number(
+                        row.quantity_purchased ??
+                        0
+                    );
+
+
+                const remaining =
+                    purchaseLimit == null
+                        ? null
+                        : Math.max(
+                            0,
+                            purchaseLimit -
+                            purchased
+                        );
+
+
+                const unavailable =
+                    remaining !==
+                        null &&
+                    remaining <=
+                        0;
+
+
+                const maxQuantity =
+                    unavailable
+                        ? 1
+                        : item?.stackable
+                            ? Math.max(
+                                1,
+                                Math.min(
+                                    Number(
+                                        item.max_stack_size ??
+                                        99
+                                    ),
+                                    remaining ??
+                                    Number(
+                                        item.max_stack_size ??
+                                        99
+                                    )
+                                )
+                            )
+                            : 1;
+
+
+                let limitText =
+                    '';
+
+
+                if (
+                    purchaseLimit !=
+                    null
+                ) {
+
+                    limitText =
+                        unavailable
+                            ? 'Already purchased'
+                            : `${remaining}/${purchaseLimit} remaining`;
+
+                }
+
+
+                const card =
+                    createShopItemCard({
+                        item,
+
+                        price:
+                            row.price,
+
+                        limitText,
+
+                        buttonText:
+                            unavailable
+                                ? 'Unavailable'
+                                : 'Buy',
+
+                        buttonDisabled:
+                            unavailable,
+
+                        maxQuantity,
+
+                        actionType:
+                            'buy',
+
+                        details:
+                            row.details,
+
+                        onAction:
+                            quantity =>
+                                buyShopItem(
+                                    row.id,
+                                    quantity
+                                )
+                    });
+
+
+                grid.appendChild(
+                    card
+                );
+
+            }
+
+
+            /*
+             * Pets are sold in the same Buy tab and use the same
+             * visual card style as normal shop items.
+             */
+            const petRows =
+                activeShopState?.pets ||
+                [];
+
+
+            for (
+                const row
+                of
+                petRows
+            ) {
+
+                const pet =
+                    Array.isArray(
+                        row.pets
+                    )
+                        ? row.pets[0]
+                        : row.pets;
+
+
+                if (
+                    !pet
+                ) {
+
+                    console.warn(
+                        '[Shop] Pet row has no pet details:',
+                        row
+                    );
+
+                    continue;
+
+                }
+
+
+                const owned =
+                    Boolean(
+                        row.owned
+                    );
+
+
+                const bonusText =
+                    (
+                        pet?.pet_bonuses ||
+                        []
+                    )
+                        .map(
+                            bonus => {
+
+                                const bonusName =
+                                    String(
+                                        bonus.bonus_type ||
+                                        ''
+                                    )
+                                        .replaceAll(
+                                            '_',
+                                            ' '
+                                        )
+                                        .replace(
+                                            /\b\w/g,
+                                            char =>
+                                                char.toUpperCase()
+                                        );
+
+
+                                const suffix =
+                                    String(
+                                        bonus.modifier_type ||
+                                        ''
+                                    )
+                                        .toLowerCase() ===
+                                    'percentage'
+                                        ? '%'
+                                        : '';
+
+
+                                return `+${Number(
+                                    bonus.value ??
+                                    0
+                                )}${suffix} ${bonusName}`;
+
+                            }
+                        )
+                        .join(
+                            ', '
+                        );
+
+
+                const petForCard = {
+                    ...pet,
+
+                    description:
+                        [
+                            pet?.description ||
+                            '',
+
+                            bonusText
+                        ]
+                            .filter(Boolean)
+                            .join(' • ')
+                };
+
+
+                const card =
+                    createShopItemCard({
+                        item:
+                            petForCard,
+
+                        price:
+                            row.price,
+
+                        limitText:
+                            owned
+                                ? 'Already owned'
+                                : `Pet • Required Level ${Number(
+                                    pet?.required_level ??
+                                    1
+                                )}`,
+
+                        buttonText:
+                            owned
+                                ? 'Owned'
+                                : 'Buy Pet',
+
+                        buttonDisabled:
+                            owned,
+
+                        maxQuantity:
+                            1,
+
+                        actionType:
+                            'pet',
+
+                        onAction:
+                            () =>
+                                buyShopPet(
+                                    row.id
+                                )
+                    });
+
+
+                grid.appendChild(
+                    card
+                );
+
+            }
+
+
+            if (
+                rows.length ===
+                    0 &&
+                petRows.length ===
+                    0
+            ) {
+
+                grid.innerHTML = `
+                    <div class="shop-empty">
+                        This shop currently has nothing for sale.
+                    </div>
+                `;
+
+            }
+
+        }
+
+
+        function renderShopSellItems() {
+
+            const grid =
+                document.getElementById(
+                    'shopSellGrid'
+                );
+
+
+            grid.innerHTML =
+                '';
+
+
+            const rows =
+                activeShopState?.inventory ||
+                [];
+
+
+            if (
+                rows.length ===
+                0
+            ) {
+
+                grid.innerHTML = `
+                    <div class="shop-empty">
+                        Your inventory is empty.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            for (
+                const row
+                of
+                rows
+            ) {
+
+                const item =
+                    row.items;
+
+
+                const quantity =
+                    Math.max(
+                        1,
+                        Number(
+                            row.quantity ??
+                            1
+                        )
+                    );
+
+
+                const canSell =
+                    item?.sell_price !=
+                    null;
+
+
+                const sellPrice =
+                    Math.max(
+                        0,
+                        Number(
+                            item?.sell_price ??
+                            0
+                        )
+                    );
+
+
+                const card =
+                    createShopItemCard({
+                        item,
+
+                        price:
+                            sellPrice,
+
+                        quantity,
+
+                        limitText:
+                            canSell
+                                ? 'Sell price'
+                                : 'Cannot be sold',
+
+                        buttonText:
+                            canSell
+                                ? 'Sell'
+                                : 'Unavailable',
+
+                        buttonDisabled:
+                            !canSell,
+
+                        maxQuantity:
+                            quantity,
+
+                        actionType:
+                            'sell',
+
+                        showOwnedQuantity:
+                            true,
+
+                        details:
+                            row.details,
+
+                        onAction:
+                            requestedQuantity =>
+                                sellShopItem(
+                                    row.inventory_id,
+                                    requestedQuantity
+                                )
+                    });
+
+
+                grid.appendChild(
+                    card
+                );
+
+            }
+
+        }
+
+
+        function renderShopBuybacks() {
+
+            const grid =
+                document.getElementById(
+                    'shopBuybackGrid'
+                );
+
+
+            grid.innerHTML =
+                '';
+
+
+            const rows =
+                activeShopState?.buybacks ||
+                [];
+
+
+            if (
+                rows.length ===
+                0
+            ) {
+
+                grid.innerHTML = `
+                    <div class="shop-empty">
+                        You have no items to buy back from this shop.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            for (
+                const row
+                of
+                rows
+            ) {
+
+                const quantity =
+                    Math.max(
+                        1,
+                        Number(
+                            row.quantity ??
+                            1
+                        )
+                    );
+
+
+                const card =
+                    createShopItemCard({
+                        item:
+                            row.items,
+
+                        price:
+                            row.price_per_item,
+
+                        quantity,
+
+                        limitText:
+                            'Buyback price',
+
+                        buttonText:
+                            'Buy Back',
+
+                        maxQuantity:
+                            quantity,
+
+                        actionType:
+                            'buyback',
+
+                        showOwnedQuantity:
+                            true,
+
+                        details:
+                            row.details,
+
+                        onAction:
+                            requestedQuantity =>
+                                buybackShopItem(
+                                    row.id,
+                                    requestedQuantity
+                                )
+                    });
+
+
+                grid.appendChild(
+                    card
+                );
+
+            }
+
+        }
+
+
+        async function buyShopItem(
+            shopItemId,
+            quantity
+        ) {
+
+            await runShopTransaction(
+                'buy_shop_item',
+                {
+                    shop_item_id:
+                        shopItemId,
+
+                    quantity
+                },
+                'Item purchased.'
+            );
+
+        }
+
+
+        async function buyShopPet(
+            shopPetId
+        ) {
+
+            await runShopTransaction(
+                'buy_shop_pet',
+                {
+                    shop_pet_id:
+                        shopPetId
+                },
+                'Pet purchased.'
+            );
+
+        }
+
+
+        async function sellShopItem(
+            inventoryId,
+            quantity
+        ) {
+
+            await runShopTransaction(
+                'sell_shop_item',
+                {
+                    shop_id:
+                        activeShopId,
+
+                    inventory_id:
+                        inventoryId,
+
+                    quantity
+                },
+                'Item sold. You can buy it back from this shop.'
+            );
+
+        }
+
+
+        async function buybackShopItem(
+            buybackId,
+            quantity
+        ) {
+
+            await runShopTransaction(
+                'buyback_shop_item',
+                {
+                    shop_id:
+                        activeShopId,
+
+                    buyback_id:
+                        buybackId,
+
+                    quantity
+                },
+                'Item bought back.'
+            );
+
+        }
+
+
+        async function runShopTransaction(
+            functionName,
+            body,
+            successMessage
+        ) {
+
+            if (
+                shopTransactionRunning
+            ) {
+                return;
+            }
+
+
+            shopTransactionRunning =
+                true;
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .functions
+                        .invoke(
+                            functionName,
+                            {
+                                body
+                            }
+                        );
+
+
+                if (
+                    error ||
+                    !data?.success
+                ) {
+
+                    let message =
+                        data?.error ||
+                        'The shop transaction failed.';
+
+
+                    if (
+                        error?.context
+                    ) {
+
+                        try {
+
+                            const errorBody =
+                                await error.context
+                                    .clone()
+                                    .json();
+
+
+                            if (
+                                errorBody?.error
+                            ) {
+
+                                message =
+                                    errorBody.error;
+
+                            }
+
+                        } catch {
+                            // Keep fallback message.
+                        }
+
+                    }
+
+
+                    showWorldToast(
+                        message
+                    );
+
+                    return;
+
+                }
+
+
+                showWorldToast(
+                    successMessage,
+                    'success'
+                );
+
+
+                await refreshShop();
+
+            } finally {
+
+                shopTransactionRunning =
+                    false;
+
+            }
+
+        }
+
+
+        function closeShop() {
+
+            document
+                .getElementById(
+                    'shopOverlay'
+                )
+                .classList.add(
+                    'hidden'
+                );
+
+
+            activeShopId =
+                null;
+
+
+            activeShopState =
+                null;
+
+        }
+
+
+        document
+            .querySelectorAll(
+                '[data-shop-tab]'
+            )
+            .forEach(
+                button => {
+
+                    button.addEventListener(
+                        'click',
+                        () =>
+                            setShopTab(
+                                button.dataset.shopTab
+                            )
+                    );
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                'shopClose'
+            )
+            .addEventListener(
+                'click',
+                closeShop
+            );
+
+
+        document
+            .getElementById(
+                'shopOverlay'
+            )
+            .addEventListener(
+                'click',
+                event => {
+
+                    if (
+                        event.target.id ===
+                        'shopOverlay'
+                    ) {
+
+                        closeShop();
+
+                    }
+
+                }
+            );
 
 
         /* =========================================================
@@ -7489,6 +10508,59 @@
 
         }
 
+
+
+
+        document.addEventListener(
+            'keydown',
+            event => {
+
+                if (
+                    event.key !==
+                    'Escape'
+                ) {
+                    return;
+                }
+
+
+                const quantityOverlay =
+                    document.getElementById(
+                        'shopQuantityOverlay'
+                    );
+
+
+                if (
+                    !quantityOverlay
+                        .classList
+                        .contains(
+                            'hidden'
+                        )
+                ) {
+
+                    closeShopQuantityDialog();
+
+                    return;
+
+                }
+
+
+                if (
+                    !document
+                        .getElementById(
+                            'shopOverlay'
+                        )
+                        .classList
+                        .contains(
+                            'hidden'
+                        )
+                ) {
+
+                    closeShop();
+
+                }
+
+            }
+        );
 
         /* =========================================================
            START
