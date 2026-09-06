@@ -253,6 +253,12 @@
                         </div>
                     </div>
                 </div>
+
+                <div
+                    id="combatEnemyStatusEffects"
+                    class="combat-status-effects combat-enemy-status-effects">
+                </div>
+
             </div>
 
             <div class="combat-divider"></div>
@@ -323,6 +329,12 @@
                             </div>
                         </div>
 
+                    </div>
+
+
+                    <div
+                        id="combatPlayerStatusEffects"
+                        class="combat-status-effects combat-player-status-effects">
                     </div>
 
 
@@ -447,6 +459,20 @@
                 <div
                     id="combatRewardLevelUpLevels"
                     class="combat-reward-level-up-levels">
+                </div>
+
+            </div>
+
+
+            <div
+                id="combatRewardQuestProgressSection"
+                class="combat-reward-quest-progress-section hidden">
+
+                <h3>Quest Progress</h3>
+
+                <div
+                    id="combatRewardQuestProgressList"
+                    class="combat-reward-quest-progress-list">
                 </div>
 
             </div>
@@ -578,15 +604,17 @@
 
 
             /*
-             * Always load the world first.
+             * Before loading the normal world, check whether this
+             * character already has an active combat session.
              *
-             * If the character has an active combat session, the
-             * combat overlay is then restored on top of the fully
-             * initialized world.
+             * start_combat is called without enemy_id here.
+             * The Edge Function interprets that as:
              *
-             * Previously we returned immediately when combat was
-             * resumed, which meant loadLocations() never ran and
-             * the world behind the combat overlay stayed empty.
+             * "Resume my active combat if one exists."
+             */
+            /*
+             * Always initialize the world first, then restore an
+             * existing combat overlay on top of it.
              */
             await loadLocations();
 
@@ -719,7 +747,19 @@
                         data.combat.enemy?.current_mana ??
                         data.combat.enemy?.max_mana ??
                         0
-                    )
+                    ),
+
+                status_effects: {
+                    player:
+                        data.combat.status_effects
+                            ?.player ||
+                        [],
+
+                    enemy:
+                        data.combat.status_effects
+                            ?.enemy ||
+                        []
+                }
 
             };
 
@@ -1995,7 +2035,14 @@
                         data.combat.enemy?.current_mana ??
                         data.combat.enemy?.max_mana ??
                         0
-                    )
+                    ),
+
+                status_effects:
+                    data.combat.status_effects ||
+                    {
+                        player: [],
+                        enemy: []
+                    }
 
             };
 
@@ -2048,12 +2095,37 @@
                 enemy.max_mana
             );
 
+
             await loadCombatPlayerIdentity();
             await loadCombatPlayerVitals();
             await loadCombatWeaponDamage();
             await loadCombatSkills();
 
-            document.getElementById('combatOverlay').classList.remove('hidden');
+
+            /*
+             * Render persisted status effects LAST.
+             *
+             * This is especially important when an active combat is
+             * resumed after a page reload: start_combat returns the
+             * rows from combat_status_effects, and we render them only
+             * after every other combat UI loader has finished.
+             */
+            renderCombatStatusEffects(
+                currentCombat.status_effects ||
+                {
+                    player: [],
+                    enemy: []
+                }
+            );
+
+
+            document
+                .getElementById(
+                    'combatOverlay'
+                )
+                .classList.remove(
+                    'hidden'
+                );
         }
 
 
@@ -2455,6 +2527,53 @@
             applyCombatResponse(playerResult);
 
 
+            showCombatStatusEvents(
+                playerResult.status_events
+            );
+
+
+            if (
+                playerResult.combat.status ===
+                'lost'
+            ) {
+
+                setCombatMessage(
+                    'You were defeated by a status effect.',
+                    'error'
+                );
+
+
+                showCombatDeathWindow({
+                    experienceLost:
+                        Number(
+                            playerResult.death_penalty
+                                ?.experience_lost ??
+                            0
+                        ),
+
+                    healthLost:
+                        Number(
+                            playerResult.death_penalty
+                                ?.health_lost ??
+                            0
+                        )
+                });
+
+
+                combatTurnPending =
+                    false;
+
+
+                setCombatSkillsDisabled(
+                    true
+                );
+
+
+                return;
+
+            }
+
+
             if (
                 playerResult.player_action?.type ===
                 'damage'
@@ -2526,7 +2645,244 @@
                 return;
             }
 
-            applyCombatResponse(enemyResult);
+            const enemyStatusEvents =
+                enemyResult.enemy_status_events ||
+                [];
+
+
+            /*
+             * Enemy-targeted periodic effects resolve before the
+             * enemy acts. Visually apply ONLY the enemy snapshot
+             * first so the player's HP is not changed early.
+             */
+            if (
+                enemyStatusEvents.length >
+                0 &&
+                enemyResult.pre_enemy_action_enemy
+            ) {
+
+                applyCombatResponse({
+                    ...enemyResult,
+
+                    combat: {
+                        ...enemyResult.combat,
+
+                        enemy: {
+                            ...enemyResult.combat.enemy,
+
+                            current_health:
+                                Number(
+                                    enemyResult
+                                        .pre_enemy_action_enemy
+                                        .current_health ??
+                                    enemyResult.combat.enemy
+                                        .current_health
+                                ),
+
+                            current_mana:
+                                Number(
+                                    enemyResult
+                                        .pre_enemy_action_enemy
+                                        .current_mana ??
+                                    enemyResult.combat.enemy
+                                        .current_mana
+                                ),
+
+                            max_health:
+                                Number(
+                                    enemyResult
+                                        .pre_enemy_action_enemy
+                                        .max_health ??
+                                    enemyResult.combat.enemy
+                                        .max_health
+                                ),
+
+                            max_mana:
+                                Number(
+                                    enemyResult
+                                        .pre_enemy_action_enemy
+                                        .max_mana ??
+                                    enemyResult.combat.enemy
+                                        .max_mana
+                                )
+                        },
+
+                        character: {
+                            ...enemyResult.combat.character,
+
+                            current_health:
+                                Number(
+                                    currentCombat.character_health ??
+                                    currentCharacter.current_health ??
+                                    enemyResult.combat.character
+                                        .current_health
+                                ),
+
+                            current_mana:
+                                Number(
+                                    currentCombat.character_mana ??
+                                    currentCharacter.current_mana ??
+                                    enemyResult.combat.character
+                                        .current_mana
+                                )
+                        }
+                    }
+                });
+
+
+                showCombatStatusEvents(
+                    enemyStatusEvents
+                );
+
+
+                const enemyStatusNames =
+                    [
+                        ...new Set(
+                            enemyStatusEvents
+                                .map(
+                                    event =>
+                                        event.status_name
+                                )
+                                .filter(
+                                    Boolean
+                                )
+                        )
+                    ];
+
+
+                if (
+                    enemyStatusNames.length >
+                    0
+                ) {
+
+                    setCombatMessage(
+                        `${enemyStatusNames.join(', ')} takes effect.`
+                    );
+
+                }
+
+
+                /*
+                 * Give the status tick half a second of its own
+                 * before the enemy's skill is displayed.
+                 */
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+            }
+
+
+            /*
+             * An enemy can die from Poison / Burn / Bleed at the
+             * start of its phase, before it gets to use a skill.
+             */
+            if (
+                enemyResult.combat.status ===
+                'won'
+            ) {
+
+                /*
+                 * Apply the final server response before showing
+                 * the victory rewards.
+                 */
+                applyCombatResponse(
+                    enemyResult
+                );
+
+
+                setCombatMessage(
+                    'The enemy was defeated by a status effect. Victory!',
+                    'success'
+                );
+
+
+                combatTurnPending =
+                    false;
+
+
+                setCombatSkillsDisabled(
+                    true
+                );
+
+
+                await showCombatRewards(
+                    enemyResult.rewards || {
+                        experience: 0,
+                        gold: 0,
+                        items: []
+                    }
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * Now that the enemy status tick has had its own visual
+             * moment, show the enemy's direct action.
+             */
+            if (
+                enemyResult.pre_status_character
+            ) {
+
+                applyCombatResponse({
+                    ...enemyResult,
+
+                    combat: {
+                        ...enemyResult.combat,
+
+                        character: {
+                            ...enemyResult.combat.character,
+
+                            current_health:
+                                Number(
+                                    enemyResult.pre_status_character
+                                        .current_health ??
+                                    enemyResult.combat.character
+                                        .current_health
+                                ),
+
+                            current_mana:
+                                Number(
+                                    enemyResult.pre_status_character
+                                        .current_mana ??
+                                    enemyResult.combat.character
+                                        .current_mana
+                                ),
+
+                            max_health:
+                                Number(
+                                    enemyResult.pre_status_character
+                                        .max_health ??
+                                    enemyResult.combat.character
+                                        .max_health
+                                ),
+
+                            max_mana:
+                                Number(
+                                    enemyResult.pre_status_character
+                                        .max_mana ??
+                                    enemyResult.combat.character
+                                        .max_mana
+                                )
+                        }
+                    }
+                });
+
+            } else {
+
+                applyCombatResponse(
+                    enemyResult
+                );
+
+            }
 
 
             if (
@@ -2562,7 +2918,25 @@
                 message += ` ${enemyMessage}`;
             }
 
-            if (enemyResult.combat.status === 'lost') {
+            /*
+             * If the direct enemy attack itself killed the player,
+             * there is no status-effect delay because the turn has
+             * already ended.
+             */
+            const killedByEnemyAttack =
+                Number(
+                    enemyResult.pre_status_character
+                        ?.current_health ??
+                    1
+                ) <=
+                0;
+
+
+            if (
+                enemyResult.combat.status ===
+                    'lost' &&
+                killedByEnemyAttack
+            ) {
 
                 const experienceLost =
                     Number(
@@ -2588,21 +2962,186 @@
                 );
 
 
+                /*
+                 * Apply the final server response before opening
+                 * the defeat window.
+                 */
+                applyCombatResponse(
+                    enemyResult
+                );
+
+
                 showCombatDeathWindow({
                     experienceLost,
                     healthLost
                 });
 
 
-                combatTurnPending = false;
-                setCombatSkillsDisabled(true);
+                combatTurnPending =
+                    false;
+
+
+                setCombatSkillsDisabled(
+                    true
+                );
+
+
                 return;
             }
 
-            setCombatMessage(message);
 
-            combatTurnPending = false;
-            setCombatSkillsDisabled(false);
+            setCombatMessage(
+                message
+            );
+
+
+            const playerStatusEvents =
+                enemyResult.status_events ||
+                [];
+
+
+            /*
+             * Keep the skills locked and leave the HP/Mana bars at
+             * their post-enemy-action values for half a second.
+             * This makes Poison/Burn/Regen ticks visually distinct
+             * from the enemy's attack.
+             */
+            if (
+                playerStatusEvents.length >
+                0
+            ) {
+
+                /*
+                 * Pause before the periodic effect is shown.
+                 * This separates the enemy's action from the
+                 * following Poison/Burn/Regen tick.
+                 */
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+
+                applyCombatResponse(
+                    enemyResult
+                );
+
+
+                showCombatStatusEvents(
+                    playerStatusEvents
+                );
+
+
+                const statusNames =
+                    [
+                        ...new Set(
+                            playerStatusEvents
+                                .map(
+                                    event =>
+                                        event.status_name
+                                )
+                                .filter(
+                                    Boolean
+                                )
+                        )
+                    ];
+
+
+                if (
+                    statusNames.length >
+                    0
+                ) {
+
+                    setCombatMessage(
+                        `${message} ${statusNames.join(', ')} takes effect.`
+                    );
+
+                }
+
+
+                /*
+                 * Keep the player's skills locked for another
+                 * half second after the status effect resolves.
+                 * This gives the HP/heal change and floating text
+                 * time to register before the next action begins.
+                 */
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+            } else {
+
+                /*
+                 * No visible periodic tick occurred, but status
+                 * durations / badges may still have changed.
+                 */
+                applyCombatResponse(
+                    enemyResult
+                );
+
+            }
+
+
+            if (
+                enemyResult.combat.status ===
+                'lost'
+            ) {
+
+                const experienceLost =
+                    Number(
+                        enemyResult.death_penalty
+                            ?.experience_lost ??
+                        0
+                    );
+
+
+                const healthLost =
+                    Number(
+                        enemyResult.death_penalty
+                            ?.health_lost ??
+                        0
+                    );
+
+
+                setCombatMessage(
+                    'You were defeated by a status effect.',
+                    'error'
+                );
+
+
+                showCombatDeathWindow({
+                    experienceLost,
+                    healthLost
+                });
+
+
+                combatTurnPending =
+                    false;
+
+
+                setCombatSkillsDisabled(
+                    true
+                );
+
+
+                return;
+            }
+
+
+            combatTurnPending =
+                false;
+
+
+            setCombatSkillsDisabled(
+                false
+            );
         }
 
 
@@ -2680,6 +3219,20 @@
                 ...data.combat.enemy
             };
 
+
+            currentCombat.status_effects =
+                data.combat.status_effects ||
+                {
+                    player: [],
+                    enemy: []
+                };
+
+
+            renderCombatStatusEffects(
+                currentCombat.status_effects
+            );
+
+
             currentCharacter.current_health =
                 Number(
                     data.combat.character.current_health ??
@@ -2719,6 +3272,218 @@
                 currentCharacter.current_mana,
                 data.combat.character.max_mana
             );
+        }
+
+
+
+        function renderCombatStatusEffects(
+            statusEffects
+        ) {
+
+            renderCombatStatusEffectList(
+                'combatPlayerStatusEffects',
+                statusEffects?.player ||
+                []
+            );
+
+
+            renderCombatStatusEffectList(
+                'combatEnemyStatusEffects',
+                statusEffects?.enemy ||
+                []
+            );
+
+        }
+
+
+        function renderCombatStatusEffectList(
+            containerId,
+            effects
+        ) {
+
+            const container =
+                document.getElementById(
+                    containerId
+                );
+
+
+            if (!container) {
+                return;
+            }
+
+
+            container.innerHTML =
+                '';
+
+
+            container.classList.toggle(
+                'empty',
+                !effects ||
+                effects.length ===
+                0
+            );
+
+
+            for (
+                const effect
+                of
+                effects ||
+                []
+            ) {
+
+                const badge =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                badge.className =
+                    `combat-status-effect ${
+                        effect.is_debuff
+                            ? 'debuff'
+                            : 'buff'
+                    }`;
+
+
+                const stacks =
+                    Math.max(
+                        1,
+                        Number(
+                            effect.stacks ??
+                            1
+                        )
+                    );
+
+
+                const turns =
+                    Math.max(
+                        0,
+                        Number(
+                            effect.remaining_turns ??
+                            0
+                        )
+                    );
+
+
+                badge.innerHTML = `
+                    <span class="combat-status-effect-name">
+                        ${escapeHtml(
+                            effect.name ||
+                            'Status'
+                        )}
+                    </span>
+
+                    ${
+                        stacks >
+                        1
+                            ? `
+                                <span class="combat-status-effect-stacks">
+                                    x${stacks}
+                                </span>
+                              `
+                            : ''
+                    }
+
+                    <span class="combat-status-effect-turns">
+                        ${turns}T
+                    </span>
+                `;
+
+
+                const tooltipParts =
+                    [];
+
+
+                if (
+                    effect.description
+                ) {
+
+                    tooltipParts.push(
+                        effect.description
+                    );
+
+                }
+
+
+                tooltipParts.push(
+                    `${turns} turn${
+                        turns ===
+                        1
+                            ? ''
+                            : 's'
+                    } remaining`
+                );
+
+
+                if (
+                    stacks >
+                    1
+                ) {
+
+                    tooltipParts.push(
+                        `${stacks} stacks`
+                    );
+
+                }
+
+
+                badge.title =
+                    tooltipParts.join(
+                        '\\n'
+                    );
+
+
+                container.appendChild(
+                    badge
+                );
+
+            }
+
+        }
+
+
+        function showCombatStatusEvents(
+            events
+        ) {
+
+            for (
+                const event
+                of
+                events ||
+                []
+            ) {
+
+                if (
+                    event.type ===
+                    'damage'
+                ) {
+
+                    showCombatDamage(
+                        event.target,
+                        Number(
+                            event.amount ??
+                            0
+                        ),
+                        false
+                    );
+
+                } else if (
+                    event.type ===
+                    'heal'
+                ) {
+
+                    showCombatHeal(
+                        event.target,
+                        Number(
+                            event.amount ??
+                            0
+                        )
+                    );
+
+                }
+
+            }
+
         }
 
 
@@ -2936,6 +3701,18 @@
                 );
 
 
+            const questProgressSection =
+                document.getElementById(
+                    'combatRewardQuestProgressSection'
+                );
+
+
+            const questProgressList =
+                document.getElementById(
+                    'combatRewardQuestProgressList'
+                );
+
+
             const itemsContainer =
                 document.getElementById(
                     'combatRewardItems'
@@ -3013,6 +3790,72 @@
 
 
             if (
+                questProgressSection &&
+                questProgressList
+            ) {
+
+                questProgressList.innerHTML =
+                    '';
+
+
+                const questProgressEntries =
+                    rewards.quest_progress ||
+                    [];
+
+
+                questProgressSection.classList.toggle(
+                    'hidden',
+                    questProgressEntries.length ===
+                    0
+                );
+
+
+                for (
+                    const questProgress
+                    of
+                    questProgressEntries
+                ) {
+
+                    const entry =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    entry.className =
+                        'combat-reward-quest-progress-item';
+
+
+                    entry.innerHTML = `
+                        <span class="combat-reward-quest-progress-name">
+                            ${escapeHtml(
+                                questProgress.quest_name ||
+                                'Quest'
+                            )}
+                        </span>
+
+                        <span class="combat-reward-quest-progress-count">
+                            (${Number(
+                                questProgress.current_objective_count ??
+                                0
+                            )}/${Number(
+                                questProgress.objective_count ??
+                                0
+                            )})
+                        </span>
+                    `;
+
+
+                    questProgressList.appendChild(
+                        entry
+                    );
+
+                }
+
+            }
+
+
+            if (
                 itemsContainer &&
                 noItemsElement
             ) {
@@ -3026,9 +3869,17 @@
                     [];
 
 
+                const rewardPets =
+                    rewards.pets ||
+                    [];
+
+
                 noItemsElement.classList.toggle(
                     'hidden',
-                    rewardItems.length >
+                    (
+                        rewardItems.length +
+                        rewardPets.length
+                    ) >
                     0
                 );
 
@@ -3245,6 +4096,126 @@
 
                 }
 
+
+                /* =============================================
+                   RENDER DROPPED PETS
+
+                   Pets use the same reward-card layout as items.
+                   ============================================= */
+
+                for (
+                    const reward
+                    of
+                    rewardPets
+                ) {
+
+                    const pet =
+                        reward.pet ||
+                        {};
+
+
+                    const rarityColor =
+                        QUEST_REWARD_RARITY_COLORS[
+                            String(
+                                pet.rarity ||
+                                'common'
+                            )
+                                .trim()
+                                .toLowerCase()
+                        ];
+
+
+                    const slot =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    slot.className =
+                        'combat-reward-item';
+
+
+                    if (
+                        rarityColor
+                    ) {
+
+                        slot.style.borderColor =
+                            rarityColor;
+
+                    }
+
+
+                    const rewardLabel =
+                        reward.leveled_up
+                            ? `Lv. ${Number(reward.level_after ?? 1)}`
+                            : reward.duplicate
+                                ? `+${Number(reward.essence_gained ?? 1)} Essence`
+                                : 'Pet';
+
+
+                    slot.innerHTML = `
+                        ${
+                            pet.image
+                                ? `
+                                    <img
+                                        src="${escapeHtml(pet.image)}"
+                                        alt="${escapeHtml(pet.name || '')}"
+                                        class="combat-reward-item-image"
+                                    >
+                                  `
+                                : `
+                                    <div class="combat-reward-item-placeholder">
+                                        ?
+                                    </div>
+                                  `
+                        }
+
+                        <div class="combat-reward-item-info">
+
+                            <span class="combat-reward-item-name">
+                                ${escapeHtml(pet.name || 'Unknown Pet')}
+                            </span>
+
+                            <span class="combat-reward-item-quantity">
+                                ${escapeHtml(rewardLabel)}
+                            </span>
+
+                        </div>
+                    `;
+
+
+                    const petTooltipHtml =
+                        buildWorldPetRewardTooltip(
+                            pet,
+                            reward
+                        );
+
+
+                    slot.addEventListener(
+                        'mouseenter',
+                        () => {
+
+                            showWorldQuestRewardTooltip(
+                                slot,
+                                petTooltipHtml
+                            );
+
+                        }
+                    );
+
+
+                    slot.addEventListener(
+                        'mouseleave',
+                        hideWorldQuestRewardTooltip
+                    );
+
+
+                    itemsContainer.appendChild(
+                        slot
+                    );
+
+                }
+
             }
 
 
@@ -3402,69 +4373,269 @@
             );
 
 
-        function getCombatSkillStatValue(stat) {
+        function getCombatStatusAdjustedPlayerStats() {
 
             const stats =
                 currentCombatEffectiveStats ||
                 {};
 
 
+            const adjustedStats = {
+                strength:
+                    Number(
+                        stats.effective_strength ??
+                        0
+                    ),
+
+                dexterity:
+                    Number(
+                        stats.effective_dexterity ??
+                        0
+                    ),
+
+                intelligence:
+                    Number(
+                        stats.effective_intelligence ??
+                        0
+                    ),
+
+                defense:
+                    Number(
+                        stats.effective_defense ??
+                        0
+                    ),
+
+                critical_chance:
+                    Number(
+                        stats.effective_critical_chance ??
+                        0
+                    ),
+
+                max_health:
+                    Number(
+                        stats.effective_max_health ??
+                        currentCharacter?.max_health ??
+                        0
+                    ),
+
+                max_mana:
+                    Number(
+                        stats.effective_max_mana ??
+                        currentCharacter?.max_mana ??
+                        0
+                    )
+            };
+
+
+            const flatModifiers =
+                {};
+
+
+            const percentageModifiers =
+                {};
+
+
+            const playerStatusEffects =
+                currentCombat
+                    ?.status_effects
+                    ?.player ||
+                [];
+
+
+            for (
+                const effect
+                of
+                playerStatusEffects
+            ) {
+
+                if (
+                    String(
+                        effect.effect_type ??
+                        ''
+                    )
+                        .trim()
+                        .toLowerCase() !==
+                    'stat_modifier'
+                ) {
+                    continue;
+                }
+
+
+                const stat =
+                    String(
+                        effect.stat ??
+                        ''
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                if (
+                    !(stat in adjustedStats)
+                ) {
+                    continue;
+                }
+
+
+                const value =
+                    Number(
+                        effect.applied_value ??
+                        0
+                    ) *
+                    Math.max(
+                        1,
+                        Number(
+                            effect.stacks ??
+                            1
+                        )
+                    );
+
+
+                const modifierType =
+                    String(
+                        effect.modifier_type ??
+                        'flat'
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                if (
+                    modifierType ===
+                    'percentage'
+                ) {
+
+                    percentageModifiers[
+                        stat
+                    ] =
+                        Number(
+                            percentageModifiers[
+                                stat
+                            ] ??
+                            0
+                        ) +
+                        value;
+
+                } else {
+
+                    flatModifiers[
+                        stat
+                    ] =
+                        Number(
+                            flatModifiers[
+                                stat
+                            ] ??
+                            0
+                        ) +
+                        value;
+
+                }
+
+            }
+
+
+            for (
+                const stat
+                of
+                Object.keys(
+                    adjustedStats
+                )
+            ) {
+
+                const valueWithFlat =
+                    Number(
+                        adjustedStats[
+                            stat
+                        ] ??
+                        0
+                    ) +
+                    Number(
+                        flatModifiers[
+                            stat
+                        ] ??
+                        0
+                    );
+
+
+                const percentage =
+                    Number(
+                        percentageModifiers[
+                            stat
+                        ] ??
+                        0
+                    );
+
+
+                let finalValue =
+                    valueWithFlat *
+                    (
+                        1 +
+                        percentage /
+                        100
+                    );
+
+
+                if (
+                    stat ===
+                    'critical_chance'
+                ) {
+
+                    finalValue =
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                finalValue
+                            )
+                        );
+
+                } else {
+
+                    finalValue =
+                        Math.max(
+                            0,
+                            finalValue
+                        );
+
+                }
+
+
+                adjustedStats[
+                    stat
+                ] =
+                    Math.round(
+                        finalValue
+                    );
+
+            }
+
+
+            return adjustedStats;
+
+        }
+
+
+        function getCombatSkillStatValue(stat) {
+
+            const adjustedStats =
+                getCombatStatusAdjustedPlayerStats();
+
+
             const key =
                 String(
                     stat ||
                     ''
-                ).toLowerCase();
+                )
+                    .trim()
+                    .toLowerCase();
 
 
-            if (key === 'strength') {
-                return Number(
-                    stats.effective_strength ??
-                    0
-                );
-            }
-
-
-            if (key === 'dexterity') {
-                return Number(
-                    stats.effective_dexterity ??
-                    0
-                );
-            }
-
-
-            if (key === 'intelligence') {
-                return Number(
-                    stats.effective_intelligence ??
-                    0
-                );
-            }
-
-
-            if (key === 'defense') {
-                return Number(
-                    stats.effective_defense ??
-                    0
-                );
-            }
-
-
-            if (key === 'max_health') {
-                return Number(
-                    stats.effective_max_health ??
-                    0
-                );
-            }
-
-
-            if (key === 'max_mana') {
-                return Number(
-                    stats.effective_max_mana ??
-                    0
-                );
-            }
-
-
-            return 0;
+            return Number(
+                adjustedStats[
+                    key
+                ] ??
+                0
+            );
 
         }
 
@@ -4065,52 +5236,107 @@
             }
 
 
-            const {
-                data: rewardRows,
-                error
-            } = await supabaseClient
-                .from('quest_reward_items')
-                .select(`
-                    item_count,
-                    items (
-                        item_id,
-                        name,
-                        description,
-                        item_type,
-                        rarity,
-                        required_level,
-                        sell_price,
-                        icon_path,
-                        stackable,
-                        max_stack_size
-                    )
-                `)
-                .eq('quest_id', questId);
+            const [
+                itemResult,
+                petResult
+            ] = await Promise.all([
+
+                supabaseClient
+                    .from('quest_reward_items')
+                    .select(`
+                        item_count,
+                        items (
+                            item_id,
+                            name,
+                            description,
+                            item_type,
+                            rarity,
+                            required_level,
+                            sell_price,
+                            icon_path,
+                            stackable,
+                            max_stack_size
+                        )
+                    `)
+                    .eq('quest_id', questId),
+
+                supabaseClient
+                    .from('quest_reward_pets')
+                    .select(`
+                        pet_id,
+                        pets (
+                            id,
+                            name,
+                            description,
+                            rarity,
+                            image,
+                            required_level,
+                            pet_bonuses (
+                                bonus_type,
+                                modifier_type,
+                                value
+                            )
+                        )
+                    `)
+                    .eq('quest_id', questId)
+
+            ]);
 
 
-            if (error) {
+            if (itemResult.error) {
 
                 console.error(
                     'Error loading quest reward items:',
-                    error
+                    itemResult.error
                 );
 
-                return;
+            }
+
+
+            if (petResult.error) {
+
+                console.error(
+                    'Error loading quest reward pets:',
+                    petResult.error
+                );
+
             }
 
 
             const rewards =
-                (rewardRows || [])
-                    .filter(row => row.items);
+                (itemResult.data || [])
+                    .filter(
+                        row =>
+                            row.items
+                    );
 
 
-            if (rewards.length === 0) {
-                container.classList.add('hidden');
+            const petRewards =
+                (petResult.data || [])
+                    .filter(
+                        row =>
+                            row.pets
+                    );
+
+
+            if (
+                rewards.length ===
+                    0 &&
+                petRewards.length ===
+                    0
+            ) {
+
+                container.classList.add(
+                    'hidden'
+                );
+
                 return;
+
             }
 
 
-            const detailsByItemId = {};
+            const detailsByItemId =
+                {};
 
 
             for (
@@ -4133,7 +5359,10 @@
                         );
 
 
-                if (itemIds.length === 0) {
+                if (
+                    itemIds.length ===
+                    0
+                ) {
                     continue;
                 }
 
@@ -4142,8 +5371,12 @@
                     data: typeData,
                     error: typeError
                 } = await supabaseClient
-                    .from(config.table)
-                    .select(config.select)
+                    .from(
+                        config.table
+                    )
+                    .select(
+                        config.select
+                    )
                     .in(
                         'item_id',
                         itemIds
@@ -4158,27 +5391,43 @@
                     );
 
                     continue;
+
                 }
 
 
-                (typeData || []).forEach(
-                    detail => {
+                for (
+                    const detail
+                    of
+                    typeData ||
+                    []
+                ) {
 
-                        detailsByItemId[
-                            detail.item_id
-                        ] = detail;
+                    detailsByItemId[
+                        detail.item_id
+                    ] =
+                        detail;
 
-                    }
-                );
+                }
 
             }
 
 
-            container.innerHTML = '';
-            container.classList.remove('hidden');
+            container.innerHTML =
+                '';
+
+            container.classList.remove(
+                'hidden'
+            );
 
 
-            rewards.forEach(row => {
+            /*
+             * Normal item rewards.
+             */
+            for (
+                const row
+                of
+                rewards
+            ) {
 
                 const item =
                     row.items;
@@ -4207,16 +5456,22 @@
 
 
                 const slot =
-                    document.createElement('div');
+                    document.createElement(
+                        'div'
+                    );
 
 
                 slot.className =
                     'quest-reward-item-slot';
 
 
-                if (rarityColor) {
+                if (
+                    rarityColor
+                ) {
+
                     slot.style.borderColor =
                         rarityColor;
+
                 }
 
 
@@ -4228,7 +5483,8 @@
                     >
 
                     ${
-                        quantity > 1
+                        quantity >
+                        1
                             ? `
                                 <span class="quest-reward-item-count">
                                     ${quantity}
@@ -4267,7 +5523,275 @@
                     slot
                 );
 
-            });
+            }
+
+
+            /*
+             * Pet rewards deliberately use the exact same slot
+             * class as item rewards so they appear beside them.
+             */
+            for (
+                const row
+                of
+                petRewards
+            ) {
+
+                const pet =
+                    row.pets;
+
+
+                const rarityColor =
+                    QUEST_REWARD_RARITY_COLORS[
+                        String(
+                            pet.rarity ||
+                            'common'
+                        )
+                            .trim()
+                            .toLowerCase()
+                    ];
+
+
+                const slot =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                slot.className =
+                    'quest-reward-item-slot';
+
+
+                if (
+                    rarityColor
+                ) {
+
+                    slot.style.borderColor =
+                        rarityColor;
+
+                }
+
+
+                slot.innerHTML = `
+                    <img
+                        src="${escapeHtml(pet.image || '')}"
+                        alt="${escapeHtml(pet.name || '')}"
+                        class="quest-reward-item-image"
+                    >
+                `;
+
+
+                slot.addEventListener(
+                    'mouseenter',
+                    () => {
+
+                        showWorldQuestRewardTooltip(
+                            slot,
+                            buildWorldPetRewardTooltip(
+                                pet
+                            )
+                        );
+
+                    }
+                );
+
+
+                slot.addEventListener(
+                    'mouseleave',
+                    hideWorldQuestRewardTooltip
+                );
+
+
+                container.appendChild(
+                    slot
+                );
+
+            }
+
+        }
+
+
+
+        function buildWorldPetRewardTooltip(
+            pet,
+            reward = null
+        ) {
+
+            const rarityColor =
+                QUEST_REWARD_RARITY_COLORS[
+                    String(
+                        pet?.rarity ||
+                        'common'
+                    )
+                        .trim()
+                        .toLowerCase()
+                ] ||
+                '#f0f0f0';
+
+
+            const detailLines =
+                [];
+
+
+            if (
+                pet?.description
+            ) {
+
+                detailLines.push(
+                    escapeHtml(
+                        pet.description
+                    )
+                );
+
+            }
+
+
+            const level =
+                Math.max(
+                    1,
+                    Math.min(
+                        3,
+                        Number(
+                            reward?.level_after ??
+                            1
+                        )
+                    )
+                );
+
+
+            const levelMultiplier =
+                1 +
+                (
+                    level -
+                    1
+                ) *
+                0.5;
+
+
+            for (
+                const bonus
+                of
+                pet?.pet_bonuses ||
+                []
+            ) {
+
+                const type =
+                    String(
+                        bonus.bonus_type ||
+                        ''
+                    )
+                        .replaceAll(
+                            '_',
+                            ' '
+                        )
+                        .replace(
+                            /\b\w/g,
+                            char =>
+                                char.toUpperCase()
+                        );
+
+
+                const value =
+                    Math.round(
+                        Number(
+                            bonus.value ??
+                            0
+                        ) *
+                        levelMultiplier *
+                        100
+                    ) /
+                    100;
+
+
+                const suffix =
+                    String(
+                        bonus.modifier_type ||
+                        ''
+                    )
+                        .toLowerCase() ===
+                    'percentage'
+                        ? '%'
+                        : '';
+
+
+                detailLines.push(
+                    `+${escapeHtml(value)}${suffix} ${escapeHtml(type)}`
+                );
+
+            }
+
+
+            if (
+                reward?.new_pet
+            ) {
+
+                detailLines.push(
+                    'New Pet'
+                );
+
+            }
+
+
+            if (
+                reward?.duplicate
+            ) {
+
+                detailLines.push(
+                    `Duplicate: +${Number(reward.essence_gained ?? 1)} Essence`
+                );
+
+            }
+
+
+            if (
+                reward?.leveled_up
+            ) {
+
+                detailLines.push(
+                    `Pet leveled up: ${Number(reward.level_before ?? 1)} → ${Number(reward.level_after ?? 1)}`
+                );
+
+            }
+
+
+            if (
+                reward &&
+                reward.essence_count != null
+            ) {
+
+                detailLines.push(
+                    `Essences: ${Number(reward.essence_count ?? 0)}`
+                );
+
+            }
+
+
+            return `
+                <div class="quest-reward-tooltip">
+
+                    <div
+                        class="quest-reward-tooltip-name"
+                        style="color: ${rarityColor};">
+                        ${escapeHtml(
+                            pet?.name ||
+                            'Unknown Pet'
+                        )}
+                    </div>
+
+                    <div
+                        class="quest-reward-tooltip-rarity"
+                        style="color: ${rarityColor};">
+                        ${escapeHtml(
+                            pet?.rarity ||
+                            'common'
+                        )}
+                    </div>
+
+                    <div class="quest-reward-tooltip-details">
+                        ${detailLines.join('<br>')}
+                    </div>
+
+                </div>
+            `;
 
         }
 
@@ -4546,7 +6070,23 @@
            NPC DIALOG
            ========================================================= */
 
-        let activeQuestIds = new Set();
+        let activeQuestIds =
+            new Set();
+
+
+        /*
+         * Stores the full character_quests row for each active quest.
+         *
+         * key   = quest_id
+         * value = {
+         *     quest_id,
+         *     character_id,
+         *     current_objective_count,
+         *     quests
+         * }
+         */
+        let activeQuestProgressById =
+            new Map();
 
 
         async function openNpcDialog(npcId) {
@@ -4584,6 +6124,11 @@
 
             await loadNpcQuests(npcId);
 
+            /*
+             * Also load quests that are ready to be turned in to
+             * this NPC. The turn-in NPC does not have to be the
+             * same NPC that originally offered the quest.
+             */
             await loadNpcTurnInQuests(npcId);
 
 
@@ -4603,29 +6148,83 @@
             const {
                 data,
                 error
-            } = await supabaseClient.functions.invoke(
-                'get_active_quests'
-            );
+            } = await supabaseClient
+                .from(
+                    'character_quests'
+                )
+                .select(`
+                    quest_id,
+                    character_id,
+                    current_objective_count,
+                    quests (
+                        id,
+                        name,
+                        description,
+                        objective_count,
+                        gold_reward,
+                        experience_reward,
+                        level_requirement,
+                        turn_in_npc,
+                        is_repeatable
+                    )
+                `)
+                .eq(
+                    'character_id',
+                    currentCharacter.id
+                );
 
 
-            if (error || !data?.success) {
+            if (error) {
 
                 console.error(
                     'Error loading active quests:',
                     error
                 );
 
-                activeQuestIds = new Set();
+
+                activeQuestIds =
+                    new Set();
+
+
+                activeQuestProgressById =
+                    new Map();
+
 
                 return;
+
             }
 
 
-            activeQuestIds = new Set(
-                data.quests
-                    .filter(characterQuest => characterQuest.quests)
-                    .map(characterQuest => characterQuest.quests.id)
-            );
+            const activeRows =
+                (data || [])
+                    .filter(
+                        characterQuest =>
+                            characterQuest.quests
+                    );
+
+
+            activeQuestIds =
+                new Set(
+                    activeRows.map(
+                        characterQuest =>
+                            Number(
+                                characterQuest.quest_id
+                            )
+                    )
+                );
+
+
+            activeQuestProgressById =
+                new Map(
+                    activeRows.map(
+                        characterQuest => [
+                            Number(
+                                characterQuest.quest_id
+                            ),
+                            characterQuest
+                        ]
+                    )
+                );
 
         }
 
@@ -4749,9 +6348,20 @@
 
             availableNpcQuests
                 .forEach(npcQuest => {
+                    const quest =
+                        npcQuest.quests;
+
+
                     renderNpcQuestCard(
                         questPanel,
-                        npcQuest.quests
+                        quest,
+                        npcId,
+                        activeQuestProgressById.get(
+                            Number(
+                                quest.id
+                            )
+                        ) ??
+                        null
                     );
                 });
 
@@ -4762,17 +6372,175 @@
            RENDER NPC QUEST CARD
            ========================================================= */
 
+        async function loadQuestTurnInLocation(
+            turnInNpcId
+        ) {
+
+            if (turnInNpcId == null) {
+                return null;
+            }
+
+
+            const {
+                data: npc,
+                error: npcError
+            } = await supabaseClient
+                .from('npcs')
+                .select('id, name')
+                .eq('id', turnInNpcId)
+                .maybeSingle();
+
+
+            if (npcError || !npc) {
+
+                console.error(
+                    'Could not load turn-in NPC:',
+                    npcError
+                );
+
+                return null;
+            }
+
+
+            const {
+                data: nodeRows,
+                error: nodeError
+            } = await supabaseClient
+                .from('area_nodes')
+                .select('area_id')
+                .eq('node_type', 'npcs')
+                .eq('entity_id', turnInNpcId)
+                .limit(1);
+
+
+            if (nodeError) {
+
+                console.error(
+                    'Could not load turn-in NPC area node:',
+                    nodeError
+                );
+
+                return {
+                    npcName: npc.name,
+                    areaName: null
+                };
+            }
+
+
+            const areaId =
+                nodeRows?.[0]?.area_id;
+
+
+            if (areaId == null) {
+
+                return {
+                    npcName: npc.name,
+                    areaName: null
+                };
+            }
+
+
+            const {
+                data: area,
+                error: areaError
+            } = await supabaseClient
+                .from('areas')
+                .select('name')
+                .eq('id', areaId)
+                .maybeSingle();
+
+
+            if (areaError) {
+
+                console.error(
+                    'Could not load turn-in area:',
+                    areaError
+                );
+
+            }
+
+
+            return {
+                npcName: npc.name,
+                areaName: area?.name ?? null
+            };
+
+        }
+
+
+        async function renderQuestTurnInLocation(
+            container,
+            turnInNpcId
+        ) {
+
+            if (
+                !container ||
+                turnInNpcId == null
+            ) {
+                return;
+            }
+
+
+            const location =
+                await loadQuestTurnInLocation(
+                    turnInNpcId
+                );
+
+
+            if (!location) {
+                return;
+            }
+
+
+            container.innerHTML = `
+                <div class="npc-quest-turn-in-location">
+
+                    <span class="npc-quest-turn-in-label">
+                        Turn in to:
+                    </span>
+
+                    <span class="npc-quest-turn-in-destination">
+                        ${escapeHtml(
+                            location.npcName ||
+                            'Unknown NPC'
+                        )}
+                        ${
+                            location.areaName
+                                ? ` — ${escapeHtml(
+                                    location.areaName
+                                  )}`
+                                : ''
+                        }
+                    </span>
+
+                </div>
+            `;
+
+        }
+
+
+
         function renderNpcQuestCard(
             container,
-            quest
+            quest,
+            npcId,
+            characterQuest = null
         ) {
 
             const card =
-                document.createElement('div');
+                document.createElement(
+                    'div'
+                );
 
 
             card.className =
                 'npc-quest-card';
+
+
+            card.dataset.questId =
+                String(
+                    quest.id
+                );
 
 
             const levelMet =
@@ -4784,8 +6552,44 @@
 
 
             const alreadyActive =
-                activeQuestIds.has(
-                    quest.id
+                Boolean(
+                    characterQuest
+                );
+
+
+            const currentObjectiveCount =
+                alreadyActive
+                    ? Number(
+                        characterQuest
+                            .current_objective_count ??
+                        0
+                    )
+                    : 0;
+
+
+            const objectiveCount =
+                Math.max(
+                    0,
+                    Number(
+                        quest.objective_count ??
+                        0
+                    )
+                );
+
+
+            const objectiveComplete =
+                alreadyActive &&
+                currentObjectiveCount >=
+                    objectiveCount;
+
+
+            const correctTurnInNpc =
+                quest.turn_in_npc != null &&
+                Number(
+                    quest.turn_in_npc
+                ) ===
+                Number(
+                    npcId
                 );
 
 
@@ -4796,6 +6600,11 @@
                     <h3>
                         ${escapeHtml(quest.name)}
                     </h3>
+
+                    <span class="npc-quest-progress
+                        ${objectiveComplete ? 'complete' : ''}">
+                        ${currentObjectiveCount} / ${objectiveCount}
+                    </span>
 
                 </div>
 
@@ -4817,6 +6626,12 @@
 
                 </div>
 
+                <div
+                    class="npc-quest-turn-in-wrapper"
+                    data-turn-in-location>
+                </div>
+
+
                 <div class="npc-quest-footer">
 
                     <div class="quest-reward-items"
@@ -4837,10 +6652,53 @@
                 );
 
 
-            if (alreadyActive) {
+            /*
+             * Once the objective is complete and this NPC is the
+             * configured turn-in NPC, show Turn In directly on the
+             * normal quest card.
+             */
+            if (
+                alreadyActive &&
+                objectiveComplete &&
+                correctTurnInNpc
+            ) {
+
+                const turnInButton =
+                    document.createElement(
+                        'button'
+                    );
+
+
+                turnInButton.className =
+                    'accept-quest-btn';
+
+
+                turnInButton.textContent =
+                    'Turn In';
+
+
+                turnInButton.addEventListener(
+                    'click',
+                    () =>
+                        turnInQuest(
+                            characterQuest,
+                            card
+                        )
+                );
+
+
+                statusElement.appendChild(
+                    turnInButton
+                );
+
+            } else if (
+                alreadyActive
+            ) {
 
                 const abandonButton =
-                    document.createElement('button');
+                    document.createElement(
+                        'button'
+                    );
 
 
                 abandonButton.className =
@@ -4853,10 +6711,12 @@
 
                 abandonButton.addEventListener(
                     'click',
-                    () => abandonNpcQuest(
-                        quest,
-                        card
-                    )
+                    () =>
+                        abandonNpcQuest(
+                            quest,
+                            card,
+                            npcId
+                        )
                 );
 
 
@@ -4864,7 +6724,9 @@
                     abandonButton
                 );
 
-            } else if (!levelMet) {
+            } else if (
+                !levelMet
+            ) {
 
                 statusElement.textContent =
                     `Requires Level ${quest.level_requirement}`;
@@ -4872,7 +6734,9 @@
             } else {
 
                 const acceptButton =
-                    document.createElement('button');
+                    document.createElement(
+                        'button'
+                    );
 
 
                 acceptButton.className =
@@ -4885,10 +6749,12 @@
 
                 acceptButton.addEventListener(
                     'click',
-                    () => acceptNpcQuest(
-                        quest,
-                        card
-                    )
+                    () =>
+                        acceptNpcQuest(
+                            quest,
+                            card,
+                            npcId
+                        )
                 );
 
 
@@ -4911,6 +6777,21 @@
                 quest.id
             );
 
+
+            if (
+                objectiveComplete &&
+                quest.turn_in_npc != null
+            ) {
+
+                renderQuestTurnInLocation(
+                    card.querySelector(
+                        '[data-turn-in-location]'
+                    ),
+                    quest.turn_in_npc
+                );
+
+            }
+
         }
 
 
@@ -4921,7 +6802,8 @@
 
         async function abandonNpcQuest(
             quest,
-            card
+            card,
+            npcId
         ) {
 
             const statusElement =
@@ -5002,7 +6884,16 @@
              * Keep the local active quest cache in sync.
              */
             activeQuestIds.delete(
-                quest.id
+                Number(
+                    quest.id
+                )
+            );
+
+
+            activeQuestProgressById.delete(
+                Number(
+                    quest.id
+                )
             );
 
 
@@ -5021,7 +6912,9 @@
 
             renderNpcQuestCard(
                 questPanel,
-                quest
+                quest,
+                npcId,
+                null
             );
 
 
@@ -5036,7 +6929,11 @@
            ACCEPT NPC QUEST
            ========================================================= */
 
-        async function acceptNpcQuest(quest, card) {
+        async function acceptNpcQuest(
+            quest,
+            card,
+            npcId
+        ) {
 
             const statusElement =
                 card.querySelector('.npc-quest-status');
@@ -5109,9 +7006,53 @@
             }
 
 
-            activeQuestIds.add(quest.id);
+            const questId =
+                Number(
+                    quest.id
+                );
 
-            statusElement.textContent = 'Quest accepted!';
+
+            const characterQuest = {
+                quest_id:
+                    questId,
+
+                character_id:
+                    currentCharacter.id,
+
+                current_objective_count:
+                    0,
+
+                quests:
+                    quest
+            };
+
+
+            activeQuestIds.add(
+                questId
+            );
+
+
+            activeQuestProgressById.set(
+                questId,
+                characterQuest
+            );
+
+
+            /*
+             * Re-render immediately so the card switches from
+             * Accept Quest to the active state and shows 0 / X.
+             */
+            card.remove();
+
+
+            renderNpcQuestCard(
+                document.getElementById(
+                    'npcQuestPanel'
+                ),
+                quest,
+                npcId,
+                characterQuest
+            );
 
         }
 
@@ -5194,7 +7135,27 @@
 
                         return objectiveComplete && correctNpc;
 
-                    });
+                    })
+                    .filter(
+                        characterQuest => {
+
+                            const questId =
+                                String(
+                                    characterQuest.quest_id
+                                );
+
+
+                            /*
+                             * If loadNpcQuests() already rendered this
+                             * quest for the same NPC, its normal card
+                             * will already show the Turn In button.
+                             */
+                            return !questPanel.querySelector(
+                                `.npc-quest-card[data-quest-id="${questId}"]`
+                            );
+
+                        }
+                    );
 
 
             if (turnInQuests.length === 0) {
@@ -5432,7 +7393,16 @@
              * Keep the local active quest cache in sync as well.
              */
             activeQuestIds.delete(
-                characterQuest.quest_id
+                Number(
+                    characterQuest.quest_id
+                )
+            );
+
+
+            activeQuestProgressById.delete(
+                Number(
+                    characterQuest.quest_id
+                )
             );
 
 

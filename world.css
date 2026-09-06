@@ -2705,78 +2705,238 @@ body {
 
 
 /* =========================================================
-   WORLD TOAST
+   COMBAT REWARD QUEST PROGRESS
    ========================================================= */
 
-.world-toast {
-    position: fixed;
+.combat-reward-quest-progress-section {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    border-radius: 8px;
+    background: rgba(10, 14, 39, 0.34);
+}
 
-    top: 18px;
-    right: 18px;
+.combat-reward-quest-progress-section h3 {
+    margin: 0 0 12px;
+    color: #d4af37;
+    font-size: 15px;
+}
 
-    z-index: 12000;
+.combat-reward-quest-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
-    max-width: 360px;
+.combat-reward-quest-progress-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    border: 1px solid rgba(212, 175, 55, 0.16);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+}
 
-    padding:
-        11px 14px;
+.combat-reward-quest-progress-name {
+    color: #e8e2cc;
+    font-size: 13px;
+}
+
+.combat-reward-quest-progress-count {
+    color: #d4af37;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   NPC QUEST OBJECTIVE PROGRESS
+   ========================================================= */
+
+.npc-quest-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+.npc-quest-progress {
+    flex: 0 0 auto;
+
+    padding: 3px 8px;
 
     border:
         1px solid
-        rgba(212, 175, 55, 0.45);
+        rgba(212, 175, 55, 0.28);
 
-    border-radius:
-        8px;
+    border-radius: 999px;
 
     background:
-        rgba(10, 14, 39, 0.97);
+        rgba(212, 175, 55, 0.07);
 
     color:
-        #e0e0e0;
+        #c9c2a9;
 
-    font-size:
-        12px;
+    font-size: 11px;
 
-    line-height:
-        1.4;
+    font-weight: bold;
 
-    box-shadow:
-        0 10px 30px
-        rgba(0, 0, 0, 0.42);
-
-    opacity: 0;
-
-    transform:
-        translateY(-8px);
-
-    pointer-events:
-        none;
-
-    transition:
-        opacity 0.16s ease,
-        transform 0.16s ease;
+    white-space: nowrap;
 }
 
 
-.world-toast.visible {
-    opacity: 1;
-
-    transform:
-        translateY(0);
-}
-
-
-.world-toast.error {
+.npc-quest-progress.complete {
     border-color:
-        rgba(224, 107, 103, 0.55);
+        rgba(104, 190, 118, 0.45);
+
+    background:
+        rgba(82, 160, 96, 0.10);
 
     color:
-        #f0c4c2;
+        #8fd29a;
 }
 
 
-.world-toast.hidden {
-    display: block !important;
+/* =========================================================
+   COMPLETED QUEST TURN-IN LOCATION
+   ========================================================= */
 
-    visibility: hidden;
+.npc-quest-turn-in-wrapper:empty {
+    display: none;
+}
+
+.npc-quest-turn-in-location {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 12px;
+    padding: 9px 10px;
+    border-left: 2px solid rgba(104, 190, 118, 0.75);
+    border-radius: 4px;
+    background: rgba(82, 160, 96, 0.07);
+}
+
+.npc-quest-turn-in-label {
+    color: #8fd29a;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.npc-quest-turn-in-destination {
+    color: #e8e2cc;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   COMBAT STATUS EFFECTS
+   ========================================================= */
+
+.combat-status-effects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    min-height: 25px;
+}
+
+
+.combat-status-effects.empty {
+    min-height: 0;
+}
+
+
+.combat-enemy-status-effects {
+    grid-column: 2;
+    margin-top: -10px;
+}
+
+
+.combat-player-status-effects {
+    margin-top: -4px;
+}
+
+
+.combat-status-effect {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    max-width: 100%;
+
+    padding: 5px 8px;
+
+    border: 1px solid rgba(212, 175, 55, 0.30);
+    border-radius: 999px;
+
+    background: rgba(10, 14, 39, 0.72);
+
+    color: #d8d8d8;
+
+    font-size: 10px;
+    line-height: 1;
+
+    cursor: help;
+}
+
+
+.combat-status-effect.buff {
+    border-color: rgba(95, 190, 112, 0.48);
+    background: rgba(64, 132, 76, 0.12);
+}
+
+
+.combat-status-effect.debuff {
+    border-color: rgba(210, 86, 82, 0.50);
+    background: rgba(150, 54, 52, 0.12);
+}
+
+
+.combat-status-effect-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.combat-status-effect.buff .combat-status-effect-name {
+    color: #95d6a0;
+}
+
+
+.combat-status-effect.debuff .combat-status-effect-name {
+    color: #ef9b96;
+}
+
+
+.combat-status-effect-stacks {
+    color: #d4af37;
+    font-weight: bold;
+}
+
+
+.combat-status-effect-turns {
+    padding-left: 5px;
+
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    color: #9d9d9d;
+
+    font-weight: bold;
+}
+
+
+@media (max-width: 760px) {
+    .combat-enemy-status-effects {
+        grid-column: 1;
+        margin-top: 0;
+    }
 }

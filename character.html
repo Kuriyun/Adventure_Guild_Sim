@@ -358,6 +358,8 @@
 
 
 
+
+
     <div id="mainCharacterView" class="game-container hidden">
 
         <!-- ========================================= -->
@@ -426,14 +428,82 @@
                     <div class="equipment-slot main-weapon-slot" data-slot="Main Weapon" data-equipment-type="main_weapon"><div class="item-slot-image"><img src="Items/Empty Slots/Main Weapon.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
                     <div class="equipment-slot offhand-slot" data-slot="Offhand" data-equipment-type="offhand"><div class="item-slot-image"><img src="Items/Empty Slots/Offhand.png" alt="" class="item-image"></div><div class="equipment-slot-name"></div></div>
                 </div>
-                <div class="card stats-card">
-                    <div class="stats-grid"><div class="stat-column">
-                        <div class="stat-row simple-stat-row"><span class="stat-label">Strength</span><span id="strengthValue" class="stat-value">0</span></div>
-                        <div class="stat-row simple-stat-row"><span class="stat-label">Intelligence</span><span id="intelligenceValue" class="stat-value">0</span></div>
-                        <div class="stat-row simple-stat-row"><span class="stat-label">Dexterity</span><span id="dexterityValue" class="stat-value">0</span></div>
-                        <div class="stat-row simple-stat-row"><span class="stat-label">Defense</span><span id="defenseValue" class="stat-value">0</span></div>
-                        <div class="stat-row simple-stat-row"><span class="stat-label">Crit Chance</span><span id="critChanceValue" class="stat-value">0%</span></div>
-                    </div></div>
+                <div class="equipment-side-column">
+
+                    <div class="card stats-card">
+                        <div class="stats-grid">
+                            <div class="stat-column">
+                                <div class="stat-row simple-stat-row"><span class="stat-label">Strength</span><span id="strengthValue" class="stat-value">0</span></div>
+                                <div class="stat-row simple-stat-row"><span class="stat-label">Intelligence</span><span id="intelligenceValue" class="stat-value">0</span></div>
+                                <div class="stat-row simple-stat-row"><span class="stat-label">Dexterity</span><span id="dexterityValue" class="stat-value">0</span></div>
+                                <div class="stat-row simple-stat-row"><span class="stat-label">Defense</span><span id="defenseValue" class="stat-value">0</span></div>
+                                <div class="stat-row simple-stat-row"><span class="stat-label">Crit Chance</span><span id="critChanceValue" class="stat-value">0%</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- ACTIVE PET                                -->
+                    <!-- ========================================= -->
+
+                    <div class="pet-summary-panel">
+
+                        <button
+                            id="activePetButton"
+                            class="active-pet-image-button"
+                            type="button"
+                            aria-label="Open pet collection">
+
+                            <img
+                                id="activePetImage"
+                                class="active-pet-image hidden"
+                                src=""
+                                alt="Active Pet">
+
+                            <div
+                                id="activePetEmpty"
+                                class="active-pet-empty">
+                                <span class="active-pet-empty-icon">+</span>
+                                <span>Pet</span>
+                            </div>
+
+                        </button>
+
+
+                        <div class="active-pet-info">
+
+                            <div class="active-pet-heading">
+                                <div>
+                                    <div
+                                        id="activePetName"
+                                        class="active-pet-name">
+                                        No Pet Equipped
+                                    </div>
+
+                                    <div
+                                        id="activePetLevel"
+                                        class="active-pet-level">
+                                        Select a pet
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div
+                                id="activePetBonuses"
+                                class="active-pet-bonuses">
+
+                                <div class="active-pet-no-bonuses">
+                                    Click the pet slot to choose a companion.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
 
@@ -959,6 +1029,50 @@
         </div>
     </div>
 
+    <!-- ========================================= -->
+    <!-- PET COLLECTION                             -->
+    <!-- ========================================= -->
+
+    <div
+        id="petSelectionOverlay"
+        class="pet-selection-overlay hidden">
+
+        <div class="pet-selection-window">
+
+            <div class="pet-selection-header">
+
+                <div>
+                    <h2>Pets</h2>
+                    <p>Select one of your companions to make it your active pet.</p>
+                </div>
+
+                <button
+                    id="closePetSelectionButton"
+                    class="pet-selection-close-btn"
+                    type="button"
+                    aria-label="Close pet collection">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="petCollectionGrid"
+                class="pet-collection-grid">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="petInventoryTooltip"
+        class="pet-inventory-tooltip hidden">
+    </div>
+
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -984,6 +1098,16 @@
         let draggedSkill = null;
         let draggedSkillSourceSlot = null;
         let activeSkillTooltip = null;
+        let activeSkillTooltipAnchor = null;
+        let activeSkillTooltipSkill = null;
+
+        /* ========================================= */
+        /* PET STATE                                  */
+        /* ========================================= */
+
+        let characterPets = [];
+        let currentEquippedPetId = null;
+        let activePetTooltipPet = null;
 
 
         /* ========================================= */
@@ -1070,6 +1194,10 @@
 
             await loadInventory(character.id);
             await loadEquipment(character.id);
+            await loadCharacterPets(
+                character.id,
+                character.equipped_pet_id
+            );
             await loadCharacterQuests(character.id);
             await loadCharacterSkills(character.id);
 
@@ -1216,6 +1344,1392 @@
                     characterResult.data?.critical_chance ??
                     0
             });
+
+
+            /*
+             * Every skill tooltip in this page uses the same
+             * calculateSkillDamage() function, including:
+             *
+             * - equipped skills on the right
+             * - available skills in the skill window
+             * - equipped loadout slots inside the skill window
+             *
+             * Refresh an already-open tooltip immediately.
+             */
+            refreshVisibleSkillTooltip();
+
+        }
+
+
+
+        function escapePetHtml(value) {
+
+            return String(
+                value ??
+                ''
+            )
+                .replaceAll(
+                    '&',
+                    '&amp;'
+                )
+                .replaceAll(
+                    '<',
+                    '&lt;'
+                )
+                .replaceAll(
+                    '>',
+                    '&gt;'
+                )
+                .replaceAll(
+                    '"',
+                    '&quot;'
+                )
+                .replaceAll(
+                    "'",
+                    '&#039;'
+                );
+
+        }
+
+
+        /* ========================================= */
+        /* PET SYSTEM                                */
+        /* ========================================= */
+
+        async function loadCharacterPets(
+            characterId,
+            equippedPetId = null
+        ) {
+
+            currentEquippedPetId =
+                equippedPetId ||
+                null;
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from(
+                    'character_pets'
+                )
+                .select(`
+                    id,
+                    pet_id,
+                    level,
+                    essence_count,
+                    obtained_at,
+                    pets (
+                        id,
+                        name,
+                        description,
+                        rarity,
+                        image,
+                        required_level,
+                        is_active,
+                        pet_bonuses (
+                            id,
+                            bonus_type,
+                            modifier_type,
+                            value
+                        )
+                    )
+                `)
+                .eq(
+                    'character_id',
+                    characterId
+                )
+                .order(
+                    'obtained_at',
+                    {
+                        ascending:
+                            true
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    'Error loading character pets:',
+                    error
+                );
+
+                characterPets =
+                    [];
+
+                renderActivePet();
+                renderPetCollection();
+
+                return;
+
+            }
+
+
+            characterPets =
+                (data || [])
+                    .filter(
+                        row =>
+                            row.pets
+                    );
+
+
+            renderActivePet();
+            renderPetCollection();
+
+        }
+
+
+        function getEquippedCharacterPet() {
+
+            if (
+                !currentEquippedPetId
+            ) {
+                return null;
+            }
+
+
+            return characterPets.find(
+                row =>
+                    String(row.id) ===
+                    String(currentEquippedPetId)
+            ) || null;
+
+        }
+
+
+        function getPetLevelMultiplier(
+            level
+        ) {
+
+            const safeLevel =
+                Math.min(
+                    3,
+                    Math.max(
+                        1,
+                        Number(
+                            level ??
+                            1
+                        )
+                    )
+                );
+
+
+            return 1 +
+                (
+                    safeLevel -
+                    1
+                ) *
+                0.5;
+
+        }
+
+
+        function getScaledPetBonuses(
+            characterPet
+        ) {
+
+            if (
+                !characterPet?.pets
+            ) {
+                return [];
+            }
+
+
+            const multiplier =
+                getPetLevelMultiplier(
+                    characterPet.level
+                );
+
+
+            return (
+                characterPet.pets
+                    .pet_bonuses ||
+                []
+            ).map(
+                bonus => ({
+                    ...bonus,
+
+                    scaled_value:
+                        Number(
+                            bonus.value ??
+                            0
+                        ) *
+                        multiplier
+                })
+            );
+
+        }
+
+
+        function formatPetBonusType(
+            bonusType
+        ) {
+
+            const normalized =
+                String(
+                    bonusType ||
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const labels = {
+                strength:
+                    'Strength',
+
+                dexterity:
+                    'Dexterity',
+
+                intelligence:
+                    'Intelligence',
+
+                defense:
+                    'Defense',
+
+                critical_chance:
+                    'Crit Chance',
+
+                max_health:
+                    'Max Health',
+
+                max_mana:
+                    'Max Mana',
+
+                combat_experience:
+                    'Combat EXP'
+            };
+
+
+            return labels[
+                normalized
+            ] ||
+                normalized
+                    .replaceAll(
+                        '_',
+                        ' '
+                    )
+                    .replace(
+                        /\b\w/g,
+                        char =>
+                            char.toUpperCase()
+                    );
+
+        }
+
+
+        function formatPetBonusValue(
+            bonus
+        ) {
+
+            const value =
+                Number(
+                    bonus.scaled_value ??
+                    bonus.value ??
+                    0
+                );
+
+
+            const rounded =
+                Math.round(
+                    value *
+                    100
+                ) /
+                100;
+
+
+            const sign =
+                rounded >
+                0
+                    ? '+'
+                    : '';
+
+
+            const suffix =
+                String(
+                    bonus.modifier_type ||
+                    ''
+                )
+                    .trim()
+                    .toLowerCase() ===
+                'percentage'
+                    ? '%'
+                    : '';
+
+
+            return `${sign}${rounded}${suffix}`;
+
+        }
+
+
+        function renderPetBonusRows(
+            characterPet,
+            className =
+                'active-pet-bonus-row'
+        ) {
+
+            const bonuses =
+                getScaledPetBonuses(
+                    characterPet
+                );
+
+
+            if (
+                bonuses.length ===
+                0
+            ) {
+
+                return `
+                    <div class="active-pet-no-bonuses">
+                        No passive bonuses
+                    </div>
+                `;
+
+            }
+
+
+            return bonuses
+                .map(
+                    bonus => `
+                        <div class="${className}">
+                            <span>
+                                ${escapePetHtml(
+                                    formatPetBonusType(
+                                        bonus.bonus_type
+                                    )
+                                )}
+                            </span>
+
+                            <strong>
+                                ${escapePetHtml(
+                                    formatPetBonusValue(
+                                        bonus
+                                    )
+                                )}
+                            </strong>
+                        </div>
+                    `
+                )
+                .join('');
+
+        }
+
+
+        function getPetEssenceProgress(
+            characterPet
+        ) {
+
+            const level =
+                Math.max(
+                    1,
+                    Math.min(
+                        3,
+                        Number(
+                            characterPet?.level ??
+                            1
+                        )
+                    )
+                );
+
+
+            const essenceCount =
+                Math.max(
+                    0,
+                    Number(
+                        characterPet?.essence_count ??
+                        0
+                    )
+                );
+
+
+            if (
+                level ===
+                1
+            ) {
+
+                return {
+                    current:
+                        essenceCount,
+
+                    required:
+                        3,
+
+                    maxLevel:
+                        false
+                };
+
+            }
+
+
+            if (
+                level ===
+                2
+            ) {
+
+                return {
+                    current:
+                        essenceCount,
+
+                    required:
+                        5,
+
+                    maxLevel:
+                        false
+                };
+
+            }
+
+
+            return {
+                current:
+                    essenceCount,
+
+                required:
+                    null,
+
+                maxLevel:
+                    true
+            };
+
+        }
+
+
+        function renderPetLevelProgressText(
+            characterPet
+        ) {
+
+            const level =
+                Math.max(
+                    1,
+                    Math.min(
+                        3,
+                        Number(
+                            characterPet?.level ??
+                            1
+                        )
+                    )
+                );
+
+
+            const progress =
+                getPetEssenceProgress(
+                    characterPet
+                );
+
+
+            if (
+                progress.maxLevel
+            ) {
+
+                return `
+                    <div>
+                        Level ${level}
+                    </div>
+
+                    <div>
+                        Max Level
+                    </div>
+                `;
+
+            }
+
+
+            return `
+                <div>
+                    Level ${level}
+                </div>
+
+                <div>
+                    Essences:
+                    ${progress.current}/${progress.required}
+                </div>
+            `;
+
+        }
+
+
+        function renderActivePet() {
+
+            const characterPet =
+                getEquippedCharacterPet();
+
+
+            const image =
+                document.getElementById(
+                    'activePetImage'
+                );
+
+
+            const empty =
+                document.getElementById(
+                    'activePetEmpty'
+                );
+
+
+            const name =
+                document.getElementById(
+                    'activePetName'
+                );
+
+
+            const level =
+                document.getElementById(
+                    'activePetLevel'
+                );
+
+
+            const bonuses =
+                document.getElementById(
+                    'activePetBonuses'
+                );
+
+
+            const button =
+                document.getElementById(
+                    'activePetButton'
+                );
+
+
+            if (
+                !image ||
+                !empty ||
+                !name ||
+                !level ||
+                !bonuses ||
+                !button
+            ) {
+                return;
+            }
+
+
+            if (
+                !characterPet?.pets
+            ) {
+
+                image.classList.add(
+                    'hidden'
+                );
+
+                image.removeAttribute(
+                    'src'
+                );
+
+
+                empty.classList.remove(
+                    'hidden'
+                );
+
+
+                name.textContent =
+                    'No Pet Equipped';
+
+
+                level.textContent =
+                    characterPets.length >
+                    0
+                        ? 'Click to select a pet'
+                        : 'No pets owned';
+
+
+                bonuses.innerHTML =
+                    `
+                        <div class="active-pet-no-bonuses">
+                            ${
+                                characterPets.length >
+                                0
+                                    ? 'Choose a companion from your collection.'
+                                    : 'You have not obtained a pet yet.'
+                            }
+                        </div>
+                    `;
+
+
+                button.style.borderColor =
+                    '';
+
+
+                return;
+
+            }
+
+
+            const pet =
+                characterPet.pets;
+
+
+            image.src =
+                pet.image ||
+                '';
+
+
+            image.alt =
+                pet.name ||
+                'Active Pet';
+
+
+            image.classList.toggle(
+                'hidden',
+                !pet.image
+            );
+
+
+            empty.classList.toggle(
+                'hidden',
+                Boolean(
+                    pet.image
+                )
+            );
+
+
+            name.textContent =
+                pet.name ||
+                'Pet';
+
+
+            const essenceProgress =
+                getPetEssenceProgress(
+                    characterPet
+                );
+
+
+            if (
+                essenceProgress.maxLevel
+            ) {
+
+                level.innerHTML = `
+                    <div>
+                        Level ${Number(characterPet.level ?? 1)}
+                    </div>
+
+                    <div>
+                        Max Level
+                    </div>
+                `;
+
+            } else {
+
+                level.innerHTML = `
+                    <div>
+                        Level ${Number(characterPet.level ?? 1)}
+                    </div>
+
+                    <div>
+                        Essences:
+                        ${essenceProgress.current}/${essenceProgress.required}
+                    </div>
+                `;
+
+            }
+
+
+            bonuses.innerHTML =
+                renderPetBonusRows(
+                    characterPet
+                );
+
+
+            button.style.borderColor =
+                '#d4af37';
+
+        }
+
+
+        function renderPetCollection() {
+
+            const grid =
+                document.getElementById(
+                    'petCollectionGrid'
+                );
+
+
+            if (!grid) {
+                return;
+            }
+
+
+            grid.innerHTML =
+                '';
+
+
+            if (
+                characterPets.length ===
+                0
+            ) {
+
+                grid.innerHTML = `
+                    <div class="pet-collection-empty">
+                        You have not obtained any pets yet.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            const sortedPets =
+                [...characterPets]
+                    .sort(
+                        (
+                            a,
+                            b
+                        ) => {
+
+                            const aEquipped =
+                                String(a.id) ===
+                                String(
+                                    currentEquippedPetId
+                                );
+
+
+                            const bEquipped =
+                                String(b.id) ===
+                                String(
+                                    currentEquippedPetId
+                                );
+
+
+                            if (
+                                aEquipped !==
+                                bEquipped
+                            ) {
+                                return aEquipped
+                                    ? -1
+                                    : 1;
+                            }
+
+
+                            return String(
+                                a.pets?.name ||
+                                ''
+                            ).localeCompare(
+                                String(
+                                    b.pets?.name ||
+                                    ''
+                                )
+                            );
+
+                        }
+                    );
+
+
+            for (
+                const characterPet
+                of
+                sortedPets
+            ) {
+
+                const pet =
+                    characterPet.pets;
+
+
+                if (!pet) {
+                    continue;
+                }
+
+
+                const isEquipped =
+                    String(
+                        characterPet.id
+                    ) ===
+                    String(
+                        currentEquippedPetId
+                    );
+
+
+                const rarityColor =
+                    RARITY_COLORS[
+                        String(
+                            pet.rarity ||
+                            'common'
+                        )
+                            .trim()
+                            .toLowerCase()
+                    ] ||
+                    '#888888';
+
+
+                const card =
+                    document.createElement(
+                        'button'
+                    );
+
+
+                card.type =
+                    'button';
+
+
+                card.className =
+                    `pet-collection-card${
+                        isEquipped
+                            ? ' equipped'
+                            : ''
+                    }`;
+
+
+                card.dataset.characterPetId =
+                    characterPet.id;
+
+
+                card.style.borderColor =
+                    isEquipped
+                        ? '#d4af37'
+                        : rarityColor;
+
+
+                card.innerHTML = `
+                    <div class="pet-collection-image-wrap">
+                        ${
+                            pet.image
+                                ? `
+                                    <img
+                                        src="${escapePetHtml(
+                                            pet.image
+                                        )}"
+                                        alt="${escapePetHtml(
+                                            pet.name ||
+                                            'Pet'
+                                        )}"
+                                        class="pet-collection-image">
+                                  `
+                                : `
+                                    <div class="pet-collection-image-placeholder">
+                                        ?
+                                    </div>
+                                  `
+                        }
+
+                        ${
+                            isEquipped
+                                ? `
+                                    <div class="pet-equipped-badge">
+                                        Equipped
+                                    </div>
+                                  `
+                                : ''
+                        }
+                    </div>
+
+                    <div
+                        class="pet-collection-name"
+                        style="color: ${
+                            isEquipped
+                                ? '#d4af37'
+                                : rarityColor
+                        };">
+                        ${escapePetHtml(
+                            pet.name ||
+                            'Pet'
+                        )}
+                    </div>
+
+                    <div class="pet-collection-meta">
+                        ${renderPetLevelProgressText(
+                            characterPet
+                        )}
+                    </div>
+                `;
+
+
+                card.addEventListener(
+                    'mouseenter',
+                    event =>
+                        showPetInventoryTooltip(
+                            event,
+                            characterPet
+                        )
+                );
+
+
+                card.addEventListener(
+                    'mousemove',
+                    movePetInventoryTooltip
+                );
+
+
+                card.addEventListener(
+                    'mouseleave',
+                    hidePetInventoryTooltip
+                );
+
+
+                card.addEventListener(
+                    'click',
+                    () =>
+                        equipCharacterPet(
+                            characterPet
+                        )
+                );
+
+
+                grid.appendChild(
+                    card
+                );
+
+            }
+
+        }
+
+
+        function buildPetTooltipHtml(
+            characterPet
+        ) {
+
+            const pet =
+                characterPet?.pets;
+
+
+            if (!pet) {
+                return '';
+            }
+
+
+            const rarity =
+                String(
+                    pet.rarity ||
+                    'common'
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const rarityColor =
+                RARITY_COLORS[
+                    rarity
+                ] ||
+                '#888888';
+
+
+            return `
+                <div
+                    class="pet-tooltip-name"
+                    style="color: ${rarityColor};">
+                    ${escapePetHtml(
+                        pet.name ||
+                        'Pet'
+                    )}
+                </div>
+
+                <div class="pet-tooltip-meta">
+                    <div>
+                        Level ${Number(characterPet.level ?? 1)}
+                        •
+                        ${escapePetHtml(
+                            rarity.charAt(0).toUpperCase() +
+                            rarity.slice(1)
+                        )}
+                    </div>
+
+                    ${
+                        getPetEssenceProgress(
+                            characterPet
+                        ).maxLevel
+                            ? `
+                                <div>
+                                    Max Level
+                                </div>
+                              `
+                            : `
+                                <div>
+                                    Essences:
+                                    ${getPetEssenceProgress(characterPet).current}/${getPetEssenceProgress(characterPet).required}
+                                </div>
+                              `
+                    }
+                </div>
+
+                ${
+                    pet.description
+                        ? `
+                            <div class="pet-tooltip-description">
+                                ${escapePetHtml(
+                                    pet.description
+                                )}
+                            </div>
+                          `
+                        : ''
+                }
+
+                <div class="pet-tooltip-divider"></div>
+
+                <div class="pet-tooltip-bonuses">
+                    ${renderPetBonusRows(
+                        characterPet,
+                        'pet-tooltip-bonus-row'
+                    )}
+                </div>
+
+                <div class="pet-tooltip-essence">
+                    Essences:
+                    <strong>
+                        ${Number(characterPet.essence_count ?? 0)}
+                    </strong>
+                </div>
+            `;
+
+        }
+
+
+        function showPetInventoryTooltip(
+            event,
+            characterPet
+        ) {
+
+            activePetTooltipPet =
+                characterPet;
+
+
+            const tooltip =
+                document.getElementById(
+                    'petInventoryTooltip'
+                );
+
+
+            if (!tooltip) {
+                return;
+            }
+
+
+            tooltip.innerHTML =
+                buildPetTooltipHtml(
+                    characterPet
+                );
+
+
+            tooltip.classList.remove(
+                'hidden'
+            );
+
+
+            movePetInventoryTooltip(
+                event
+            );
+
+        }
+
+
+        function movePetInventoryTooltip(
+            event
+        ) {
+
+            const tooltip =
+                document.getElementById(
+                    'petInventoryTooltip'
+                );
+
+
+            if (
+                !tooltip ||
+                tooltip.classList.contains(
+                    'hidden'
+                )
+            ) {
+                return;
+            }
+
+
+            const gap =
+                14;
+
+
+            const rect =
+                tooltip.getBoundingClientRect();
+
+
+            let left =
+                event.clientX +
+                gap;
+
+
+            let top =
+                event.clientY +
+                gap;
+
+
+            if (
+                left +
+                rect.width >
+                window.innerWidth -
+                10
+            ) {
+
+                left =
+                    event.clientX -
+                    rect.width -
+                    gap;
+
+            }
+
+
+            if (
+                top +
+                rect.height >
+                window.innerHeight -
+                10
+            ) {
+
+                top =
+                    event.clientY -
+                    rect.height -
+                    gap;
+
+            }
+
+
+            tooltip.style.left =
+                `${Math.max(
+                    10,
+                    left
+                )}px`;
+
+
+            tooltip.style.top =
+                `${Math.max(
+                    10,
+                    top
+                )}px`;
+
+        }
+
+
+        function hidePetInventoryTooltip() {
+
+            activePetTooltipPet =
+                null;
+
+
+            const tooltip =
+                document.getElementById(
+                    'petInventoryTooltip'
+                );
+
+
+            if (
+                tooltip
+            ) {
+
+                tooltip.classList.add(
+                    'hidden'
+                );
+
+            }
+
+        }
+
+
+        function openPetSelection() {
+
+            renderPetCollection();
+
+
+            document
+                .getElementById(
+                    'petSelectionOverlay'
+                )
+                ?.classList
+                .remove(
+                    'hidden'
+                );
+
+        }
+
+
+        function closePetSelection() {
+
+            hidePetInventoryTooltip();
+
+
+            document
+                .getElementById(
+                    'petSelectionOverlay'
+                )
+                ?.classList
+                .add(
+                    'hidden'
+                );
+
+        }
+
+
+        async function equipCharacterPet(
+            characterPet
+        ) {
+
+            if (
+                !characterPet?.id ||
+                String(
+                    characterPet.id
+                ) ===
+                String(
+                    currentEquippedPetId
+                )
+            ) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .functions
+                .invoke(
+                    'equip_pet',
+                    {
+                        body: {
+                            character_pet_id:
+                                characterPet.id
+                        }
+                    }
+                );
+
+
+            if (
+                error ||
+                !data?.success
+            ) {
+
+                let errorMessage =
+                    data?.error ||
+                    'Could not equip pet.';
+
+
+                /*
+                 * Supabase wraps non-2xx Edge Function responses in
+                 * FunctionsHttpError. The actual JSON returned by the
+                 * function is available through error.context.
+                 */
+                if (
+                    error?.context
+                ) {
+
+                    try {
+
+                        const response =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (
+                            response?.error
+                        ) {
+
+                            errorMessage =
+                                response.error;
+
+                        }
+
+                    } catch (
+                        parseError
+                    ) {
+
+                        console.error(
+                            'Could not parse equip_pet error response:',
+                            parseError
+                        );
+
+                    }
+
+                }
+
+
+                console.error(
+                    'Could not equip pet:',
+                    errorMessage,
+                    error ||
+                    data
+                );
+
+
+                alert(
+                    errorMessage
+                );
+
+
+                return;
+
+            }
+
+
+            currentEquippedPetId =
+                data.equipped_pet_id ||
+                characterPet.id;
+
+
+            renderActivePet();
+            renderPetCollection();
+            hidePetInventoryTooltip();
+
+
+            /*
+             * This is already useful once the effective-stat RPC
+             * includes pet bonuses. Until then it is harmless.
+             */
+            await refreshCharacterEffectiveStats();
+
+        }
+
+
+        function initializePetUi() {
+
+            document
+                .getElementById(
+                    'activePetButton'
+                )
+                ?.addEventListener(
+                    'click',
+                    openPetSelection
+                );
+
+
+            document
+                .getElementById(
+                    'closePetSelectionButton'
+                )
+                ?.addEventListener(
+                    'click',
+                    closePetSelection
+                );
+
+
+            document
+                .getElementById(
+                    'petSelectionOverlay'
+                )
+                ?.addEventListener(
+                    'click',
+                    event => {
+
+                        if (
+                            event.target?.id ===
+                            'petSelectionOverlay'
+                        ) {
+
+                            closePetSelection();
+
+                        }
+
+                    }
+                );
+
+
+            document.addEventListener(
+                'keydown',
+                event => {
+
+                    if (
+                        event.key ===
+                        'Escape'
+                    ) {
+
+                        closePetSelection();
+
+                    }
+
+                }
+            );
 
         }
 
@@ -3540,6 +5054,7 @@
 
 
         /* ========================================= */
+        /* ========================================= */
         /* INVENTORY DRAG AND DROP                    */
         /* ========================================= */
 
@@ -3552,7 +5067,6 @@
 
 
             inventorySlots.forEach(slot => {
-
 
                 /* ========================================= */
                 /* RIGHT-CLICK DISCARD MENU                  */
@@ -4401,26 +5915,80 @@
         }
 
         function getSkillStatValue(stat) {
-            const s = currentCharacterEffectiveStats || {};
-            const key = String(stat || '').toLowerCase();
 
-            if (key === 'strength') return Number(s.effective_strength ?? 0);
-            if (key === 'dexterity') return Number(s.effective_dexterity ?? 0);
-            if (key === 'intelligence') return Number(s.effective_intelligence ?? 0);
-            if (key === 'defense') return Number(s.effective_defense ?? 0);
-            if (key === 'max_health') return Number(s.effective_max_health ?? 0);
-            if (key === 'max_mana') return Number(s.effective_max_mana ?? 0);
+            const stats =
+                currentCharacterEffectiveStats ||
+                {};
 
-            return 0;
+
+            const key =
+                String(
+                    stat ||
+                    ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const statMap = {
+
+                strength:
+                    'effective_strength',
+
+                dexterity:
+                    'effective_dexterity',
+
+                intelligence:
+                    'effective_intelligence',
+
+                defense:
+                    'effective_defense',
+
+                critical_chance:
+                    'effective_critical_chance',
+
+                max_health:
+                    'effective_max_health',
+
+                max_mana:
+                    'effective_max_mana'
+
+            };
+
+
+            const effectiveKey =
+                statMap[
+                    key
+                ];
+
+
+            if (!effectiveKey) {
+                return 0;
+            }
+
+
+            return Number(
+                stats[
+                    effectiveKey
+                ] ??
+                0
+            );
+
         }
+
 
         function getEquippedWeaponDamage() {
 
-            let weaponDamage = 0;
+            let weaponDamage =
+                0;
+
 
             for (
                 const equipmentType
-                of ['main_weapon', 'offhand']
+                of [
+                    'main_weapon',
+                    'offhand'
+                ]
             ) {
 
                 const slot =
@@ -4428,9 +5996,13 @@
                         `.equipment-grid .equipment-slot[data-equipment-type="${equipmentType}"]`
                     );
 
-                if (!slot?.dataset.item) {
+
+                if (
+                    !slot?.dataset.item
+                ) {
                     continue;
                 }
+
 
                 try {
 
@@ -4439,20 +6011,26 @@
                             slot.dataset.item
                         );
 
+
                     if (
-                        slotData.item?.item_type !==
+                        slotData.item
+                            ?.item_type !==
                         'weapons'
                     ) {
                         continue;
                     }
 
+
                     weaponDamage +=
                         Number(
-                            slotData.details?.damage ??
+                            slotData.details
+                                ?.damage ??
                             0
                         );
 
-                } catch (error) {
+                } catch (
+                    error
+                ) {
 
                     console.error(
                         'Could not read equipped weapon damage:',
@@ -4463,18 +6041,49 @@
 
             }
 
+
             return weaponDamage;
+
         }
 
 
-        function calculateSkillDamage(skill) {
-            let damage = Number(skill.base_damage ?? 0);
+        function calculateSkillDamage(
+            skill
+        ) {
 
-            for (const scaling of skill.skill_scalings || []) {
-                damage +=
-                    getSkillStatValue(scaling.stat) *
-                    Number(scaling.scaling ?? 0);
+            let value =
+                Number(
+                    skill.base_damage ??
+                    0
+                );
+
+
+            /*
+             * All skill scalings use the authoritative effective
+             * stats returned by get_character_effective_stats().
+             *
+             * That now includes:
+             * base + level + equipment + active pet.
+             */
+            for (
+                const scaling
+                of
+                skill.skill_scalings ||
+                []
+            ) {
+
+                value +=
+                    getSkillStatValue(
+                        scaling.stat
+                    )
+                    *
+                    Number(
+                        scaling.scaling ??
+                        0
+                    );
+
             }
+
 
             const skillType =
                 String(
@@ -4484,22 +6093,34 @@
                     .trim()
                     .toLowerCase();
 
+
             /*
-             * Only damage skills receive weapon damage.
-             * Main Weapon + Offhand weapon damage are summed,
-             * then 50% of that total is added.
+             * Match combat:
+             *
+             * damage skill
+             * + 50% of Main Weapon + Offhand weapon damage.
+             *
+             * Healing skills do not receive weapon damage.
              */
             if (
                 skillType ===
                 'damage'
             ) {
-                damage +=
-                    getEquippedWeaponDamage() *
+
+                value +=
+                    getEquippedWeaponDamage()
+                    *
                     0.50;
+
             }
 
-            return Math.round(damage);
+
+            return Math.round(
+                value
+            );
+
         }
+
 
         function buildResolvedSkillDescriptionHtml(skill) {
             const description =
@@ -4597,14 +6218,45 @@
         }
 
         function hideSkillTooltip() {
-            activeSkillTooltip?.remove();
-            activeSkillTooltip = null;
+
+            activeSkillTooltip
+                ?.remove();
+
+
+            activeSkillTooltip =
+                null;
+
+
+            activeSkillTooltipAnchor =
+                null;
+
+
+            activeSkillTooltipSkill =
+                null;
+
         }
 
-        function showSkillTooltip(element, skill) {
+
+        function showSkillTooltip(
+            element,
+            skill
+        ) {
+
             hideSkillTooltip();
 
-            const wrapper = document.createElement('div');
+
+            activeSkillTooltipAnchor =
+                element;
+
+
+            activeSkillTooltipSkill =
+                skill;
+
+
+            const wrapper =
+                document.createElement(
+                    'div'
+                );
             wrapper.innerHTML = buildSkillTooltip(skill).trim();
             const tooltip = wrapper.firstElementChild;
 
@@ -4631,6 +6283,40 @@
             tooltip.style.left = `${left}px`;
             tooltip.style.top = `${top}px`;
         }
+
+        function refreshVisibleSkillTooltip() {
+
+            if (
+                !activeSkillTooltipAnchor ||
+                !activeSkillTooltipSkill ||
+                !document.body.contains(
+                    activeSkillTooltipAnchor
+                )
+            ) {
+                return;
+            }
+
+
+            const anchor =
+                activeSkillTooltipAnchor;
+
+
+            const skill =
+                activeSkillTooltipSkill;
+
+
+            /*
+             * Rebuild the open tooltip so equipment/pet changes are
+             * visible immediately without requiring the mouse to
+             * leave and re-enter the skill.
+             */
+            showSkillTooltip(
+                anchor,
+                skill
+            );
+
+        }
+
 
         function getSkillById(id) {
             return characterClassSkills.find(
@@ -5287,57 +6973,120 @@
             }
 
 
-            const {
-                data: rewardRows,
-                error
-            } = await supabaseClient
-                .from('quest_reward_items')
-                .select(`
-                    item_count,
-                    items (
-                        item_id,
-                        name,
-                        description,
-                        item_type,
-                        rarity,
-                        required_level,
-                        sell_price,
-                        icon_path,
-                        stackable,
-                        max_stack_size
+            const [
+                itemResult,
+                petResult
+            ] = await Promise.all([
+
+                supabaseClient
+                    .from('quest_reward_items')
+                    .select(`
+                        item_count,
+                        items (
+                            item_id,
+                            name,
+                            description,
+                            item_type,
+                            rarity,
+                            required_level,
+                            sell_price,
+                            icon_path,
+                            stackable,
+                            max_stack_size
+                        )
+                    `)
+                    .eq(
+                        'quest_id',
+                        questId
+                    ),
+
+                supabaseClient
+                    .from('quest_reward_pets')
+                    .select(`
+                        pet_id,
+                        pets (
+                            id,
+                            name,
+                            description,
+                            rarity,
+                            image,
+                            required_level,
+                            pet_bonuses (
+                                bonus_type,
+                                modifier_type,
+                                value
+                            )
+                        )
+                    `)
+                    .eq(
+                        'quest_id',
+                        questId
                     )
-                `)
-                .eq('quest_id', questId);
+
+            ]);
 
 
-            if (error) {
+            if (itemResult.error) {
 
                 console.error(
                     'Error loading quest reward items:',
-                    error
+                    itemResult.error
                 );
 
-                return;
+            }
+
+
+            if (petResult.error) {
+
+                console.error(
+                    'Error loading quest reward pets:',
+                    petResult.error
+                );
+
             }
 
 
             const rewards =
-                (rewardRows || [])
-                    .filter(row => row.items);
+                (itemResult.data || [])
+                    .filter(
+                        row =>
+                            row.items
+                    );
 
 
-            if (rewards.length === 0) {
-                container.classList.add('hidden');
+            const petRewards =
+                (petResult.data || [])
+                    .filter(
+                        row =>
+                            row.pets
+                    );
+
+
+            if (
+                rewards.length ===
+                    0 &&
+                petRewards.length ===
+                    0
+            ) {
+
+                container.classList.add(
+                    'hidden'
+                );
+
                 return;
+
             }
 
 
-            const detailsByItemId = {};
+            const detailsByItemId =
+                {};
 
 
             for (
                 const [itemType, config]
-                of Object.entries(ITEM_TYPE_TABLES)
+                of Object.entries(
+                    ITEM_TYPE_TABLES
+                )
             ) {
 
                 const itemIds =
@@ -5353,7 +7102,10 @@
                         );
 
 
-                if (itemIds.length === 0) {
+                if (
+                    itemIds.length ===
+                    0
+                ) {
                     continue;
                 }
 
@@ -5362,8 +7114,12 @@
                     data: typeData,
                     error: typeError
                 } = await supabaseClient
-                    .from(config.table)
-                    .select(config.select)
+                    .from(
+                        config.table
+                    )
+                    .select(
+                        config.select
+                    )
                     .in(
                         'item_id',
                         itemIds
@@ -5378,27 +7134,40 @@
                     );
 
                     continue;
+
                 }
 
 
-                (typeData || []).forEach(
-                    detail => {
+                for (
+                    const detail
+                    of
+                    typeData ||
+                    []
+                ) {
 
-                        detailsByItemId[
-                            detail.item_id
-                        ] = detail;
+                    detailsByItemId[
+                        detail.item_id
+                    ] =
+                        detail;
 
-                    }
-                );
+                }
 
             }
 
 
-            container.innerHTML = '';
-            container.classList.remove('hidden');
+            container.innerHTML =
+                '';
+
+            container.classList.remove(
+                'hidden'
+            );
 
 
-            rewards.forEach(row => {
+            for (
+                const row
+                of
+                rewards
+            ) {
 
                 const item =
                     row.items;
@@ -5427,16 +7196,22 @@
 
 
                 const slot =
-                    document.createElement('div');
+                    document.createElement(
+                        'div'
+                    );
 
 
                 slot.className =
                     'quest-reward-item-slot';
 
 
-                if (rarityColor) {
+                if (
+                    rarityColor
+                ) {
+
                     slot.style.borderColor =
                         rarityColor;
+
                 }
 
 
@@ -5448,7 +7223,8 @@
                     >
 
                     ${
-                        quantity > 1
+                        quantity >
+                        1
                             ? `
                                 <span class="quest-reward-item-count">
                                     ${quantity}
@@ -5463,18 +7239,14 @@
                     'mouseenter',
                     () => {
 
-                        const tooltipHtml =
+                        showItemTooltip(
+                            slot,
                             buildItemTooltip(
                                 item,
                                 details,
                                 quantity,
                                 rarityColor
-                            );
-
-
-                        showItemTooltip(
-                            slot,
-                            tooltipHtml
+                            )
                         );
 
                     }
@@ -5491,7 +7263,206 @@
                     slot
                 );
 
-            });
+            }
+
+
+            for (
+                const row
+                of
+                petRewards
+            ) {
+
+                const pet =
+                    row.pets;
+
+
+                const rarityColor =
+                    RARITY_COLORS[
+                        String(
+                            pet.rarity ||
+                            'common'
+                        )
+                            .trim()
+                            .toLowerCase()
+                    ];
+
+
+                const slot =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                slot.className =
+                    'quest-reward-item-slot';
+
+
+                if (
+                    rarityColor
+                ) {
+
+                    slot.style.borderColor =
+                        rarityColor;
+
+                }
+
+
+                slot.innerHTML = `
+                    <img
+                        src="${escapeQuestHtml(pet.image || '')}"
+                        alt="${escapeQuestHtml(pet.name || '')}"
+                        class="quest-reward-item-image"
+                    >
+                `;
+
+
+                slot.addEventListener(
+                    'mouseenter',
+                    () => {
+
+                        showItemTooltip(
+                            slot,
+                            buildQuestPetRewardTooltip(
+                                pet
+                            )
+                        );
+
+                    }
+                );
+
+
+                slot.addEventListener(
+                    'mouseleave',
+                    hideItemTooltip
+                );
+
+
+                container.appendChild(
+                    slot
+                );
+
+            }
+
+        }
+
+
+
+        function buildQuestPetRewardTooltip(
+            pet
+        ) {
+
+            const rarityColor =
+                RARITY_COLORS[
+                    String(
+                        pet?.rarity ||
+                        'common'
+                    )
+                        .trim()
+                        .toLowerCase()
+                ] ||
+                '#f0f0f0';
+
+
+            const detailLines =
+                [];
+
+
+            if (
+                pet?.description
+            ) {
+
+                detailLines.push(
+                    escapeQuestHtml(
+                        pet.description
+                    )
+                );
+
+            }
+
+
+            /*
+             * Quest reward previews always show the pet's
+             * level-1 values because newly obtained pets start at Lv.1.
+             */
+            for (
+                const bonus
+                of
+                pet?.pet_bonuses ||
+                []
+            ) {
+
+                const type =
+                    String(
+                        bonus.bonus_type ||
+                        ''
+                    )
+                        .replaceAll(
+                            '_',
+                            ' '
+                        )
+                        .replace(
+                            /\b\w/g,
+                            char =>
+                                char.toUpperCase()
+                        );
+
+
+                const value =
+                    Math.round(
+                        Number(
+                            bonus.value ??
+                            0
+                        ) *
+                        100
+                    ) /
+                    100;
+
+
+                const suffix =
+                    String(
+                        bonus.modifier_type ||
+                        ''
+                    )
+                        .toLowerCase() ===
+                    'percentage'
+                        ? '%'
+                        : '';
+
+
+                detailLines.push(
+                    `+${escapeQuestHtml(value)}${suffix} ${escapeQuestHtml(type)}`
+                );
+
+            }
+
+
+            return `
+                <div class="item-tooltip">
+
+                    <div
+                        class="item-tooltip-name"
+                        style="color: ${rarityColor};">
+                        ${escapeQuestHtml(
+                            pet?.name ||
+                            'Unknown Pet'
+                        )}
+                    </div>
+
+                    <div
+                        class="item-tooltip-rarity"
+                        style="color: ${rarityColor};">
+                        ${escapeQuestHtml(
+                            pet?.rarity ||
+                            'common'
+                        )}
+                    </div>
+
+                    <div class="item-tooltip-details">
+                        ${detailLines.join('<br>')}
+                    </div>
+
+                </div>
+            `;
 
         }
 
@@ -6039,6 +8010,7 @@
 
         }
         
+        initializePetUi();
         loadCharacter();
 
         /* ========================================= */
