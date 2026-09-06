@@ -601,6 +601,97 @@
             transform: translateY(-1px);
         }
 
+
+        /* =========================================================
+           WORLD NOTIFICATIONS
+           Keep notifications above shops / combat overlays.
+           ========================================================= */
+
+        .world-toast {
+            position: fixed !important;
+
+            top: 20px !important;
+            right: 20px !important;
+            left: auto !important;
+            bottom: auto !important;
+
+            z-index: 1000000 !important;
+
+            max-width: min(
+                420px,
+                calc(100vw - 40px)
+            );
+
+            padding: 12px 16px;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.7);
+
+            border-radius: 8px;
+
+            background:
+                rgba(10, 14, 39, 0.98);
+
+            color: #f0f0f0;
+
+            font-family: 'Georgia', serif;
+            font-size: 13px;
+            line-height: 1.4;
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, 0.55);
+
+            opacity: 0;
+
+            transform:
+                translateY(-8px);
+
+            pointer-events: none;
+
+            transition:
+                opacity 0.18s ease,
+                transform 0.18s ease;
+        }
+
+
+        .world-toast.visible {
+            opacity: 1;
+
+            transform:
+                translateY(0);
+        }
+
+
+        .world-toast.success {
+            border-color:
+                rgba(69, 196, 111, 0.8);
+
+            color:
+                #baf3ca;
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, 0.55),
+                0 0 16px
+                rgba(69, 196, 111, 0.12);
+        }
+
+
+        .world-toast.error {
+            border-color:
+                rgba(217, 83, 79, 0.8);
+
+            color:
+                #f0aaa7;
+        }
+
+
+        .world-toast.hidden {
+            display: none !important;
+        }
+
 </style>
 
 </head>
