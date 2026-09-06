@@ -2278,10 +2278,13 @@
                     characterPet.id;
 
 
+                /*
+                 * Keep the pet card frame tied to the pet's rarity.
+                 * Equipped state is still visible through the Equipped
+                 * badge and the existing equipped-card glow.
+                 */
                 card.style.borderColor =
-                    isEquipped
-                        ? '#d4af37'
-                        : rarityColor;
+                    rarityColor;
 
 
                 card.innerHTML = `
@@ -2319,11 +2322,7 @@
 
                     <div
                         class="pet-collection-name"
-                        style="color: ${
-                            isEquipped
-                                ? '#d4af37'
-                                : rarityColor
-                        };">
+                        style="color: ${rarityColor};">
                         ${escapePetHtml(
                             pet.name ||
                             'Pet'
@@ -6051,9 +6050,9 @@
 
                     case 'armors':
                         detailLines.push(
-                            `${escapeHtml(details.armor_type)} (${escapeHtml(details.equipment_slot)}) - Defense: ${escapeHtml(details.defense)}`
+                            `${escapeHtml(details.armor_type)} (${escapeHtml(details.equipment_slot)})`
                         );
-
+                        if (details.defense) detailLines.push(`${escapeHtml(details.defense)} Defense`);
                         if (details.strength) detailLines.push(`${escapeHtml(details.strength)} Strength`);
                         if (details.dexterity) detailLines.push(`${escapeHtml(details.dexterity)} Dexterity`);
                         if (details.intelligence) detailLines.push(`${escapeHtml(details.intelligence)} Intelligence`);

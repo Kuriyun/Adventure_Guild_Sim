@@ -592,7 +592,16 @@
                 padding: 16px;
             }
         }
-    </style>
+    
+        .combat-inventory-slot.occupied {
+            cursor: pointer;
+        }
+
+        .combat-inventory-slot.occupied:hover {
+            transform: translateY(-1px);
+        }
+
+</style>
 
 </head>
 
@@ -3088,6 +3097,200 @@
         }
 
 
+        function showCombatInventoryConsumableTooltip(
+            event,
+            item,
+            details,
+            quantity
+        ) {
+
+            const tooltip =
+                document.getElementById(
+                    'shopItemTooltip'
+                );
+
+
+            if (
+                !tooltip
+            ) {
+                return;
+            }
+
+
+            const rarity =
+                String(
+                    item?.rarity ||
+                    'common'
+                )
+                    .trim()
+                    .toLowerCase();
+
+
+            const rarityColor =
+                getShopRarityColor(
+                    rarity
+                );
+
+
+            let effectHtml =
+                '';
+
+
+            if (
+                details?.effect_type ===
+                    'Status Effect' &&
+                details?.status_effect
+            ) {
+
+                const statusEffect =
+                    details.status_effect;
+
+
+                const suffix =
+                    String(
+                        statusEffect.modifier_type ||
+                        ''
+                    )
+                        .toLowerCase() ===
+                    'percentage'
+                        ? '%'
+                        : '';
+
+
+                effectHtml = `
+                    <div class="shop-item-tooltip-row">
+                        <span>
+                            Status Effect ${escapeHtml(
+                                statusEffect.stat ||
+                                ''
+                            )}
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                statusEffect.base_value ??
+                                0
+                            )}${suffix}
+                        </strong>
+                    </div>
+                `;
+
+            } else if (
+                details?.effect_type
+            ) {
+
+                effectHtml = `
+                    <div class="shop-item-tooltip-row">
+                        <span>
+                            ${escapeHtml(
+                                details.effect_type
+                            )}
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                details.effect_value ??
+                                ''
+                            )}
+                        </strong>
+                    </div>
+                `;
+
+            }
+
+
+            tooltip.innerHTML = `
+
+                <div
+                    class="shop-item-tooltip-name"
+                    style="color: ${rarityColor};">
+                    ${escapeHtml(
+                        item?.name ||
+                        'Unknown Item'
+                    )}
+                </div>
+
+                <div
+                    class="shop-item-tooltip-rarity"
+                    style="color: ${rarityColor};">
+                    ${escapeHtml(
+                        rarity
+                    )}
+                </div>
+
+                ${
+                    item?.description
+                        ? `
+                            <div class="shop-item-tooltip-description">
+                                ${escapeHtml(
+                                    item.description
+                                )}
+                            </div>
+                          `
+                        : ''
+                }
+
+                ${effectHtml}
+
+                ${
+                    Number(
+                        item?.required_level ??
+                        0
+                    ) >
+                    0
+                        ? `
+                            <div class="shop-item-tooltip-row">
+                                <span>
+                                    Required Level
+                                </span>
+
+                                <strong>
+                                    ${Number(
+                                        item.required_level
+                                    )}
+                                </strong>
+                            </div>
+                          `
+                        : ''
+                }
+
+                ${
+                    item?.stackable
+                        ? `
+                            <div class="shop-item-tooltip-row">
+                                <span>
+                                    Quantity
+                                </span>
+
+                                <strong>
+                                    ${Number(
+                                        quantity ??
+                                        1
+                                    )} / ${Number(
+                                        item.max_stack_size ??
+                                        99
+                                    )}
+                                </strong>
+                            </div>
+                          `
+                        : ''
+                }
+
+            `;
+
+
+            tooltip.classList.remove(
+                'hidden'
+            );
+
+
+            moveShopItemTooltip(
+                event
+            );
+
+        }
+
+
         function showShopItemTooltip(
             event,
             {
@@ -4557,6 +4760,150 @@
         }
 
 
+        function buildShopTransactionSuccessMessage(
+            data,
+            fallbackMessage
+        ) {
+
+            /*
+             * Normal item purchase
+             */
+            if (
+                data?.purchase?.item_name
+            ) {
+
+                const purchase =
+                    data.purchase;
+
+
+                const quantity =
+                    Math.max(
+                        1,
+                        Number(
+                            purchase.quantity ??
+                            1
+                        )
+                    );
+
+
+                const goldSpent =
+                    Math.max(
+                        0,
+                        Number(
+                            purchase.gold_spent ??
+                            0
+                        )
+                    );
+
+
+                return `Bought ${quantity}x ${purchase.item_name} for ${goldSpent} Gold.`;
+
+            }
+
+
+            /*
+             * Pet purchase
+             */
+            if (
+                data?.purchase?.pet_name
+            ) {
+
+                const purchase =
+                    data.purchase;
+
+
+                const goldSpent =
+                    Math.max(
+                        0,
+                        Number(
+                            purchase.gold_spent ??
+                            0
+                        )
+                    );
+
+
+                return `Bought ${purchase.pet_name} for ${goldSpent} Gold.`;
+
+            }
+
+
+            /*
+             * Item sale
+             */
+            if (
+                data?.sale?.item_name
+            ) {
+
+                const sale =
+                    data.sale;
+
+
+                const quantity =
+                    Math.max(
+                        1,
+                        Number(
+                            sale.quantity ??
+                            1
+                        )
+                    );
+
+
+                const goldReceived =
+                    Math.max(
+                        0,
+                        Number(
+                            sale.gold_received ??
+                            0
+                        )
+                    );
+
+
+                return `Sold ${quantity}x ${sale.item_name} for ${goldReceived} Gold.`;
+
+            }
+
+
+            /*
+             * Buyback
+             */
+            if (
+                data?.buyback?.item_name
+            ) {
+
+                const buyback =
+                    data.buyback;
+
+
+                const quantity =
+                    Math.max(
+                        1,
+                        Number(
+                            buyback.quantity ??
+                            1
+                        )
+                    );
+
+
+                const goldSpent =
+                    Math.max(
+                        0,
+                        Number(
+                            buyback.gold_spent ??
+                            0
+                        )
+                    );
+
+
+                return `Bought back ${quantity}x ${buyback.item_name} for ${goldSpent} Gold.`;
+
+            }
+
+
+            return fallbackMessage;
+
+        }
+
+
         async function runShopTransaction(
             functionName,
             body,
@@ -4638,7 +4985,10 @@
 
 
                 showWorldToast(
-                    successMessage,
+                    buildShopTransactionSuccessMessage(
+                        data,
+                        successMessage
+                    ),
                     'success'
                 );
 
@@ -6161,6 +6511,776 @@
             setCombatSkillsDisabled(
                 false
             );
+        }
+
+
+
+        async function continueCombatAfterConsumable(
+            message
+        ) {
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, 1000)
+                );
+    
+                /* ENEMY ATTACK */
+                const enemyResult = await invokeCombatTurn({
+                    phase: 'enemy',
+                    combat_id: currentCombat.id
+                });
+    
+                if (!enemyResult) {
+                    combatTurnPending = false;
+                    setCombatSkillsDisabled(false);
+                    return;
+                }
+    
+                const enemyStatusEvents =
+                    enemyResult.enemy_status_events ||
+                    [];
+    
+    
+                /*
+                 * Enemy-targeted periodic effects resolve before the
+                 * enemy acts. Visually apply ONLY the enemy snapshot
+                 * first so the player's HP is not changed early.
+                 */
+                if (
+                    enemyStatusEvents.length >
+                    0 &&
+                    enemyResult.pre_enemy_action_enemy
+                ) {
+    
+                    applyCombatResponse({
+                        ...enemyResult,
+    
+                        combat: {
+                            ...enemyResult.combat,
+    
+                            enemy: {
+                                ...enemyResult.combat.enemy,
+    
+                                current_health:
+                                    Number(
+                                        enemyResult
+                                            .pre_enemy_action_enemy
+                                            .current_health ??
+                                        enemyResult.combat.enemy
+                                            .current_health
+                                    ),
+    
+                                current_mana:
+                                    Number(
+                                        enemyResult
+                                            .pre_enemy_action_enemy
+                                            .current_mana ??
+                                        enemyResult.combat.enemy
+                                            .current_mana
+                                    ),
+    
+                                max_health:
+                                    Number(
+                                        enemyResult
+                                            .pre_enemy_action_enemy
+                                            .max_health ??
+                                        enemyResult.combat.enemy
+                                            .max_health
+                                    ),
+    
+                                max_mana:
+                                    Number(
+                                        enemyResult
+                                            .pre_enemy_action_enemy
+                                            .max_mana ??
+                                        enemyResult.combat.enemy
+                                            .max_mana
+                                    )
+                            },
+    
+                            character: {
+                                ...enemyResult.combat.character,
+    
+                                current_health:
+                                    Number(
+                                        currentCombat.character_health ??
+                                        currentCharacter.current_health ??
+                                        enemyResult.combat.character
+                                            .current_health
+                                    ),
+    
+                                current_mana:
+                                    Number(
+                                        currentCombat.character_mana ??
+                                        currentCharacter.current_mana ??
+                                        enemyResult.combat.character
+                                            .current_mana
+                                    )
+                            }
+                        }
+                    });
+    
+    
+                    showCombatStatusEvents(
+                        enemyStatusEvents
+                    );
+    
+    
+                    const enemyStatusNames =
+                        [
+                            ...new Set(
+                                enemyStatusEvents
+                                    .map(
+                                        event =>
+                                            event.status_name
+                                    )
+                                    .filter(
+                                        Boolean
+                                    )
+                            )
+                        ];
+    
+    
+                    if (
+                        enemyStatusNames.length >
+                        0
+                    ) {
+    
+                        setCombatMessage(
+                            `${enemyStatusNames.join(', ')} takes effect.`
+                        );
+    
+                    }
+    
+    
+                    /*
+                     * Give the status tick half a second of its own
+                     * before the enemy's skill is displayed.
+                     */
+                    await new Promise(
+                        resolve =>
+                            setTimeout(
+                                resolve,
+                                1000
+                            )
+                    );
+    
+                }
+    
+    
+                /*
+                 * An enemy can die from Poison / Burn / Bleed at the
+                 * start of its phase, before it gets to use a skill.
+                 */
+                if (
+                    enemyResult.combat.status ===
+                    'won'
+                ) {
+    
+                    /*
+                     * Apply the final server response before showing
+                     * the victory rewards.
+                     */
+                    applyCombatResponse(
+                        enemyResult
+                    );
+    
+    
+                    setCombatMessage(
+                        'The enemy was defeated by a status effect. Victory!',
+                        'success'
+                    );
+    
+    
+                    combatTurnPending =
+                        false;
+    
+    
+                    setCombatSkillsDisabled(
+                        true
+                    );
+    
+    
+                    await showCombatRewards(
+                        enemyResult.rewards || {
+                            experience: 0,
+                            gold: 0,
+                            items: []
+                        }
+                    );
+    
+    
+                    return;
+    
+                }
+    
+    
+                /*
+                 * Now that the enemy status tick has had its own visual
+                 * moment, show the enemy's direct action.
+                 */
+                if (
+                    enemyResult.pre_status_character
+                ) {
+    
+                    applyCombatResponse({
+                        ...enemyResult,
+    
+                        combat: {
+                            ...enemyResult.combat,
+    
+                            character: {
+                                ...enemyResult.combat.character,
+    
+                                current_health:
+                                    Number(
+                                        enemyResult.pre_status_character
+                                            .current_health ??
+                                        enemyResult.combat.character
+                                            .current_health
+                                    ),
+    
+                                current_mana:
+                                    Number(
+                                        enemyResult.pre_status_character
+                                            .current_mana ??
+                                        enemyResult.combat.character
+                                            .current_mana
+                                    ),
+    
+                                max_health:
+                                    Number(
+                                        enemyResult.pre_status_character
+                                            .max_health ??
+                                        enemyResult.combat.character
+                                            .max_health
+                                    ),
+    
+                                max_mana:
+                                    Number(
+                                        enemyResult.pre_status_character
+                                            .max_mana ??
+                                        enemyResult.combat.character
+                                            .max_mana
+                                    )
+                            }
+                        }
+                    });
+    
+                } else {
+    
+                    applyCombatResponse(
+                        enemyResult
+                    );
+    
+                }
+    
+    
+                if (
+                    enemyResult.enemy_action?.type ===
+                    'damage'
+                ) {
+    
+                    showCombatDamage(
+                        'player',
+                        enemyResult.enemy_action.amount,
+                        enemyResult.enemy_action.critical
+                    );
+    
+                } else if (
+                    enemyResult.enemy_action?.type ===
+                    'heal'
+                ) {
+    
+                    showCombatHeal(
+                        'enemy',
+                        enemyResult.enemy_action.amount
+                    );
+    
+                }
+    
+    
+                const enemyMessage =
+                    buildCombatActionMessage(
+                        enemyResult.enemy_action
+                    );
+    
+                if (enemyMessage) {
+                    message += ` ${enemyMessage}`;
+                }
+    
+                /*
+                 * If the direct enemy attack itself killed the player,
+                 * there is no status-effect delay because the turn has
+                 * already ended.
+                 */
+                const killedByEnemyAttack =
+                    Number(
+                        enemyResult.pre_status_character
+                            ?.current_health ??
+                        1
+                    ) <=
+                    0;
+    
+    
+                if (
+                    enemyResult.combat.status ===
+                        'lost' &&
+                    killedByEnemyAttack
+                ) {
+    
+                    const experienceLost =
+                        Number(
+                            enemyResult.death_penalty
+                                ?.experience_lost ??
+                            0
+                        );
+    
+    
+                    const healthLost =
+                        Number(
+                            enemyResult.death_penalty
+                                ?.health_lost ??
+                            enemyResult.enemy_action
+                                ?.amount ??
+                            0
+                        );
+    
+    
+                    setCombatMessage(
+                        'You were defeated.',
+                        'error'
+                    );
+    
+    
+                    /*
+                     * Apply the final server response before opening
+                     * the defeat window.
+                     */
+                    applyCombatResponse(
+                        enemyResult
+                    );
+    
+    
+                    showCombatDeathWindow({
+                        experienceLost,
+                        healthLost
+                    });
+    
+    
+                    combatTurnPending =
+                        false;
+    
+    
+                    setCombatSkillsDisabled(
+                        true
+                    );
+    
+    
+                    return;
+                }
+    
+    
+                setCombatMessage(
+                    message
+                );
+    
+    
+                const playerStatusEvents =
+                    enemyResult.status_events ||
+                    [];
+    
+    
+                /*
+                 * Keep the skills locked and leave the HP/Mana bars at
+                 * their post-enemy-action values for half a second.
+                 * This makes Poison/Burn/Regen ticks visually distinct
+                 * from the enemy's attack.
+                 */
+                if (
+                    playerStatusEvents.length >
+                    0
+                ) {
+    
+                    /*
+                     * Pause before the periodic effect is shown.
+                     * This separates the enemy's action from the
+                     * following Poison/Burn/Regen tick.
+                     */
+                    await new Promise(
+                        resolve =>
+                            setTimeout(
+                                resolve,
+                                1000
+                            )
+                    );
+    
+    
+                    applyCombatResponse(
+                        enemyResult
+                    );
+    
+    
+                    showCombatStatusEvents(
+                        playerStatusEvents
+                    );
+    
+    
+                    const statusNames =
+                        [
+                            ...new Set(
+                                playerStatusEvents
+                                    .map(
+                                        event =>
+                                            event.status_name
+                                    )
+                                    .filter(
+                                        Boolean
+                                    )
+                            )
+                        ];
+    
+    
+                    if (
+                        statusNames.length >
+                        0
+                    ) {
+    
+                        setCombatMessage(
+                            `${message} ${statusNames.join(', ')} takes effect.`
+                        );
+    
+                    }
+    
+    
+                    /*
+                     * Keep the player's skills locked for another
+                     * half second after the status effect resolves.
+                     * This gives the HP/heal change and floating text
+                     * time to register before the next action begins.
+                     */
+                    await new Promise(
+                        resolve =>
+                            setTimeout(
+                                resolve,
+                                1000
+                            )
+                    );
+    
+                } else {
+    
+                    /*
+                     * No visible periodic tick occurred, but status
+                     * durations / badges may still have changed.
+                     */
+                    applyCombatResponse(
+                        enemyResult
+                    );
+    
+                }
+    
+    
+                if (
+                    enemyResult.combat.status ===
+                    'lost'
+                ) {
+    
+                    const experienceLost =
+                        Number(
+                            enemyResult.death_penalty
+                                ?.experience_lost ??
+                            0
+                        );
+    
+    
+                    const healthLost =
+                        Number(
+                            enemyResult.death_penalty
+                                ?.health_lost ??
+                            0
+                        );
+    
+    
+                    setCombatMessage(
+                        'You were defeated by a status effect.',
+                        'error'
+                    );
+    
+    
+                    showCombatDeathWindow({
+                        experienceLost,
+                        healthLost
+                    });
+    
+    
+                    combatTurnPending =
+                        false;
+    
+    
+                    setCombatSkillsDisabled(
+                        true
+                    );
+    
+    
+                    return;
+                }
+    
+    
+                combatTurnPending =
+                    false;
+    
+    
+                setCombatSkillsDisabled(
+                    false
+                );
+
+        }
+
+
+        async function invokeCombatConsumable(
+            body
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .functions
+                    .invoke(
+                        'use_combat_consumable',
+                        {
+                            body
+                        }
+                    );
+
+
+            if (error) {
+
+                let errorMessage =
+                    data?.error ||
+                    'Could not use the consumable.';
+
+
+                if (
+                    error?.context
+                ) {
+
+                    try {
+
+                        const errorBody =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (
+                            errorBody?.error
+                        ) {
+
+                            errorMessage =
+                                errorBody.error;
+
+                        }
+
+                    } catch {
+                        // Keep the fallback message.
+                    }
+
+                }
+
+
+                setCombatMessage(
+                    errorMessage,
+                    'error'
+                );
+
+
+                return null;
+
+            }
+
+
+            if (
+                data?.error
+            ) {
+
+                setCombatMessage(
+                    data.error,
+                    'error'
+                );
+
+
+                return null;
+
+            }
+
+
+            return data;
+
+        }
+
+
+        async function useCombatConsumable(
+            inventoryRow,
+            item,
+            details,
+            slot
+        ) {
+
+            if (
+                combatTurnPending ||
+                !currentCombat?.id ||
+                !inventoryRow ||
+                !item
+            ) {
+                return;
+            }
+
+
+            combatTurnPending =
+                true;
+
+
+            hideShopItemTooltip();
+
+            setCombatSkillsDisabled(
+                true
+            );
+
+
+            slot?.classList.add(
+                'combat-skill-pending'
+            );
+
+
+            closeCombatInventory();
+
+
+            setCombatMessage(
+                `Using ${item.name}...`
+            );
+
+
+            const result =
+                await invokeCombatConsumable({
+                    combat_id:
+                        currentCombat.id,
+
+                    inventory_id:
+                        inventoryRow.inventory_id
+                });
+
+
+            slot?.classList.remove(
+                'combat-skill-pending'
+            );
+
+
+            if (
+                !result
+            ) {
+
+                combatTurnPending =
+                    false;
+
+
+                setCombatSkillsDisabled(
+                    false
+                );
+
+
+                return;
+
+            }
+
+
+            applyCombatResponse(
+                result
+            );
+
+
+            const action =
+                result.action ||
+                {};
+
+
+            let message =
+                `${item.name} was used.`;
+
+
+            if (
+                action.type ===
+                'heal'
+            ) {
+
+                showCombatHeal(
+                    'player',
+                    Number(
+                        action.amount ??
+                        0
+                    )
+                );
+
+
+                message =
+                    `${item.name} restores ${Number(
+                        action.amount ??
+                        0
+                    )} Health.`;
+
+            } else if (
+                action.type ===
+                'mana'
+            ) {
+
+                message =
+                    `${item.name} restores ${Number(
+                        action.amount ??
+                        0
+                    )} Mana.`;
+
+            } else if (
+                action.type ===
+                'status'
+            ) {
+
+                const targetText =
+                    action.target ===
+                        'enemy'
+                        ? 'the enemy'
+                        : 'you';
+
+
+                message =
+                    `${item.name} applies ${
+                        action.status_name ||
+                        'a status effect'
+                    } to ${targetText}.`;
+
+            }
+
+
+            setCombatMessage(
+                message
+            );
+
+
+            /*
+             * Refresh immediately so the consumed stack count is
+             * already correct the next time the inventory is opened.
+             */
+            await loadCombatInventory();
+
+
+            /*
+             * Using a consumable counts as the player's action.
+             * The enemy therefore continues with its normal phase,
+             * including all existing status-effect timing.
+             */
+            await continueCombatAfterConsumable(
+                message
+            );
+
         }
 
 
@@ -8000,6 +9120,7 @@
                         description,
                         item_type,
                         rarity,
+                        required_level,
                         icon_path,
                         stackable,
                         max_stack_size
@@ -8042,6 +9163,181 @@
                     row =>
                         row.items
                 );
+
+
+            const consumableItemIds =
+                consumables
+                    .map(
+                        row =>
+                            row.items?.item_id
+                    )
+                    .filter(
+                        Boolean
+                    );
+
+
+            const consumableDetailsByItemId =
+                new Map();
+
+
+            if (
+                consumableItemIds.length >
+                0
+            ) {
+
+                const {
+                    data: consumableDetailsRows,
+                    error: consumableDetailsError
+                } =
+                    await supabaseClient
+                        .from(
+                            'consumables'
+                        )
+                        .select(
+                            'item_id, effect_type, effect_value, status_effect_id'
+                        )
+                        .in(
+                            'item_id',
+                            consumableItemIds
+                        );
+
+
+                if (
+                    consumableDetailsError
+                ) {
+
+                    console.error(
+                        'Could not load combat consumable details:',
+                        consumableDetailsError
+                    );
+
+                } else {
+
+                    const statusEffectIds =
+                        [
+                            ...new Set(
+                                (
+                                    consumableDetailsRows ||
+                                    []
+                                )
+                                    .filter(
+                                        detail =>
+                                            detail.effect_type ===
+                                                'Status Effect' &&
+                                            detail.status_effect_id !=
+                                                null
+                                    )
+                                    .map(
+                                        detail =>
+                                            Number(
+                                                detail.status_effect_id
+                                            )
+                                    )
+                                    .filter(
+                                        id =>
+                                            Number.isFinite(
+                                                id
+                                            )
+                                    )
+                            )
+                        ];
+
+
+                    const statusEffectById =
+                        new Map();
+
+
+                    if (
+                        statusEffectIds.length >
+                        0
+                    ) {
+
+                        const {
+                            data: statusEffectRows,
+                            error: statusEffectError
+                        } =
+                            await supabaseClient
+                                .from(
+                                    'status_effects'
+                                )
+                                .select(
+                                    'id, stat, modifier_type, base_value'
+                                )
+                                .in(
+                                    'id',
+                                    statusEffectIds
+                                );
+
+
+                        if (
+                            statusEffectError
+                        ) {
+
+                            console.error(
+                                'Could not load combat consumable status effects:',
+                                statusEffectError
+                            );
+
+                        } else {
+
+                            for (
+                                const statusEffect
+                                of
+                                statusEffectRows ||
+                                []
+                            ) {
+
+                                statusEffectById.set(
+                                    Number(
+                                        statusEffect.id
+                                    ),
+                                    statusEffect
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+
+                    for (
+                        const detail
+                        of
+                        consumableDetailsRows ||
+                        []
+                    ) {
+
+                        if (
+                            detail.effect_type ===
+                                'Status Effect' &&
+                            detail.status_effect_id !=
+                                null
+                        ) {
+
+                            detail.status_effect =
+                                statusEffectById.get(
+                                    Number(
+                                        detail.status_effect_id
+                                    )
+                                ) ||
+                                null;
+
+                        }
+
+
+                        consumableDetailsByItemId.set(
+                            String(
+                                detail.item_id
+                            ),
+                            detail
+                        );
+
+                    }
+
+                }
+
+            }
 
 
             if (
@@ -8118,9 +9414,55 @@
                 `;
 
 
-                slot.title =
-                    item.name ||
-                    '';
+                const consumableDetails =
+                    consumableDetailsByItemId.get(
+                        String(
+                            item.item_id
+                        )
+                    ) ||
+                    null;
+
+
+                slot.addEventListener(
+                    'mouseenter',
+                    event => {
+
+                        showCombatInventoryConsumableTooltip(
+                            event,
+                            item,
+                            consumableDetails,
+                            Number(
+                                row.quantity ??
+                                1
+                            )
+                        );
+
+                    }
+                );
+
+
+                slot.addEventListener(
+                    'mousemove',
+                    moveShopItemTooltip
+                );
+
+
+                slot.addEventListener(
+                    'mouseleave',
+                    hideShopItemTooltip
+                );
+
+
+                slot.addEventListener(
+                    'click',
+                    () =>
+                        useCombatConsumable(
+                            row,
+                            item,
+                            consumableDetails,
+                            slot
+                        )
+                );
 
 
                 container.appendChild(
