@@ -688,8 +688,863 @@
         }
 
 
+        .world-toast.quest {
+            min-width: 300px;
+
+            padding: 15px 17px;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.95);
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(212, 175, 55, 0.16),
+                    transparent 48%
+                ),
+                linear-gradient(
+                    145deg,
+                    rgba(20, 24, 48, 0.99),
+                    rgba(8, 11, 28, 0.99)
+                );
+
+            color:
+                #f1e7bf;
+
+            box-shadow:
+                0 12px 34px
+                rgba(0, 0, 0, 0.58),
+                0 0 20px
+                rgba(212, 175, 55, 0.18);
+        }
+
+
+        .world-toast-quest-label {
+            margin-bottom: 4px;
+
+            color:
+                #d4af37;
+
+            font-size:
+                10px;
+
+            font-weight:
+                700;
+
+            letter-spacing:
+                0.12em;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .world-toast-quest-name {
+            color:
+                #f0d968;
+
+            font-size:
+                15px;
+
+            font-weight:
+                700;
+
+            line-height:
+                1.3;
+        }
+
+
+        .world-toast-quest-progress {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            gap:
+                18px;
+
+            margin-top:
+                9px;
+
+            padding-top:
+                8px;
+
+            border-top:
+                1px solid
+                rgba(212, 175, 55, 0.18);
+
+            color:
+                #aeb3c6;
+
+            font-size:
+                11px;
+        }
+
+
+        .world-toast-quest-progress strong {
+            color:
+                #d4af37;
+
+            font-size:
+                18px;
+
+            font-weight:
+                700;
+
+            line-height:
+                1;
+        }
+
+
         .world-toast.hidden {
             display: none !important;
+        }
+
+        /* =========================================================
+           QUEST LEVEL-UP NOTIFICATION
+           ========================================================= */
+
+        .quest-levelup-toast {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            left: auto !important;
+            bottom: auto !important;
+
+            z-index: 1000002;
+
+            min-width: 230px;
+
+            padding: 14px 17px;
+
+            opacity: 0;
+
+            transform: translateY(-8px);
+
+            pointer-events: none;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.95);
+
+            border-radius:
+                9px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(20, 24, 48, 0.99),
+                    rgba(8, 11, 28, 0.99)
+                );
+
+            box-shadow:
+                0 12px 34px rgba(0, 0, 0, 0.58),
+                0 0 20px rgba(212, 175, 55, 0.18);
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .quest-levelup-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        .quest-levelup-toast.hidden {
+            display: none !important;
+        }
+
+
+        .quest-levelup-label {
+            margin-bottom: 4px;
+
+            color: #d4af37;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+
+        .quest-levelup-text {
+            color: #f0d968;
+
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+
+        /* =========================================================
+           QUEST TURN-IN EXPERIENCE
+           ========================================================= */
+
+        .quest-turnin-exp-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            z-index: 1000001;
+
+            width: min(520px, calc(100vw - 40px));
+            padding: 13px 16px 12px;
+
+            transform: translate(-50%, 10px);
+            opacity: 0;
+            pointer-events: none;
+
+            border: 1px solid rgba(212, 175, 55, 0.75);
+            border-radius: 9px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(15, 20, 48, 0.985),
+                    rgba(7, 10, 28, 0.985)
+                );
+
+            box-shadow:
+                0 12px 34px rgba(0, 0, 0, 0.58),
+                0 0 18px rgba(212, 175, 55, 0.12);
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .quest-turnin-exp-toast.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .quest-turnin-exp-toast.hidden {
+            display: none !important;
+        }
+
+        .quest-turnin-exp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 7px;
+        }
+
+        .quest-turnin-exp-title {
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .quest-turnin-exp-gain {
+            color: #f0d968;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .quest-turnin-exp-bar {
+            width: 100%;
+            height: 20px;
+            overflow: hidden;
+
+            border: 1px solid rgba(212, 175, 55, 0.48);
+            border-radius: 6px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0f1219 0%,
+                    #1a1f3a 100%
+                );
+
+            box-shadow:
+                inset 0 0 8px rgba(0, 0, 0, 0.55);
+        }
+
+        .quest-turnin-exp-fill {
+            width: 0%;
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #9b7b20 0%,
+                    #d4af37 60%,
+                    #f0d968 100%
+                );
+
+            box-shadow:
+                0 0 12px rgba(212, 175, 55, 0.32);
+
+            transition:
+                width 0.75s ease;
+        }
+
+        .quest-turnin-exp-text {
+            margin-top: 5px;
+            color: #c9c9c9;
+            font-size: 11px;
+            text-align: right;
+        }
+
+
+
+        /* =========================================================
+           COMBAT HISTORY
+           ========================================================= */
+
+        .combat-layout {
+            width:
+                min(
+                    1240px,
+                    calc(100vw - 48px)
+                );
+
+            max-height:
+                calc(100vh - 48px);
+
+            display:
+                grid;
+
+            grid-template-columns:
+                300px minmax(0, 900px);
+
+            gap:
+                18px;
+
+            align-items:
+                start;
+        }
+
+
+        .combat-layout > .combat-window {
+            width:
+                100%;
+
+            max-width:
+                none;
+        }
+
+
+        .combat-history-panel {
+            height:
+                min(
+                    620px,
+                    calc(100vh - 48px)
+                );
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            min-height:
+                0;
+
+            padding:
+                18px;
+
+            overflow:
+                hidden;
+
+            border:
+                2px solid
+                #3d4452;
+
+            border-radius:
+                12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #151a2d 0%,
+                    #20273a 100%
+                );
+
+            box-shadow:
+                0 22px 65px
+                rgba(0, 0, 0, 0.58);
+        }
+
+
+        .combat-history-header {
+            margin-bottom: 9px;
+
+            color: #d4af37;
+
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .combat-history-list {
+            flex:
+                1;
+
+            min-height:
+                0;
+
+            height:
+                auto;
+
+            max-height:
+                none;
+
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            overflow-y: auto;
+
+            padding: 8px;
+
+            border:
+                1px solid
+                rgba(61, 68, 82, 0.72);
+
+            border-radius: 7px;
+
+            background:
+                rgba(7, 10, 24, 0.62);
+
+            scrollbar-width: thin;
+        }
+
+
+        .combat-history-entry {
+            flex: 0 0 auto;
+
+            padding: 6px 8px;
+
+            border-left:
+                2px solid
+                #3d4452;
+
+            border-radius: 4px;
+
+            background:
+                rgba(255, 255, 255, 0.025);
+
+            color: #bfc3cf;
+
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+
+        .combat-history-entry.player {
+            border-left-color:
+                rgba(212, 175, 55, 0.82);
+        }
+
+
+        .combat-history-entry.enemy {
+            border-left-color:
+                rgba(218, 86, 82, 0.78);
+        }
+
+
+        .combat-history-entry.status {
+            border-left-color:
+                rgba(146, 104, 214, 0.85);
+
+            color:
+                #c9b6ef;
+        }
+
+
+        .combat-history-entry.status.player {
+            border-left-color:
+                rgba(212, 175, 55, 0.82);
+        }
+
+
+        .combat-history-entry.status.enemy {
+            border-left-color:
+                rgba(218, 86, 82, 0.78);
+        }
+
+
+        .combat-history-entry.heal {
+            border-left-color:
+                rgba(87, 216, 121, 0.76);
+
+            color:
+                #a9ddb5;
+        }
+
+
+        .combat-history-entry.heal.player {
+            border-left-color:
+                rgba(212, 175, 55, 0.82);
+        }
+
+
+        .combat-history-entry.heal.enemy {
+            border-left-color:
+                rgba(218, 86, 82, 0.78);
+        }
+
+
+        .combat-history-entry.system {
+            border-left-color:
+                rgba(139, 139, 139, 0.65);
+
+            color:
+                #8f96a3;
+
+            font-style:
+                italic;
+        }
+
+
+        /* =========================================================
+           COMBAT RESULT EXPERIENCE BARS
+           ========================================================= */
+
+        .combat-result-exp-block {
+            margin-bottom: 20px;
+        }
+
+
+        .combat-result-exp-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            margin-bottom: 7px;
+
+            color: #c9c9c9;
+
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+        .combat-result-exp-label-row span:last-child {
+            color: #d4af37;
+        }
+
+
+        .combat-result-exp-bar {
+            width: 100%;
+            height: 22px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.48);
+
+            border-radius: 6px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0f1219 0%,
+                    #1a1f3a 100%
+                );
+
+            box-shadow:
+                inset 0 0 8px
+                rgba(0, 0, 0, 0.55);
+        }
+
+
+        .combat-result-exp-fill {
+            height: 100%;
+
+            width: 0%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #9b7b20 0%,
+                    #d4af37 60%,
+                    #f0d968 100%
+                );
+
+            box-shadow:
+                0 0 12px
+                rgba(212, 175, 55, 0.32);
+
+            transition:
+                width 0.75s ease;
+        }
+
+
+        .combat-result-exp-fill-death {
+            background:
+                linear-gradient(
+                    90deg,
+                    #6d2f34 0%,
+                    #a8444a 65%,
+                    #d9656d 100%
+                );
+
+            box-shadow:
+                0 0 12px
+                rgba(217, 101, 109, 0.24);
+        }
+
+
+        .combat-result-exp-block-death
+        .combat-result-exp-label-row
+        span:last-child {
+            color: #d9656d;
+        }
+
+
+
+        .combat-history-critical {
+            margin-left: 5px;
+
+            color: #ffd45a;
+
+            font-weight: bold;
+        }
+
+
+        .combat-history-damage {
+            color: #ef7772;
+
+            font-weight: bold;
+        }
+
+
+        .combat-history-status-name {
+            color: #c9a8ff;
+
+            font-weight: bold;
+        }
+
+
+        @media (max-width: 1050px) {
+
+            .combat-layout {
+                width:
+                    min(
+                        900px,
+                        calc(100vw - 30px)
+                    );
+
+                max-height:
+                    calc(100vh - 30px);
+
+                grid-template-columns:
+                    1fr;
+
+                overflow-y:
+                    auto;
+            }
+
+
+            .combat-history-panel {
+                height:
+                    180px;
+            }
+
+        }
+
+
+
+        /* =========================================================
+           WORLD CHARACTER HEADER
+           ========================================================= */
+
+        .world-character-header {
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+        }
+
+
+        .world-class-icon-frame {
+            width: 58px;
+            height: 58px;
+
+            flex: 0 0 58px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            border: 2px solid #d4af37;
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #2d3142 0%,
+                    #0f1219 100%
+                );
+
+            box-shadow:
+                inset 0 0 13px rgba(0, 0, 0, 0.7),
+                0 0 12px rgba(212, 175, 55, 0.18);
+        }
+
+
+        .world-class-icon {
+            width: 100%;
+            height: 100%;
+
+            display: block;
+
+            object-fit: cover;
+        }
+
+
+        .world-character-header-info {
+            width: min(430px, 42vw);
+            min-width: 230px;
+        }
+
+
+        .world-character-header-name-row {
+            display: flex;
+            align-items: baseline;
+
+            gap: 9px;
+
+            margin-bottom: 7px;
+
+            white-space: nowrap;
+        }
+
+
+        .world-character-name {
+            overflow: hidden;
+
+            color: #f0e7c2;
+
+            font-size: 21px;
+            font-weight: 700;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .world-character-class {
+            color: #b9b4a2;
+
+            font-size: 12px;
+        }
+
+
+        .world-character-level {
+            color: #d4af37;
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+
+        .world-character-exp-row {
+            display: grid;
+
+            grid-template-columns:
+                minmax(120px, 1fr)
+                auto;
+
+            align-items: center;
+
+            gap: 9px;
+        }
+
+
+        .world-character-exp-bar {
+            height: 12px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.5);
+
+            border-radius: 5px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0f1219 0%,
+                    #1a1f3a 100%
+                );
+
+            box-shadow:
+                inset 0 0 6px
+                rgba(0, 0, 0, 0.55);
+        }
+
+
+        .world-character-exp-fill {
+            width: 0%;
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #9b7b20 0%,
+                    #d4af37 60%,
+                    #f0d968 100%
+                );
+
+            box-shadow:
+                0 0 10px
+                rgba(212, 175, 55, 0.28);
+
+            transition:
+                width 0.65s ease;
+        }
+
+
+        .world-character-exp-text {
+            color: #bfc3cf;
+
+            font-size: 10px;
+
+            white-space: nowrap;
+        }
+
+
+        @media (max-width: 720px) {
+
+            .world-character-header-info {
+                width: min(330px, 60vw);
+                min-width: 0;
+            }
+
+
+            .world-character-class {
+                display: none;
+            }
+
+
+            .world-character-exp-row {
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .world-character-exp-text {
+                display: none;
+            }
+
         }
 
 </style>
@@ -697,6 +1552,50 @@
 </head>
 
 <body>
+
+    <div
+        id="questLevelUpToast"
+        class="quest-levelup-toast hidden"
+        role="status"
+        aria-live="polite">
+
+        <div class="quest-levelup-label">
+            Level Up
+        </div>
+
+        <div
+            id="questLevelUpText"
+            class="quest-levelup-text">
+            Level 1
+        </div>
+
+    </div>
+
+
+    <div
+        id="questTurnInExpToast"
+        class="quest-turnin-exp-toast hidden"
+        aria-live="polite">
+
+        <div class="quest-turnin-exp-header">
+            <span class="quest-turnin-exp-title">Quest Experience</span>
+            <span id="questTurnInExpGain" class="quest-turnin-exp-gain">+0 EXP</span>
+        </div>
+
+        <div class="quest-turnin-exp-bar">
+            <div
+                id="questTurnInExpFill"
+                class="quest-turnin-exp-fill"
+                style="width: 0%;">
+            </div>
+        </div>
+
+        <div id="questTurnInExpText" class="quest-turnin-exp-text">
+            0 / 0
+        </div>
+
+    </div>
+
 
     <div
         id="worldToast"
@@ -712,9 +1611,59 @@
         <!-- Header -->
         <header class="world-header">
 
-            <div>
-                <h1>🌍 World</h1>
-                <p>Explore the lands and discover what awaits you.</p>
+            <div class="world-character-header">
+
+                <div class="world-class-icon-frame">
+                    <img
+                        id="worldClassIcon"
+                        class="world-class-icon hidden"
+                        src=""
+                        alt="Class icon">
+                </div>
+
+                <div class="world-character-header-info">
+
+                    <div class="world-character-header-name-row">
+
+                        <span
+                            id="worldCharacterName"
+                            class="world-character-name">
+                            Character
+                        </span>
+
+                        <span
+                            id="worldCharacterClass"
+                            class="world-character-class">
+                        </span>
+
+                        <span
+                            id="worldCharacterLevel"
+                            class="world-character-level">
+                            Level 1
+                        </span>
+
+                    </div>
+
+                    <div class="world-character-exp-row">
+
+                        <div class="world-character-exp-bar">
+                            <div
+                                id="worldCharacterExpFill"
+                                class="world-character-exp-fill"
+                                style="width: 0%;">
+                            </div>
+                        </div>
+
+                        <span
+                            id="worldCharacterExpText"
+                            class="world-character-exp-text">
+                            0 / 0 EXP
+                        </span>
+
+                    </div>
+
+                </div>
+
             </div>
 
             <a href="hub.html" class="back-button">
@@ -900,7 +1849,25 @@
 
     <!-- COMBAT OVERLAY -->
     <div id="combatOverlay" class="combat-overlay hidden">
-        <div class="combat-window">
+
+        <div class="combat-layout">
+
+            <aside class="combat-history-panel">
+
+                <div class="combat-history-header">
+                    <span>Combat History</span>
+                </div>
+
+                <div
+                    id="combatHistoryList"
+                    class="combat-history-list"
+                    aria-live="polite">
+                </div>
+
+            </aside>
+
+
+            <div class="combat-window">
             <div class="combat-header">
                 <div>
                     <h2 id="combatEnemyName">Enemy</h2>
@@ -1048,12 +2015,17 @@
                         id="combatMessage"
                         class="combat-message">
                     </div>
+
+
                 </div>
 
             </div>
 
 
+            </div>
+
         </div>
+
     </div>
 
 
@@ -1085,6 +2057,24 @@
                     <span id="combatDeathHealthLost" class="combat-death-value">
                         0
                     </span>
+                </div>
+
+            </div>
+
+
+            <div class="combat-result-exp-block combat-result-exp-block-death">
+
+                <div class="combat-result-exp-label-row">
+                    <span>Experience</span>
+                    <span id="combatDeathExpText">0 / 0</span>
+                </div>
+
+                <div class="combat-result-exp-bar">
+                    <div
+                        id="combatDeathExpFill"
+                        class="combat-result-exp-fill combat-result-exp-fill-death"
+                        style="width: 0%;">
+                    </div>
                 </div>
 
             </div>
@@ -1134,6 +2124,24 @@
 
             </div>
 
+            <div class="combat-result-exp-block">
+
+                <div class="combat-result-exp-label-row">
+                    <span>Experience</span>
+                    <span id="combatRewardExpText">0 / 0</span>
+                </div>
+
+                <div class="combat-result-exp-bar">
+                    <div
+                        id="combatRewardExpFill"
+                        class="combat-result-exp-fill"
+                        style="width: 0%;">
+                    </div>
+                </div>
+
+            </div>
+
+
             <div
                 id="combatRewardLevelUp"
                 class="combat-reward-level-up hidden">
@@ -1145,20 +2153,6 @@
                 <div
                     id="combatRewardLevelUpLevels"
                     class="combat-reward-level-up-levels">
-                </div>
-
-            </div>
-
-
-            <div
-                id="combatRewardQuestProgressSection"
-                class="combat-reward-quest-progress-section hidden">
-
-                <h3>Quest Progress</h3>
-
-                <div
-                    id="combatRewardQuestProgressList"
-                    class="combat-reward-quest-progress-list">
                 </div>
 
             </div>
@@ -1422,6 +2416,8 @@
     <script>
 
         let currentCharacter = null;
+        let currentCharacterClassName = null;
+
         let currentLocation = null;
         let currentSublocation = null;
         let currentCombat = null;
@@ -1435,6 +2431,209 @@
         let shopTransactionRunning = false;
 
         let activeShopAction = null;
+
+
+        /* =========================================================
+           WORLD CHARACTER HEADER
+           ========================================================= */
+
+        async function renderWorldCharacterHeader() {
+
+            if (!currentCharacter) {
+                return;
+            }
+
+
+            const nameElement =
+                document.getElementById(
+                    'worldCharacterName'
+                );
+
+            const classElement =
+                document.getElementById(
+                    'worldCharacterClass'
+                );
+
+            const levelElement =
+                document.getElementById(
+                    'worldCharacterLevel'
+                );
+
+            const iconElement =
+                document.getElementById(
+                    'worldClassIcon'
+                );
+
+            const expFill =
+                document.getElementById(
+                    'worldCharacterExpFill'
+                );
+
+            const expText =
+                document.getElementById(
+                    'worldCharacterExpText'
+                );
+
+
+            if (nameElement) {
+
+                nameElement.textContent =
+                    currentCharacter.name ||
+                    'Character';
+
+            }
+
+
+            if (levelElement) {
+
+                levelElement.textContent =
+                    `Level ${Number(
+                        currentCharacter.level ??
+                        1
+                    )}`;
+
+            }
+
+
+            /*
+             * Class changes are extremely rare, so cache the class name.
+             * We only query again if it has not been loaded yet.
+             */
+            if (
+                !currentCharacterClassName &&
+                currentCharacter.class_id
+            ) {
+
+                const {
+                    data: classData,
+                    error: classError
+                } =
+                    await supabaseClient
+                        .from('classes')
+                        .select('name')
+                        .eq(
+                            'id',
+                            currentCharacter.class_id
+                        )
+                        .maybeSingle();
+
+
+                if (
+                    classError
+                ) {
+
+                    console.error(
+                        'Could not load world header class:',
+                        classError
+                    );
+
+                } else if (
+                    classData?.name
+                ) {
+
+                    currentCharacterClassName =
+                        classData.name;
+
+                }
+
+            }
+
+
+            if (classElement) {
+
+                classElement.textContent =
+                    currentCharacterClassName ||
+                    '';
+
+            }
+
+
+            if (
+                iconElement &&
+                currentCharacterClassName
+            ) {
+
+                iconElement.src =
+                    `classes/${currentCharacterClassName}/ClassIcon/${currentCharacterClassName}.png`;
+
+                iconElement.alt =
+                    `${currentCharacterClassName} Class Icon`;
+
+                iconElement.classList.remove(
+                    'hidden'
+                );
+
+            }
+
+
+            const level =
+                Math.max(
+                    1,
+                    Number(
+                        currentCharacter.level ??
+                        1
+                    )
+                );
+
+
+            const experience =
+                Math.max(
+                    0,
+                    Number(
+                        currentCharacter.experience ??
+                        0
+                    )
+                );
+
+
+            const requiredExperience =
+                await getExperienceRequirementForLevel(
+                    level + 1
+                );
+
+
+            const percentage =
+                requiredExperience >
+                    0
+                    ? Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            (
+                                experience /
+                                requiredExperience
+                            ) *
+                            100
+                        )
+                    )
+                    : 100;
+
+
+            if (expFill) {
+
+                expFill.style.width =
+                    `${percentage}%`;
+
+            }
+
+
+            if (expText) {
+
+                expText.textContent =
+                    requiredExperience >
+                        0
+                        ? `${Math.round(
+                            experience
+                        )} / ${Math.round(
+                            requiredExperience
+                        )} EXP`
+                        : `${Math.round(
+                            experience
+                        )} EXP`;
+
+            }
+
+        }
 
 
         /* =========================================================
@@ -1460,7 +2659,7 @@
                 error: characterError
             } = await supabaseClient
                 .from('characters')
-                .select('id, level, class_id, current_health, current_mana, max_health, max_mana')
+                .select('id, name, level, experience, class_id, current_health, current_mana, max_health, max_mana')
                 .eq('user_id', user.id)
                 .maybeSingle();
 
@@ -1485,11 +2684,14 @@
             currentCharacter = character;
 
 
+            await renderWorldCharacterHeader();
+
+
             /*
              * Before loading the normal world, check whether this
              * character already has an active combat session.
              *
-             * start_combat is called without enemy_id here.
+             * start_combat is called without encounter_id here.
              * The Edge Function interprets that as:
              *
              * "Resume my active combat if one exists."
@@ -1528,7 +2730,9 @@
                 .from('characters')
                 .select(`
                     id,
+                    name,
                     level,
+                    experience,
                     class_id,
                     current_health,
                     current_mana,
@@ -1558,6 +2762,9 @@
 
             currentCharacter =
                 character;
+
+
+            await renderWorldCharacterHeader();
 
 
             return true;
@@ -2582,7 +3789,15 @@
             }
 
             if (node.node_type === 'enemies') {
-                await openCombatOverlay(node.entity_id, node);
+                /*
+                 * For enemy nodes, entity_id now stores an
+                 * enemy_encounter_table.encounter_id.
+                 */
+                await openCombatOverlay(
+                    node.entity_id,
+                    node
+                );
+
                 return;
             }
 
@@ -5250,6 +6465,131 @@
             }
 
 
+            /*
+             * Check whether this objective completed the whole quest.
+             *
+             * The existing world toast already appears in the top-right,
+             * so reuse it for quest-completion feedback.
+             */
+            try {
+
+                const [
+                    questResult,
+                    progressResult
+                ] =
+                    await Promise.all([
+
+                        supabaseClient
+                            .from('quests')
+                            .select(
+                                'name, objective_count'
+                            )
+                            .eq(
+                                'id',
+                                node.quest_id
+                            )
+                            .maybeSingle(),
+
+                        supabaseClient
+                            .from(
+                                'character_quests'
+                            )
+                            .select(
+                                'current_objective_count'
+                            )
+                            .eq(
+                                'character_id',
+                                currentCharacter.id
+                            )
+                            .eq(
+                                'quest_id',
+                                node.quest_id
+                            )
+                            .maybeSingle()
+
+                    ]);
+
+
+                if (
+                    questResult.error
+                ) {
+
+                    console.error(
+                        'Could not load quest after objective update:',
+                        questResult.error
+                    );
+
+                }
+
+
+                if (
+                    progressResult.error
+                ) {
+
+                    console.error(
+                        'Could not load quest progress after objective update:',
+                        progressResult.error
+                    );
+
+                }
+
+
+                const quest =
+                    questResult.data;
+
+
+                const progress =
+                    progressResult.data;
+
+
+                const requiredObjectives =
+                    Math.max(
+                        1,
+                        Number(
+                            quest?.objective_count ??
+                            1
+                        )
+                    );
+
+
+                const currentObjectives =
+                    Number(
+                        progress?.current_objective_count ??
+                        data?.current_objective_count ??
+                        0
+                    );
+
+
+                if (
+                    quest?.name &&
+                    currentObjectives >=
+                        requiredObjectives
+                ) {
+
+                    showQuestProgressToast(
+                        quest.name,
+                        currentObjectives,
+                        requiredObjectives
+                    );
+
+                }
+
+            } catch (
+                notificationError
+            ) {
+
+                /*
+                 * Quest completion itself already succeeded.
+                 * A notification lookup failure must never undo or block it.
+                 */
+                console.error(
+                    'Could not show quest completion notification:',
+                    notificationError
+                );
+
+            }
+
+
             console.log(
                 `Quest ${data.quest_id} objective updated by ${data.count_added}.`
             );
@@ -5287,6 +6627,249 @@
 
         let worldToastTimeout =
             null;
+
+
+        function showQuestProgressToast(
+            questName,
+            currentObjectiveCount,
+            objectiveCount
+        ) {
+
+            const current =
+                Math.max(
+                    0,
+                    Number(
+                        currentObjectiveCount ??
+                        0
+                    )
+                );
+
+
+            const required =
+                Math.max(
+                    1,
+                    Number(
+                        objectiveCount ??
+                        1
+                    )
+                );
+
+
+            const completed =
+                current >=
+                required;
+
+
+            const toast =
+                document.getElementById(
+                    'worldToast'
+                );
+
+
+            if (!toast) {
+                return;
+            }
+
+
+            if (
+                worldToastTimeout
+            ) {
+
+                clearTimeout(
+                    worldToastTimeout
+                );
+
+            }
+
+
+            toast.className =
+                `world-toast quest${
+                    completed
+                        ? ' quest-complete'
+                        : ' quest-progress'
+                }`;
+
+
+            toast.innerHTML = `
+                <div class="world-toast-quest-label">
+                    ${
+                        completed
+                            ? 'Quest Complete'
+                            : 'Quest Progress'
+                    }
+                </div>
+
+                <div class="world-toast-quest-name">
+                    ${escapeHtml(
+                        questName ||
+                        'Quest'
+                    )}
+                </div>
+
+                <div class="world-toast-quest-progress">
+                    <span>
+                        Objectives Completed
+                    </span>
+
+                    <strong>
+                        ${Math.min(
+                            current,
+                            required
+                        )}/${required}
+                    </strong>
+                </div>
+            `;
+
+
+            requestAnimationFrame(
+                () => {
+
+                    toast.classList.add(
+                        'visible'
+                    );
+
+                }
+            );
+
+
+            worldToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            'visible'
+                        );
+
+
+                        setTimeout(
+                            () =>
+                                toast.classList.add(
+                                    'hidden'
+                                ),
+                            180
+                        );
+
+                    },
+                    completed
+                        ? 3800
+                        : 3000
+                );
+
+        }
+
+
+        function showQuestCompletionToast(
+            questName,
+            currentObjectiveCount,
+            objectiveCount
+        ) {
+
+            const toast =
+                document.getElementById(
+                    'worldToast'
+                );
+
+
+            if (!toast) {
+                return;
+            }
+
+
+            if (
+                worldToastTimeout
+            ) {
+
+                clearTimeout(
+                    worldToastTimeout
+                );
+
+            }
+
+
+            const current =
+                Math.max(
+                    0,
+                    Number(
+                        currentObjectiveCount ??
+                        0
+                    )
+                );
+
+
+            const required =
+                Math.max(
+                    1,
+                    Number(
+                        objectiveCount ??
+                        1
+                    )
+                );
+
+
+            toast.className =
+                'world-toast quest';
+
+
+            toast.innerHTML = `
+                <div class="world-toast-quest-label">
+                    Quest Complete
+                </div>
+
+                <div class="world-toast-quest-name">
+                    ${escapeHtml(
+                        questName ||
+                        'Quest'
+                    )}
+                </div>
+
+                <div class="world-toast-quest-progress">
+                    <span>
+                        Objectives Completed
+                    </span>
+
+                    <strong>
+                        ${Math.min(
+                            current,
+                            required
+                        )}/${required}
+                    </strong>
+                </div>
+            `;
+
+
+            requestAnimationFrame(
+                () => {
+
+                    toast.classList.add(
+                        'visible'
+                    );
+
+                }
+            );
+
+
+            worldToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            'visible'
+                        );
+
+
+                        setTimeout(
+                            () =>
+                                toast.classList.add(
+                                    'hidden'
+                                ),
+                            180
+                        );
+
+                    },
+                    3800
+                );
+
+        }
 
 
         function showWorldToast(
@@ -5369,7 +6952,7 @@
 
 
         async function openCombatOverlay(
-            enemyId,
+            encounterId,
             node
         ) {
 
@@ -5381,8 +6964,8 @@
                     'start_combat',
                     {
                         body: {
-                            enemy_id:
-                                enemyId
+                            encounter_id:
+                                encounterId
                         }
                     }
                 );
@@ -5523,6 +7106,13 @@
             if (!currentCombat?.enemy) return;
 
             const enemy = currentCombat.enemy;
+
+
+            ensureCombatHistory(
+                currentCombat.id,
+                enemy.name ||
+                    'Enemy'
+            );
 
             document.getElementById('combatEnemyName').textContent = enemy.name || 'Enemy';
             document.getElementById('combatEnemyLevel').textContent = `Level ${enemy.level}`;
@@ -5935,6 +7525,294 @@
         }
 
 
+        let combatHistoryCombatId =
+            null;
+
+
+        function resetCombatHistory(
+            combatId,
+            enemyName = ''
+        ) {
+
+            combatHistoryCombatId =
+                combatId == null
+                    ? null
+                    : String(
+                        combatId
+                    );
+
+
+            const list =
+                document.getElementById(
+                    'combatHistoryList'
+                );
+
+
+            if (!list) {
+                return;
+            }
+
+
+            list.innerHTML =
+                '';
+
+
+            if (
+                enemyName
+            ) {
+
+                addCombatHistoryEntry(
+                    `Combat started against ${enemyName}.`,
+                    'system'
+                );
+
+            }
+
+        }
+
+
+        function ensureCombatHistory(
+            combatId,
+            enemyName = ''
+        ) {
+
+            const id =
+                combatId == null
+                    ? null
+                    : String(
+                        combatId
+                    );
+
+
+            if (
+                combatHistoryCombatId !==
+                id
+            ) {
+
+                resetCombatHistory(
+                    id,
+                    enemyName
+                );
+
+            }
+
+        }
+
+
+        function addCombatHistoryEntry(
+            html,
+            type = ''
+        ) {
+
+            const list =
+                document.getElementById(
+                    'combatHistoryList'
+                );
+
+
+            if (!list) {
+                return;
+            }
+
+
+            const entry =
+                document.createElement(
+                    'div'
+                );
+
+
+            entry.className =
+                'combat-history-entry';
+
+
+            if (
+                type
+            ) {
+
+                String(
+                    type
+                )
+                    .split(
+                        /\s+/
+                    )
+                    .filter(
+                        Boolean
+                    )
+                    .forEach(
+                        className =>
+                            entry.classList.add(
+                                className
+                            )
+                    );
+
+            }
+
+
+            entry.innerHTML =
+                html;
+
+
+            list.appendChild(
+                entry
+            );
+
+
+            list.scrollTop =
+                list.scrollHeight;
+
+        }
+
+
+        function recordAppliedStatusEffects(
+            sourceType,
+            effects
+        ) {
+
+            const enemyName =
+                currentCombat?.enemy?.name ||
+                'Enemy';
+
+
+            for (
+                const effect
+                of
+                effects ||
+                []
+            ) {
+
+                const sourceName =
+                    sourceType ===
+                        'player'
+                        ? 'You'
+                        : enemyName;
+
+
+                const targetName =
+                    effect.target_type ===
+                        'enemy'
+                        ? enemyName
+                        : 'You';
+
+
+                addCombatHistoryEntry(
+                    `${escapeHtml(
+                        sourceName
+                    )} inflicted <span class="combat-history-status-name">${escapeHtml(
+                        effect.name ||
+                        'Status Effect'
+                    )}</span> on ${escapeHtml(
+                        targetName
+                    )}.`,
+                    `status ${sourceType}`
+                );
+
+            }
+
+        }
+
+
+        function recordCombatAction(
+            sourceType,
+            action
+        ) {
+
+            if (
+                !action
+            ) {
+                return;
+            }
+
+
+            const enemyName =
+                currentCombat?.enemy?.name ||
+                'Enemy';
+
+
+            const sourceName =
+                sourceType ===
+                    'player'
+                    ? 'You'
+                    : enemyName;
+
+
+            const targetName =
+                sourceType ===
+                    'player'
+                    ? enemyName
+                    : 'You';
+
+
+            const skillName =
+                action.skill_name ||
+                action.name ||
+                'Attack';
+
+
+            if (
+                action.type ===
+                'damage'
+            ) {
+
+                const criticalHtml =
+                    action.critical
+                        ? '<span class="combat-history-critical">CRITICAL</span>'
+                        : '';
+
+
+                addCombatHistoryEntry(
+                    `${escapeHtml(
+                        sourceName
+                    )} used ${escapeHtml(
+                        skillName
+                    )} and dealt <span class="combat-history-damage">${Number(
+                        action.amount ??
+                        0
+                    )}</span> damage to ${escapeHtml(
+                        targetName
+                    )}.${criticalHtml}`,
+                    sourceType
+                );
+
+            } else if (
+                action.type ===
+                'heal'
+            ) {
+
+                addCombatHistoryEntry(
+                    `${escapeHtml(
+                        sourceName
+                    )} used ${escapeHtml(
+                        skillName
+                    )} and restored ${Number(
+                        action.amount ??
+                        0
+                    )} Health.`,
+                    `heal ${sourceType}`
+                );
+
+            } else if (
+                action.type ===
+                'skip'
+            ) {
+
+                addCombatHistoryEntry(
+                    `${escapeHtml(
+                        sourceName
+                    )} could not use a skill.`,
+                    'system'
+                );
+
+            }
+
+
+            recordAppliedStatusEffects(
+                sourceType,
+                action.applied_status_effects
+            );
+
+        }
+
+
         let combatTurnPending = false;
 
         function setCombatSkillsDisabled(disabled) {
@@ -6003,6 +7881,15 @@
                 );
 
 
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+
                 showCombatDeathWindow({
                     experienceLost:
                         Number(
@@ -6058,6 +7945,12 @@
             }
 
 
+            recordCombatAction(
+                'player',
+                playerResult.player_action
+            );
+
+
             let message =
                 buildCombatActionMessage(
                     playerResult.player_action
@@ -6077,6 +7970,15 @@
 
                 combatTurnPending = false;
                 setCombatSkillsDisabled(true);
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
 
                 await showCombatRewards(
                     playerResult.rewards || {
@@ -6369,6 +8271,12 @@
             }
 
 
+            recordCombatAction(
+                'enemy',
+                enemyResult.enemy_action
+            );
+
+
             const enemyMessage =
                 buildCombatActionMessage(
                     enemyResult.enemy_action
@@ -6431,8 +8339,32 @@
                 );
 
 
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+
                 showCombatDeathWindow({
                     experienceLost,
+
+                    experienceAfter:
+                        Number(
+                            enemyResult.death_penalty
+                                ?.experience_after ??
+                            Math.max(
+                                0,
+                                Number(
+                                    currentCharacter?.experience ??
+                                    0
+                                ) -
+                                experienceLost
+                            )
+                        ),
+
                     healthLost
                 });
 
@@ -6578,6 +8510,21 @@
 
                 showCombatDeathWindow({
                     experienceLost,
+
+                    experienceAfter:
+                        Number(
+                            enemyResult.death_penalty
+                                ?.experience_after ??
+                            Math.max(
+                                0,
+                                Number(
+                                    currentCharacter?.experience ??
+                                    0
+                                ) -
+                                experienceLost
+                            )
+                        ),
+
                     healthLost
                 });
 
@@ -6890,6 +8837,12 @@
                 }
     
     
+                recordCombatAction(
+                    'enemy',
+                    enemyResult.enemy_action
+                );
+
+
                 const enemyMessage =
                     buildCombatActionMessage(
                         enemyResult.enemy_action
@@ -6954,6 +8907,21 @@
     
                     showCombatDeathWindow({
                         experienceLost,
+
+                        experienceAfter:
+                            Number(
+                                enemyResult.death_penalty
+                                    ?.experience_after ??
+                                Math.max(
+                                    0,
+                                    Number(
+                                        currentCharacter?.experience ??
+                                        0
+                                    ) -
+                                    experienceLost
+                                )
+                            ),
+
                         healthLost
                     });
     
@@ -7099,6 +9067,21 @@
     
                     showCombatDeathWindow({
                         experienceLost,
+
+                        experienceAfter:
+                            Number(
+                                enemyResult.death_penalty
+                                    ?.experience_after ??
+                                Math.max(
+                                    0,
+                                    Number(
+                                        currentCharacter?.experience ??
+                                        0
+                                    ) -
+                                    experienceLost
+                                )
+                            ),
+
                         healthLost
                     });
     
@@ -7347,6 +9330,26 @@
                         action.status_name ||
                         'a status effect'
                     } to ${targetText}.`;
+
+
+                addCombatHistoryEntry(
+                    `You used ${escapeHtml(
+                        item.name ||
+                        'Consumable'
+                    )} and inflicted <span class="combat-history-status-name">${escapeHtml(
+                        action.status_name ||
+                        'Status Effect'
+                    )}</span> on ${escapeHtml(
+                        action.target ===
+                            'enemy'
+                            ? (
+                                currentCombat?.enemy?.name ||
+                                'Enemy'
+                            )
+                            : 'You'
+                    )}.`,
+                    'status player'
+                );
 
             }
 
@@ -7676,6 +9679,11 @@
             events
         ) {
 
+            const enemyName =
+                currentCombat?.enemy?.name ||
+                'Enemy';
+
+
             for (
                 const event
                 of
@@ -7683,18 +9691,47 @@
                 []
             ) {
 
+                const targetName =
+                    event.target ===
+                        'enemy'
+                        ? enemyName
+                        : 'You';
+
+
                 if (
                     event.type ===
                     'damage'
                 ) {
 
-                    showCombatDamage(
-                        event.target,
+                    const amount =
                         Number(
                             event.amount ??
                             0
-                        ),
+                        );
+
+
+                    showCombatDamage(
+                        event.target,
+                        amount,
                         false
+                    );
+
+
+                    const statusSource =
+                        event.target ===
+                            'enemy'
+                            ? 'player'
+                            : 'enemy';
+
+
+                    addCombatHistoryEntry(
+                        `<span class="combat-history-status-name">${escapeHtml(
+                            event.status_name ||
+                            'Status Effect'
+                        )}</span> dealt <span class="combat-history-damage">${amount}</span> damage to ${escapeHtml(
+                            targetName
+                        )}.`,
+                        `status ${statusSource}`
                     );
 
                 } else if (
@@ -7702,12 +9739,34 @@
                     'heal'
                 ) {
 
-                    showCombatHeal(
-                        event.target,
+                    const amount =
                         Number(
                             event.amount ??
                             0
-                        )
+                        );
+
+
+                    showCombatHeal(
+                        event.target,
+                        amount
+                    );
+
+
+                    const statusSource =
+                        event.target ===
+                            'player'
+                            ? 'player'
+                            : 'enemy';
+
+
+                    addCombatHistoryEntry(
+                        `<span class="combat-history-status-name">${escapeHtml(
+                            event.status_name ||
+                            'Status Effect'
+                        )}</span> restored ${amount} Health to ${escapeHtml(
+                            targetName
+                        )}.`,
+                        `heal ${statusSource}`
                     );
 
                 }
@@ -7903,9 +9962,443 @@
         }
 
 
+        async function getExperienceRequirementForLevel(
+            targetLevel
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'level_experience'
+                    )
+                    .select(
+                        'exp_to_reach_level'
+                    )
+                    .eq(
+                        'level',
+                        Number(
+                            targetLevel
+                        )
+                    )
+                    .maybeSingle();
+
+
+            if (
+                error
+            ) {
+
+                console.error(
+                    'Could not load EXP requirement:',
+                    error
+                );
+
+                return 0;
+
+            }
+
+
+            return Math.max(
+                0,
+                Number(
+                    data?.exp_to_reach_level ??
+                    0
+                )
+            );
+
+        }
+
+
+        function setCombatResultExpBar(
+            fillId,
+            textId,
+            currentExperience,
+            requiredExperience,
+            animate = true
+        ) {
+
+            const fill =
+                document.getElementById(
+                    fillId
+                );
+
+
+            const text =
+                document.getElementById(
+                    textId
+                );
+
+
+            const current =
+                Math.max(
+                    0,
+                    Number(
+                        currentExperience ??
+                        0
+                    )
+                );
+
+
+            const required =
+                Math.max(
+                    0,
+                    Number(
+                        requiredExperience ??
+                        0
+                    )
+                );
+
+
+            const percentage =
+                required >
+                    0
+                    ? Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            (
+                                current /
+                                required
+                            ) *
+                            100
+                        )
+                    )
+                    : 100;
+
+
+            if (
+                text
+            ) {
+
+                text.textContent =
+                    required >
+                        0
+                        ? `${Math.round(
+                            current
+                        )} / ${Math.round(
+                            required
+                        )}`
+                        : `${Math.round(
+                            current
+                        )}`;
+
+            }
+
+
+            if (
+                fill
+            ) {
+
+                if (
+                    !animate
+                ) {
+
+                    fill.style.transition =
+                        'none';
+
+                }
+
+
+                fill.style.width =
+                    `${percentage}%`;
+
+
+                if (
+                    !animate
+                ) {
+
+                    requestAnimationFrame(
+                        () => {
+
+                            fill.style.transition =
+                                '';
+
+                        }
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        async function animateCombatVictoryExperience(
+            fromLevel,
+            fromExperience,
+            toLevel,
+            toExperience
+        ) {
+
+            const fillId =
+                'combatRewardExpFill';
+
+
+            const textId =
+                'combatRewardExpText';
+
+
+            let level =
+                Math.max(
+                    1,
+                    Number(
+                        fromLevel ??
+                        1
+                    )
+                );
+
+
+            let experience =
+                Math.max(
+                    0,
+                    Number(
+                        fromExperience ??
+                        0
+                    )
+                );
+
+
+            const finalLevel =
+                Math.max(
+                    level,
+                    Number(
+                        toLevel ??
+                        level
+                    )
+                );
+
+
+            const finalExperience =
+                Math.max(
+                    0,
+                    Number(
+                        toExperience ??
+                        0
+                    )
+                );
+
+
+            let requirement =
+                await getExperienceRequirementForLevel(
+                    level +
+                    1
+                );
+
+
+            setCombatResultExpBar(
+                fillId,
+                textId,
+                experience,
+                requirement,
+                false
+            );
+
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        120
+                    )
+            );
+
+
+            while (
+                level <
+                finalLevel
+            ) {
+
+                setCombatResultExpBar(
+                    fillId,
+                    textId,
+                    requirement,
+                    requirement,
+                    true
+                );
+
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            820
+                        )
+                );
+
+
+                level++;
+
+
+                requirement =
+                    await getExperienceRequirementForLevel(
+                        level +
+                        1
+                    );
+
+
+                setCombatResultExpBar(
+                    fillId,
+                    textId,
+                    0,
+                    requirement,
+                    false
+                );
+
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            100
+                        )
+                );
+
+            }
+
+
+            setCombatResultExpBar(
+                fillId,
+                textId,
+                finalExperience,
+                requirement,
+                true
+            );
+
+        }
+
+
+        async function animateCombatDeathExperience(
+            fromLevel,
+            fromExperience,
+            toExperience
+        ) {
+
+            const requirement =
+                await getExperienceRequirementForLevel(
+                    Number(
+                        fromLevel ??
+                        1
+                    ) +
+                    1
+                );
+
+
+            setCombatResultExpBar(
+                'combatDeathExpFill',
+                'combatDeathExpText',
+                fromExperience,
+                requirement,
+                false
+            );
+
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        140
+                    )
+            );
+
+
+            setCombatResultExpBar(
+                'combatDeathExpFill',
+                'combatDeathExpText',
+                toExperience,
+                requirement,
+                true
+            );
+
+        }
+
+
         async function showCombatRewards(
             rewards
         ) {
+
+            const previousLevel =
+                Number(
+                    currentCharacter?.level ??
+                    rewards?.level_up?.from_level ??
+                    1
+                );
+
+
+            const previousExperience =
+                Number(
+                    currentCharacter?.experience ??
+                    0
+                );
+
+
+            const {
+                data: finalCharacter,
+                error: finalCharacterError
+            } =
+                await supabaseClient
+                    .from(
+                        'characters'
+                    )
+                    .select(
+                        'level, experience'
+                    )
+                    .eq(
+                        'id',
+                        currentCharacter.id
+                    )
+                    .maybeSingle();
+
+
+            if (
+                finalCharacterError
+            ) {
+
+                console.error(
+                    'Could not load final combat EXP:',
+                    finalCharacterError
+                );
+
+            }
+
+
+            const finalLevel =
+                Number(
+                    finalCharacter?.level ??
+                    rewards?.level_up?.to_level ??
+                    previousLevel
+                );
+
+
+            const finalExperience =
+                Number(
+                    finalCharacter?.experience ??
+                    (
+                        previousExperience +
+                        Number(
+                            rewards?.experience ??
+                            0
+                        )
+                    )
+                );
+
+
+            if (
+                currentCharacter
+            ) {
+
+                currentCharacter.level =
+                    finalLevel;
+
+                currentCharacter.experience =
+                    finalExperience;
+
+
+                await renderWorldCharacterHeader();
+
+            }
+
 
             const expElement =
                 document.getElementById(
@@ -7928,18 +10421,6 @@
             const levelUpLevelsElement =
                 document.getElementById(
                     'combatRewardLevelUpLevels'
-                );
-
-
-            const questProgressSection =
-                document.getElementById(
-                    'combatRewardQuestProgressSection'
-                );
-
-
-            const questProgressList =
-                document.getElementById(
-                    'combatRewardQuestProgressList'
                 );
 
 
@@ -8019,65 +10500,65 @@
             }
 
 
+            /*
+             * Kill/combat quest progress is no longer rendered inside
+             * the Victory Rewards window. Show it with the same
+             * top-right quest notification used by map objectives.
+             */
+            const questProgressEntries =
+                rewards.quest_progress ||
+                [];
+
+
             if (
-                questProgressSection &&
-                questProgressList
+                questProgressEntries.length >
+                0
             ) {
 
-                questProgressList.innerHTML =
-                    '';
-
-
-                const questProgressEntries =
-                    rewards.quest_progress ||
-                    [];
-
-
-                questProgressSection.classList.toggle(
-                    'hidden',
-                    questProgressEntries.length ===
-                    0
-                );
-
-
+                /*
+                 * Usually one kill updates one quest, but multiple active
+                 * kill quests can react to the same enemy. Show each one
+                 * sequentially so none of the notifications overwrite
+                 * another immediately.
+                 */
                 for (
-                    const questProgress
-                    of
-                    questProgressEntries
+                    let index = 0;
+                    index <
+                        questProgressEntries.length;
+                    index++
                 ) {
 
-                    const entry =
-                        document.createElement(
-                            'div'
+                    const questProgress =
+                        questProgressEntries[index];
+
+
+                    if (
+                        index >
+                        0
+                    ) {
+
+                        await new Promise(
+                            resolve =>
+                                setTimeout(
+                                    resolve,
+                                    3200
+                                )
                         );
 
-
-                    entry.className =
-                        'combat-reward-quest-progress-item';
+                    }
 
 
-                    entry.innerHTML = `
-                        <span class="combat-reward-quest-progress-name">
-                            ${escapeHtml(
-                                questProgress.quest_name ||
-                                'Quest'
-                            )}
-                        </span>
-
-                        <span class="combat-reward-quest-progress-count">
-                            (${Number(
-                                questProgress.current_objective_count ??
-                                0
-                            )}/${Number(
-                                questProgress.objective_count ??
-                                0
-                            )})
-                        </span>
-                    `;
-
-
-                    questProgressList.appendChild(
-                        entry
+                    showQuestProgressToast(
+                        questProgress.quest_name ||
+                            'Quest',
+                        Number(
+                            questProgress.current_objective_count ??
+                            0
+                        ),
+                        Number(
+                            questProgress.objective_count ??
+                            1
+                        )
                     );
 
                 }
@@ -8457,6 +10938,14 @@
                     'hidden'
                 );
 
+
+            animateCombatVictoryExperience(
+                previousLevel,
+                previousExperience,
+                finalLevel,
+                finalExperience
+            );
+
         }
 
 
@@ -8509,8 +10998,50 @@
 
         function showCombatDeathWindow({
             experienceLost = 0,
+            experienceAfter = null,
             healthLost = 0
         } = {}) {
+
+            const levelBeforeDeath =
+                Number(
+                    currentCharacter?.level ??
+                    1
+                );
+
+
+            const experienceBeforeDeath =
+                Number(
+                    currentCharacter?.experience ??
+                    (
+                        Number(
+                            experienceAfter ??
+                            0
+                        ) +
+                        Number(
+                            experienceLost ??
+                            0
+                        )
+                    )
+                );
+
+
+            const resolvedExperienceAfter =
+                experienceAfter !=
+                    null
+                    ? Math.max(
+                        0,
+                        Number(
+                            experienceAfter
+                        )
+                    )
+                    : Math.max(
+                        0,
+                        experienceBeforeDeath -
+                        Number(
+                            experienceLost ??
+                            0
+                        )
+                    );
 
             const experienceElement =
                 document.getElementById(
@@ -8559,6 +11090,26 @@
                 ?.classList.remove(
                     'hidden'
                 );
+
+
+            animateCombatDeathExperience(
+                levelBeforeDeath,
+                experienceBeforeDeath,
+                resolvedExperienceAfter
+            );
+
+
+            if (
+                currentCharacter
+            ) {
+
+                currentCharacter.experience =
+                    resolvedExperienceAfter;
+
+
+                renderWorldCharacterHeader();
+
+            }
 
         }
 
@@ -11752,10 +14303,283 @@
            TURN IN QUEST
            ========================================================= */
 
+        let questLevelUpToastTimeout =
+            null;
+
+
+        function showQuestLevelUpToast(
+            newLevel
+        ) {
+
+            const toast =
+                document.getElementById(
+                    'questLevelUpToast'
+                );
+
+
+            const text =
+                document.getElementById(
+                    'questLevelUpText'
+                );
+
+
+            if (!toast) {
+                return;
+            }
+
+
+            if (questLevelUpToastTimeout) {
+
+                clearTimeout(
+                    questLevelUpToastTimeout
+                );
+
+            }
+
+
+            if (text) {
+
+                text.textContent =
+                    `Level ${Number(
+                        newLevel ??
+                        1
+                    )}`;
+
+            }
+
+
+            toast.classList.remove(
+                'hidden'
+            );
+
+
+            requestAnimationFrame(
+                () => {
+
+                    toast.classList.add(
+                        'visible'
+                    );
+
+                }
+            );
+
+
+            questLevelUpToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            'visible'
+                        );
+
+
+                        setTimeout(
+                            () => {
+
+                                toast.classList.add(
+                                    'hidden'
+                                );
+
+                            },
+                            200
+                        );
+
+                    },
+                    3000
+                );
+
+        }
+
+
+        let questTurnInExpToastTimeout = null;
+
+
+        function setQuestTurnInExpBar(
+            currentExperience,
+            requiredExperience,
+            animate = true
+        ) {
+
+            const fill =
+                document.getElementById('questTurnInExpFill');
+
+            const text =
+                document.getElementById('questTurnInExpText');
+
+            const current =
+                Math.max(0, Number(currentExperience ?? 0));
+
+            const required =
+                Math.max(0, Number(requiredExperience ?? 0));
+
+            const percentage =
+                required > 0
+                    ? Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            (current / required) * 100
+                        )
+                    )
+                    : 100;
+
+            if (text) {
+                text.textContent =
+                    required > 0
+                        ? `${Math.round(current)} / ${Math.round(required)}`
+                        : `${Math.round(current)}`;
+            }
+
+            if (fill) {
+
+                if (!animate) {
+                    fill.style.transition = 'none';
+                }
+
+                fill.style.width = `${percentage}%`;
+
+                if (!animate) {
+                    requestAnimationFrame(
+                        () => {
+                            fill.style.transition = '';
+                        }
+                    );
+                }
+            }
+        }
+
+
+        async function showQuestTurnInExperienceBar({
+            fromLevel,
+            fromExperience,
+            toLevel,
+            toExperience,
+            experienceGained
+        }) {
+
+            const toast =
+                document.getElementById('questTurnInExpToast');
+
+            const gainElement =
+                document.getElementById('questTurnInExpGain');
+
+            if (!toast) {
+                return;
+            }
+
+            if (questTurnInExpToastTimeout) {
+                clearTimeout(questTurnInExpToastTimeout);
+            }
+
+            const gained =
+                Math.max(0, Number(experienceGained ?? 0));
+
+            if (gainElement) {
+                gainElement.textContent =
+                    `+${Math.round(gained)} EXP`;
+            }
+
+            toast.classList.remove('hidden');
+
+            requestAnimationFrame(
+                () => toast.classList.add('visible')
+            );
+
+            let level =
+                Math.max(1, Number(fromLevel ?? 1));
+
+            let experience =
+                Math.max(0, Number(fromExperience ?? 0));
+
+            const finalLevel =
+                Math.max(level, Number(toLevel ?? level));
+
+            const finalExperience =
+                Math.max(0, Number(toExperience ?? 0));
+
+            let requirement =
+                await getExperienceRequirementForLevel(
+                    level + 1
+                );
+
+            setQuestTurnInExpBar(
+                experience,
+                requirement,
+                false
+            );
+
+            await new Promise(
+                resolve => setTimeout(resolve, 120)
+            );
+
+            while (level < finalLevel) {
+
+                setQuestTurnInExpBar(
+                    requirement,
+                    requirement,
+                    true
+                );
+
+                await new Promise(
+                    resolve => setTimeout(resolve, 820)
+                );
+
+                level++;
+
+                requirement =
+                    await getExperienceRequirementForLevel(
+                        level + 1
+                    );
+
+                setQuestTurnInExpBar(
+                    0,
+                    requirement,
+                    false
+                );
+
+                await new Promise(
+                    resolve => setTimeout(resolve, 100)
+                );
+            }
+
+            setQuestTurnInExpBar(
+                finalExperience,
+                requirement,
+                true
+            );
+
+            await new Promise(
+                resolve => setTimeout(resolve, 800)
+            );
+
+            questTurnInExpToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove('visible');
+
+                        setTimeout(
+                            () => toast.classList.add('hidden'),
+                            200
+                        );
+
+                    },
+                    3000
+                );
+        }
+
+
         async function turnInQuest(
             characterQuest,
             card
         ) {
+
+            const previousLevel =
+                Number(currentCharacter?.level ?? 1);
+
+            const previousExperience =
+                Number(currentCharacter?.experience ?? 0);
+
 
             const statusElement =
                 card.querySelector('.npc-quest-status');
@@ -11839,6 +14663,101 @@
              * Remove the turn-in card immediately.
              */
             card.remove();
+
+
+            const {
+                data: updatedCharacter,
+                error: updatedCharacterError
+            } =
+                await supabaseClient
+                    .from('characters')
+                    .select('level, experience')
+                    .eq('id', currentCharacter.id)
+                    .maybeSingle();
+
+
+            if (updatedCharacterError) {
+
+                console.error(
+                    'Could not refresh EXP after quest turn-in:',
+                    updatedCharacterError
+                );
+
+            }
+
+
+            const finalLevel =
+                Number(
+                    updatedCharacter?.level ??
+                    previousLevel
+                );
+
+
+            const finalExperience =
+                Number(
+                    updatedCharacter?.experience ??
+                    (
+                        previousExperience +
+                        Number(
+                            characterQuest?.quests
+                                ?.experience_reward ??
+                            0
+                        )
+                    )
+                );
+
+
+            const experienceGained =
+                Number(
+                    characterQuest?.quests
+                        ?.experience_reward ??
+                    data?.experience_reward ??
+                    data?.experience_gained ??
+                    0
+                );
+
+
+            showQuestTurnInExperienceBar({
+                fromLevel:
+                    previousLevel,
+
+                fromExperience:
+                    previousExperience,
+
+                toLevel:
+                    finalLevel,
+
+                toExperience:
+                    finalExperience,
+
+                experienceGained
+            });
+
+
+            if (
+                finalLevel >
+                previousLevel
+            ) {
+
+                showQuestLevelUpToast(
+                    finalLevel
+                );
+
+            }
+
+
+            if (currentCharacter) {
+
+                currentCharacter.level =
+                    finalLevel;
+
+                currentCharacter.experience =
+                    finalExperience;
+
+
+                await renderWorldCharacterHeader();
+
+            }
 
 
             /*
