@@ -1547,11 +1547,371 @@
 
         }
 
+
+
+        /* =========================================================
+           CHOOSE QUEST REWARD
+           ========================================================= */
+
+        .quest-reward-choice-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+
+        .quest-reward-choice-label {
+            color: #d4af37;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+
+        .quest-reward-choice-label.muted {
+            color: #8f96a3;
+            font-weight: 400;
+        }
+
+
+        .quest-reward-item-slot.selectable {
+            position: relative;
+            cursor: pointer;
+
+            transition:
+                transform 0.14s ease,
+                box-shadow 0.14s ease,
+                border-color 0.14s ease;
+        }
+
+
+        .quest-reward-item-slot.selectable:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 0 0 1px rgba(212, 175, 55, 0.32),
+                0 5px 14px rgba(0, 0, 0, 0.35);
+        }
+
+
+        .quest-reward-item-slot.selected {
+            border-color: #d4af37 !important;
+
+            box-shadow:
+                0 0 0 2px rgba(212, 175, 55, 0.38),
+                0 0 16px rgba(212, 175, 55, 0.26);
+        }
+
+
+        .quest-reward-item-slot.selected::after {
+            content: "✓";
+
+            position: absolute;
+            top: -6px;
+            right: -6px;
+
+            width: 18px;
+            height: 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid #d4af37;
+            border-radius: 50%;
+
+            background: #151a2d;
+            color: #f0d968;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.45);
+        }
+
+
+
+        /* =========================================================
+           MAIN QUEST
+           ========================================================= */
+
+        .npc-quest-card.main-quest {
+            border-color: rgba(212, 175, 55, 0.72) !important;
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(212, 175, 55, 0.10),
+                    transparent 44%
+                ),
+                rgba(17, 21, 39, 0.94);
+        }
+
+
+        .main-quest-badge {
+            display: inline-flex;
+            align-items: center;
+
+            margin-left: 8px;
+            padding: 2px 6px;
+
+            border: 1px solid rgba(212, 175, 55, 0.55);
+            border-radius: 4px;
+
+            color: #d4af37;
+
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+
+            vertical-align: middle;
+        }
+
+
+        .area-marker.main-quest-objective {
+            border-color: #d4af37 !important;
+
+            box-shadow:
+                0 0 0 2px rgba(212, 175, 55, 0.25),
+                0 0 16px rgba(212, 175, 55, 0.78) !important;
+        }
+
+
+        .main-quest-tracker {
+            min-width: 220px;
+            max-width: 320px;
+
+            padding: 9px 13px;
+
+            border-left: 2px solid #d4af37;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(212, 175, 55, 0.07),
+                    transparent
+                );
+        }
+
+
+        .main-quest-tracker.hidden {
+            display: none !important;
+        }
+
+
+        .main-quest-tracker-label {
+            margin-bottom: 3px;
+
+            color: #d4af37;
+
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
+
+
+        .main-quest-tracker-name {
+            overflow: hidden;
+
+            color: #f0e7c2;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+
+        .main-quest-tracker-progress-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+
+            margin-top: 4px;
+
+            color: #9fa5b3;
+
+            font-size: 10px;
+        }
+
+
+        .main-quest-tracker-progress {
+            color: #d4af37;
+            white-space: nowrap;
+        }
+
+
+        .main-quest-toast {
+            position: fixed !important;
+
+            top: 98px !important;
+            right: 20px !important;
+            left: auto !important;
+            bottom: auto !important;
+
+            z-index: 1000002;
+
+            min-width: 290px;
+            max-width: 390px;
+
+            padding: 15px 17px;
+
+            opacity: 0;
+            transform: translateY(-8px);
+
+            pointer-events: none;
+
+            border: 1px solid rgba(212, 175, 55, 0.95);
+            border-radius: 9px;
+
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(212, 175, 55, 0.14),
+                    transparent 48%
+                ),
+                linear-gradient(
+                    145deg,
+                    rgba(20, 24, 48, 0.99),
+                    rgba(8, 11, 28, 0.99)
+                );
+
+            box-shadow:
+                0 12px 34px rgba(0, 0, 0, 0.58),
+                0 0 20px rgba(212, 175, 55, 0.18);
+
+            transition:
+                opacity 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .main-quest-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        .main-quest-toast.hidden {
+            display: none !important;
+        }
+
+
+        .main-quest-toast-label {
+            margin-bottom: 5px;
+
+            color: #d4af37;
+
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+
+        .main-quest-toast-name {
+            color: #f0d968;
+
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+
+        .main-quest-toast-chapter {
+            margin-top: 4px;
+
+            color: #aeb3c0;
+
+            font-size: 10px;
+        }
+
+
+        @media (max-width: 900px) {
+
+            .main-quest-tracker {
+                display: none !important;
+            }
+
+        }
+
+
+
+        /* =========================================================
+           QUEST-GATED WORLD CONTENT
+           ========================================================= */
+
+        .area-marker.quest-locked {
+            filter: grayscale(1);
+            opacity: 0.48;
+            cursor: default !important;
+
+            box-shadow:
+                0 0 0 2px rgba(120, 120, 120, 0.22),
+                0 0 10px rgba(70, 70, 70, 0.32) !important;
+        }
+
+
+        .area-marker.quest-locked:hover {
+            opacity: 0.62;
+        }
+
+
+        .tooltip-quest-requirement {
+            margin-top: 8px;
+            padding-top: 7px;
+
+            border-top:
+                1px solid
+                rgba(212, 175, 55, 0.24);
+
+            color: #d4af37;
+
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+
+        .tooltip-quest-requirement.hidden {
+            display: none !important;
+        }
+
+
+        .location-item-level.quest-requirement {
+            color: #d4af37;
+        }
+
 </style>
 
 </head>
 
 <body>
+
+    <div
+        id="mainQuestToast"
+        class="main-quest-toast hidden"
+        role="status"
+        aria-live="polite">
+
+        <div class="main-quest-toast-label">
+            New Main Quest
+        </div>
+
+        <div
+            id="mainQuestToastName"
+            class="main-quest-toast-name">
+        </div>
+
+        <div
+            id="mainQuestToastChapter"
+            class="main-quest-toast-chapter">
+        </div>
+
+    </div>
+
 
     <div
         id="questLevelUpToast"
@@ -1666,6 +2026,35 @@
 
             </div>
 
+            <div
+                id="mainQuestTracker"
+                class="main-quest-tracker hidden">
+
+                <div class="main-quest-tracker-label">
+                    Main Quest
+                </div>
+
+                <div
+                    id="mainQuestTrackerName"
+                    class="main-quest-tracker-name">
+                </div>
+
+                <div class="main-quest-tracker-progress-row">
+
+                    <span
+                        id="mainQuestTrackerChapter"
+                        class="main-quest-tracker-chapter">
+                    </span>
+
+                    <span
+                        id="mainQuestTrackerProgress"
+                        class="main-quest-tracker-progress">
+                    </span>
+
+                </div>
+
+            </div>
+
             <a href="hub.html" class="back-button">
                 ← Back to Hub
             </a>
@@ -1758,6 +2147,11 @@
                         <div class="tooltip-level">
                             Level
                             <span id="tooltipLevel"></span>
+                        </div>
+
+                        <div
+                            id="tooltipRequirement"
+                            class="tooltip-quest-requirement hidden">
                         </div>
 
                     </div>
@@ -2868,6 +3262,778 @@
 
 
         /* =========================================================
+           QUEST REQUIREMENT HELPERS
+           ========================================================= */
+
+        let completedQuestIds =
+            new Set();
+
+
+        let completedQuestIdsLoaded =
+            false;
+
+
+        const questRequirementNames =
+            new Map();
+
+
+        async function ensureCompletedQuestIds() {
+
+            if (
+                completedQuestIdsLoaded ||
+                !currentCharacter?.id
+            ) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'character_completed_quests'
+                    )
+                    .select(
+                        'quest_id'
+                    )
+                    .eq(
+                        'character_id',
+                        currentCharacter.id
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    'Could not load completed quests for world requirements:',
+                    error
+                );
+
+                return;
+
+            }
+
+
+            completedQuestIds =
+                new Set(
+                    (data || [])
+                        .map(
+                            row =>
+                                Number(
+                                    row.quest_id
+                                )
+                        )
+                        .filter(
+                            questId =>
+                                Number.isFinite(
+                                    questId
+                                )
+                        )
+                );
+
+
+            completedQuestIdsLoaded =
+                true;
+
+        }
+
+
+        async function loadQuestRequirementNames(
+            rows
+        ) {
+
+            const requiredQuestIds =
+                [
+                    ...new Set(
+                        (rows || [])
+                            .map(
+                                row =>
+                                    row.quest_requirement
+                            )
+                            .filter(
+                                questId =>
+                                    questId !=
+                                    null
+                            )
+                            .map(
+                                questId =>
+                                    Number(
+                                        questId
+                                    )
+                            )
+                            .filter(
+                                questId =>
+                                    Number.isFinite(
+                                        questId
+                                    )
+                            )
+                    )
+                ];
+
+
+            const missingQuestIds =
+                requiredQuestIds
+                    .filter(
+                        questId =>
+                            !questRequirementNames.has(
+                                questId
+                            )
+                    );
+
+
+            if (
+                missingQuestIds.length ===
+                0
+            ) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'quests'
+                    )
+                    .select(
+                        'id, name'
+                    )
+                    .in(
+                        'id',
+                        missingQuestIds
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    'Could not load quest requirement names:',
+                    error
+                );
+
+                return;
+
+            }
+
+
+            for (
+                const quest
+                of
+                data ||
+                []
+            ) {
+
+                questRequirementNames.set(
+                    Number(
+                        quest.id
+                    ),
+                    quest.name ||
+                    `Quest ${quest.id}`
+                );
+
+            }
+
+
+            /*
+             * Avoid repeatedly querying broken/missing quest ids.
+             */
+            for (
+                const questId
+                of
+                missingQuestIds
+            ) {
+
+                if (
+                    !questRequirementNames.has(
+                        questId
+                    )
+                ) {
+
+                    questRequirementNames.set(
+                        questId,
+                        `Quest ${questId}`
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        async function prepareQuestRequirements(
+            rows
+        ) {
+
+            await Promise.all([
+                ensureCompletedQuestIds(),
+                loadQuestRequirementNames(
+                    rows
+                )
+            ]);
+
+
+            for (
+                const row
+                of
+                rows ||
+                []
+            ) {
+
+                const requiredQuestId =
+                    row.quest_requirement ==
+                        null
+                        ? null
+                        : Number(
+                            row.quest_requirement
+                        );
+
+
+                const hasRequirement =
+                    requiredQuestId !=
+                        null &&
+                    Number.isFinite(
+                        requiredQuestId
+                    );
+
+
+                row.quest_requirement_met =
+                    !hasRequirement ||
+                    completedQuestIds.has(
+                        requiredQuestId
+                    );
+
+
+                row.required_quest_name =
+                    hasRequirement
+                        ? (
+                            questRequirementNames.get(
+                                requiredQuestId
+                            ) ||
+                            `Quest ${requiredQuestId}`
+                        )
+                        : null;
+
+            }
+
+        }
+
+
+        async function refreshQuestRequirementState() {
+
+            /*
+             * Rebuild all quest-gated world UI immediately after
+             * a quest is turned in, without requiring a page reload.
+             *
+             * Preserve the player's currently selected location and
+             * sublocation whenever they are still available.
+             */
+            const selectedLocationId =
+                currentLocation?.id ??
+                null;
+
+
+            const selectedSublocationId =
+                currentSublocation?.id ??
+                null;
+
+
+            const {
+                data: locations,
+                error: locationsError
+            } =
+                await supabaseClient
+                    .from(
+                        'world-locations'
+                    )
+                    .select('*')
+                    .order('id');
+
+
+            if (
+                locationsError ||
+                !locations
+            ) {
+
+                console.error(
+                    'Could not refresh quest-gated locations:',
+                    locationsError
+                );
+
+                return;
+
+            }
+
+
+            await prepareQuestRequirements(
+                locations
+            );
+
+
+            /*
+             * First refresh the top-level location buttons.
+             */
+            const locationList =
+                document.getElementById(
+                    'locationList'
+                );
+
+
+            if (locationList) {
+
+                locationList.innerHTML =
+                    '';
+
+
+                for (
+                    const location
+                    of
+                    locations
+                ) {
+
+                    const levelTooLow =
+                        currentCharacter.level <
+                        Number(
+                            location.level_requirement ||
+                            0
+                        );
+
+
+                    const questLocked =
+                        location.quest_requirement_met ===
+                        false;
+
+
+                    const locked =
+                        !location.is_unlocked ||
+                        levelTooLow ||
+                        questLocked;
+
+
+                    const locationButton =
+                        document.createElement(
+                            'button'
+                        );
+
+
+                    locationButton.className =
+                        'location-item';
+
+
+                    if (locked) {
+
+                        locationButton.classList.add(
+                            'locked'
+                        );
+
+                    }
+
+
+                    if (!locked) {
+
+                        locationButton.addEventListener(
+                            'click',
+                            () =>
+                                selectLocation(
+                                    location
+                                )
+                        );
+
+                    }
+
+
+                    if (
+                        Number(
+                            location.id
+                        ) ===
+                        Number(
+                            selectedLocationId
+                        )
+                    ) {
+
+                        locationButton.classList.add(
+                            'selected'
+                        );
+
+                    }
+
+
+                    const lockIcon =
+                        locked
+                            ? '🔒'
+                            : '';
+
+
+                    let levelText =
+                        '';
+
+
+                    if (
+                        !location.is_unlocked
+                    ) {
+
+                        levelText =
+                            'in progress...';
+
+                    } else if (
+                        questLocked
+                    ) {
+
+                        levelText =
+                            `Complete "${location.required_quest_name}"`;
+
+                    } else if (
+                        Number(
+                            location.level_requirement
+                        ) >
+                        currentCharacter.level
+                    ) {
+
+                        levelText =
+                            `Level ${location.level_requirement} required`;
+
+                    } else {
+
+                        levelText =
+                            `Level ${location.min_level} - ${location.max_level}`;
+
+                    }
+
+
+                    locationButton.innerHTML = `
+
+                        <div class="location-item-icon">
+                            ${lockIcon}
+                        </div>
+
+                        <div class="location-item-content">
+
+                            <div class="location-item-name">
+                                ${escapeHtml(
+                                    location.name
+                                )}
+                            </div>
+
+                            ${
+                                levelText
+                                    ? `
+                                        <div class="location-item-level${
+                                            questLocked
+                                                ? ' quest-requirement'
+                                                : ''
+                                        }">
+                                            ${levelText}
+                                        </div>
+                                      `
+                                    : ''
+                            }
+
+                        </div>
+
+                    `;
+
+
+                    locationList.appendChild(
+                        locationButton
+                    );
+
+                }
+
+            }
+
+
+            const selectedLocation =
+                locations.find(
+                    location =>
+                        Number(
+                            location.id
+                        ) ===
+                        Number(
+                            selectedLocationId
+                        )
+                ) ||
+                null;
+
+
+            if (!selectedLocation) {
+                return;
+            }
+
+
+            currentLocation =
+                selectedLocation;
+
+
+            /*
+             * Then refresh this location's sublocations.
+             */
+            const {
+                data: sublocations,
+                error: sublocationsError
+            } =
+                await supabaseClient
+                    .from(
+                        'sublocation'
+                    )
+                    .select('*')
+                    .eq(
+                        'location_id',
+                        selectedLocation.id
+                    )
+                    .order('id');
+
+
+            if (
+                sublocationsError ||
+                !sublocations
+            ) {
+
+                console.error(
+                    'Could not refresh quest-gated sublocations:',
+                    sublocationsError
+                );
+
+                return;
+
+            }
+
+
+            await prepareQuestRequirements(
+                sublocations
+            );
+
+
+            const sublocationList =
+                document.getElementById(
+                    'sublocationList'
+                );
+
+
+            if (sublocationList) {
+
+                sublocationList.innerHTML =
+                    '';
+
+
+                let lastSublocationLocked =
+                    false;
+
+
+                for (
+                    const sublocation
+                    of
+                    sublocations
+                ) {
+
+                    const levelTooLow =
+                        currentCharacter.level <
+                        Number(
+                            sublocation.level_requirement ||
+                            0
+                        );
+
+
+                    const questLocked =
+                        sublocation.quest_requirement_met ===
+                        false;
+
+
+                    const locked =
+                        !sublocation.is_unlocked ||
+                        levelTooLow ||
+                        questLocked;
+
+
+                    const button =
+                        document.createElement(
+                            'button'
+                        );
+
+
+                    button.className =
+                        'location-item sublocation-item';
+
+
+                    let subLocationName =
+                        `${escapeHtml(
+                            sublocation.name
+                        )}`;
+
+
+                    if (locked) {
+
+                        button.classList.add(
+                            'locked'
+                        );
+
+
+                        if (
+                            lastSublocationLocked
+                        ) {
+
+                            subLocationName =
+                                '???';
+
+                        }
+
+
+                        lastSublocationLocked =
+                            true;
+
+                    }
+
+
+                    if (!locked) {
+
+                        button.addEventListener(
+                            'click',
+                            () =>
+                                selectSublocation(
+                                    sublocation
+                                )
+                        );
+
+                    }
+
+
+                    if (
+                        Number(
+                            sublocation.id
+                        ) ===
+                        Number(
+                            selectedSublocationId
+                        )
+                    ) {
+
+                        button.classList.add(
+                            'selected'
+                        );
+
+                    }
+
+
+                    const lockIcon =
+                        locked
+                            ? '🔒'
+                            : '';
+
+
+                    let levelText =
+                        '';
+
+
+                    if (
+                        !sublocation.is_unlocked
+                    ) {
+
+                        levelText =
+                            'in progress...';
+
+                    } else if (
+                        questLocked
+                    ) {
+
+                        levelText =
+                            `Complete "${sublocation.required_quest_name}"`;
+
+                    } else if (
+                        Number(
+                            sublocation.level_requirement
+                        ) >
+                        currentCharacter.level
+                    ) {
+
+                        levelText =
+                            `Level ${sublocation.level_requirement} required`;
+
+                    } else {
+
+                        levelText =
+                            `Level ${sublocation.min_level} - ${sublocation.max_level}`;
+
+                    }
+
+
+                    button.innerHTML = `
+
+                        <div class="location-item-icon">
+                            ${lockIcon}
+                        </div>
+
+                        <div class="location-item-content">
+
+                            <div class="location-item-name">
+                                ${subLocationName}
+                            </div>
+
+                            ${
+                                levelText
+                                    ? `
+                                        <div class="location-item-level${
+                                            questLocked
+                                                ? ' quest-requirement'
+                                                : ''
+                                        }">
+                                            ${levelText}
+                                        </div>
+                                      `
+                                    : ''
+                            }
+
+                        </div>
+
+                    `;
+
+
+                    sublocationList.appendChild(
+                        button
+                    );
+
+                }
+
+            }
+
+
+            const selectedSublocation =
+                sublocations.find(
+                    sublocation =>
+                        Number(
+                            sublocation.id
+                        ) ===
+                        Number(
+                            selectedSublocationId
+                        )
+                ) ||
+                null;
+
+
+            if (
+                selectedSublocation
+            ) {
+
+                currentSublocation =
+                    selectedSublocation;
+
+
+                /*
+                 * This is the important part for already visible area
+                 * markers: recreate them immediately so newly unlocked
+                 * areas stop being grey/non-clickable.
+                 */
+                await loadAreas(
+                    selectedSublocation.id
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
            LOAD LOCATIONS
            ========================================================= */
 
@@ -2893,6 +4059,11 @@
             }
 
 
+            await prepareQuestRequirements(
+                locations
+            );
+
+
             const locationList =
                 document.getElementById('locationList');
 
@@ -2907,9 +4078,15 @@
                     Number(location.level_requirement || 0);
 
 
+                const questLocked =
+                    location.quest_requirement_met ===
+                    false;
+
+
                 const locked =
                     !location.is_unlocked ||
-                    levelTooLow;
+                    levelTooLow ||
+                    questLocked;
 
 
                 const locationButton =
@@ -2941,11 +4118,16 @@
                 let levelText = '';
 
                 if (!location.is_unlocked) {
-                    levelText = 'in progress...'
+                    levelText = 'in progress...';
+                } else if (questLocked) {
+                    levelText =
+                        `Complete "${location.required_quest_name}"`;
                 } else if (Number(location.level_requirement) > currentCharacter.level) {
-                    levelText = `Level ${location.level_requirement} required`;
+                    levelText =
+                        `Level ${location.level_requirement} required`;
                 } else if (currentCharacter.level >= Number(location.level_requirement)) {
-                    levelText = `Level ${location.min_level} - ${location.max_level}`;
+                    levelText =
+                        `Level ${location.min_level} - ${location.max_level}`;
                 }
 
                 locationButton.innerHTML = `
@@ -2963,7 +4145,11 @@
                         ${
                             levelText
                                 ? `
-                                    <div class="location-item-level">
+                                    <div class="location-item-level${
+                                        questLocked
+                                            ? ' quest-requirement'
+                                            : ''
+                                    }">
                                         ${levelText}
                                     </div>
                                   `
@@ -2992,9 +4178,15 @@
                         Number(location.level_requirement || 0);
 
 
+                    const questLocked =
+                        location.quest_requirement_met ===
+                        false;
+
+
                     return (
                         location.is_unlocked &&
-                        !levelTooLow
+                        !levelTooLow &&
+                        !questLocked
                     );
 
                 });
@@ -3101,6 +4293,11 @@
             }
 
 
+            await prepareQuestRequirements(
+                sublocations
+            );
+
+
             const sublocationList =
                 document.getElementById(
                     'sublocationList'
@@ -3123,9 +4320,23 @@
             let lastSublocationLocked = false;
             sublocations.forEach(sublocation => {
 
-                const levelTooLow = currentCharacter.level < Number(sublocation.level_requirement || 0);
+                const levelTooLow =
+                    currentCharacter.level <
+                    Number(
+                        sublocation.level_requirement ||
+                        0
+                    );
 
-                const locked = !sublocation.is_unlocked || levelTooLow;
+
+                const questLocked =
+                    sublocation.quest_requirement_met ===
+                    false;
+
+
+                const locked =
+                    !sublocation.is_unlocked ||
+                    levelTooLow ||
+                    questLocked;
                 
                 const button = document.createElement('button');
                 button.className = 'location-item sublocation-item';
@@ -3149,11 +4360,16 @@
                 let levelText = '';
 
                 if (!sublocation.is_unlocked) {
-                    levelText = 'in progress...'
+                    levelText = 'in progress...';
+                } else if (questLocked) {
+                    levelText =
+                        `Complete "${sublocation.required_quest_name}"`;
                 } else if (Number(sublocation.level_requirement) > currentCharacter.level) {
-                    levelText = `Level ${sublocation.level_requirement} required`;
+                    levelText =
+                        `Level ${sublocation.level_requirement} required`;
                 } else if (currentCharacter.level >= Number(sublocation.level_requirement)) {
-                    levelText = `Level ${sublocation.min_level} - ${sublocation.max_level}`;
+                    levelText =
+                        `Level ${sublocation.min_level} - ${sublocation.max_level}`;
                 }
 
 
@@ -3172,7 +4388,11 @@
                         ${
                             levelText
                                 ? `
-                                    <div class="location-item-level">
+                                    <div class="location-item-level${
+                                        questLocked
+                                            ? ' quest-requirement'
+                                            : ''
+                                    }">
                                         ${levelText}
                                     </div>
                                   `
@@ -3200,9 +4420,15 @@
                         );
 
 
+                    const questLocked =
+                        sublocation.quest_requirement_met ===
+                        false;
+
+
                     return (
                         sublocation.is_unlocked &&
-                        !levelTooLow
+                        !levelTooLow &&
+                        !questLocked
                     );
 
                 });
@@ -3318,6 +4544,11 @@
             }
 
 
+            await prepareQuestRequirements(
+                areas
+            );
+
+
             const areaMarkers =
                 document.getElementById(
                     'areaMarkers'
@@ -3342,8 +4573,17 @@
                     document.createElement('div');
 
 
+                const questLocked =
+                    area.quest_requirement_met ===
+                    false;
+
+
                 marker.className =
-                    'area-marker';
+                    `area-marker${
+                        questLocked
+                            ? ' quest-locked'
+                            : ''
+                    }`;
 
 
                 /*
@@ -3393,10 +4633,14 @@
 
                 /* Click event */
 
-                marker.addEventListener(
-                    'click',
-                    () => openArea(area)
-                );
+                if (!questLocked) {
+
+                    marker.addEventListener(
+                        'click',
+                        () => openArea(area)
+                    );
+
+                }
 
 
                 areaMarkers.appendChild(marker);
@@ -3434,6 +4678,43 @@
                 'tooltipLevel'
             ).textContent =
                 `${area.min_level} - ${area.max_level}`;
+
+
+            const requirementElement =
+                document.getElementById(
+                    'tooltipRequirement'
+                );
+
+
+            if (
+                requirementElement
+            ) {
+
+                if (
+                    area.quest_requirement_met ===
+                    false &&
+                    area.required_quest_name
+                ) {
+
+                    requirementElement.textContent =
+                        `Requires completion of: ${area.required_quest_name}`;
+
+                    requirementElement.classList.remove(
+                        'hidden'
+                    );
+
+                } else {
+
+                    requirementElement.textContent =
+                        '';
+
+                    requirementElement.classList.add(
+                        'hidden'
+                    );
+
+                }
+
+            }
 
 
             tooltip.style.left =
@@ -3597,7 +4878,13 @@
                         error: characterQuestsError
                     } = await supabaseClient
                         .from('character_quests')
-                        .select('quest_id, current_objective_count')
+                        .select(`
+                            quest_id,
+                            current_objective_count,
+                            quests (
+                                is_main_quest
+                            )
+                        `)
                         .eq('character_id', currentCharacter.id)
                         .in('quest_id', questIds);
 
@@ -3617,7 +4904,18 @@
 
                         activeQuestProgressByQuestId.set(
                             String(characterQuest.quest_id),
-                            Number(characterQuest.current_objective_count ?? 0)
+                            {
+                                current_objective_count:
+                                    Number(
+                                        characterQuest.current_objective_count ??
+                                        0
+                                    ),
+
+                                is_main_quest:
+                                    characterQuest.quests
+                                        ?.is_main_quest ===
+                                    true
+                            }
                         );
 
                     });
@@ -3665,8 +4963,24 @@
                     }
 
 
+                    const activeQuest =
+                        activeQuestProgressByQuestId.get(
+                            questId
+                        );
+
+
                     const currentObjectiveCount =
-                        activeQuestProgressByQuestId.get(questId);
+                        Number(
+                            activeQuest
+                                ?.current_objective_count ??
+                            0
+                        );
+
+
+                    node.is_main_quest =
+                        activeQuest
+                            ?.is_main_quest ===
+                        true;
 
 
                     /*
@@ -3685,7 +4999,12 @@
 
 
                 marker.className =
-                    'area-marker';
+                    `area-marker${
+                        node.is_main_quest ===
+                        true
+                            ? ' main-quest-objective'
+                            : ''
+                    }`;
 
 
                 /*
@@ -6588,6 +7907,9 @@
                 );
 
             }
+
+
+            await loadMainQuestTracker();
 
 
             console.log(
@@ -10939,6 +12261,9 @@
                 );
 
 
+            loadMainQuestTracker();
+
+
             animateCombatVictoryExperience(
                 previousLevel,
                 previousExperience,
@@ -12231,7 +13556,9 @@
 
         async function renderWorldQuestRewardItems(
             container,
-            questId
+            questId,
+            chooseReward = false,
+            allowSelection = false
         ) {
 
             if (!container) {
@@ -12424,6 +13751,43 @@
 
 
             /*
+             * A choose_reward quest still grants Gold, EXP and pet
+             * rewards normally. Only the item rewards become a choice.
+             */
+            if (
+                chooseReward &&
+                rewards.length >
+                    0
+            ) {
+
+                const choiceLabel =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                choiceLabel.className =
+                    `quest-reward-choice-label${
+                        allowSelection
+                            ? ''
+                            : ' muted'
+                    }`;
+
+
+                choiceLabel.textContent =
+                    allowSelection
+                        ? 'Choose one reward:'
+                        : 'Choose one item when turning in';
+
+
+                container.appendChild(
+                    choiceLabel
+                );
+
+            }
+
+
+            /*
              * Normal item rewards.
              */
             for (
@@ -12520,6 +13884,65 @@
                     'mouseleave',
                     hideWorldQuestRewardTooltip
                 );
+
+
+                if (
+                    chooseReward &&
+                    allowSelection
+                ) {
+
+                    slot.classList.add(
+                        'selectable'
+                    );
+
+
+                    slot.dataset.rewardItemId =
+                        String(
+                            item.item_id
+                        );
+
+
+                    slot.addEventListener(
+                        'click',
+                        () => {
+
+                            const card =
+                                container.closest(
+                                    '.npc-quest-card'
+                                );
+
+
+                            if (!card) {
+                                return;
+                            }
+
+
+                            container
+                                .querySelectorAll(
+                                    '.quest-reward-item-slot.selected'
+                                )
+                                .forEach(
+                                    rewardSlot =>
+                                        rewardSlot.classList.remove(
+                                            'selected'
+                                        )
+                                );
+
+
+                            slot.classList.add(
+                                'selected'
+                            );
+
+
+                            card.dataset.selectedRewardItemId =
+                                String(
+                                    item.item_id
+                                );
+
+                        }
+                    );
+
+                }
 
 
                 container.appendChild(
@@ -13142,6 +14565,238 @@
         }
 
 
+        let mainQuestToastTimeout =
+            null;
+
+
+        function showNewMainQuestToast(
+            quest
+        ) {
+
+            const toast =
+                document.getElementById(
+                    'mainQuestToast'
+                );
+
+
+            if (
+                !toast ||
+                !quest
+            ) {
+                return;
+            }
+
+
+            if (mainQuestToastTimeout) {
+
+                clearTimeout(
+                    mainQuestToastTimeout
+                );
+
+            }
+
+
+            const nameElement =
+                document.getElementById(
+                    'mainQuestToastName'
+                );
+
+
+            const chapterElement =
+                document.getElementById(
+                    'mainQuestToastChapter'
+                );
+
+
+            if (nameElement) {
+
+                nameElement.textContent =
+                    quest.name ||
+                    'New Main Quest';
+
+            }
+
+
+            if (chapterElement) {
+
+                chapterElement.textContent =
+                    quest.chapter
+                        ? `Chapter: ${quest.chapter}`
+                        : '';
+
+            }
+
+
+            toast.classList.remove(
+                'hidden'
+            );
+
+
+            requestAnimationFrame(
+                () =>
+                    toast.classList.add(
+                        'visible'
+                    )
+            );
+
+
+            mainQuestToastTimeout =
+                setTimeout(
+                    () => {
+
+                        toast.classList.remove(
+                            'visible'
+                        );
+
+
+                        setTimeout(
+                            () =>
+                                toast.classList.add(
+                                    'hidden'
+                                ),
+                            200
+                        );
+
+                    },
+                    3500
+                );
+
+        }
+
+
+        async function loadMainQuestTracker() {
+
+            if (
+                !currentCharacter?.id
+            ) {
+                return;
+            }
+
+
+            const tracker =
+                document.getElementById(
+                    'mainQuestTracker'
+                );
+
+
+            if (!tracker) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'character_quests'
+                    )
+                    .select(`
+                        quest_id,
+                        current_objective_count,
+                        quests (
+                            id,
+                            name,
+                            objective_count,
+                            is_main_quest,
+                            chapter,
+                            main_quest_order
+                        )
+                    `)
+                    .eq(
+                        'character_id',
+                        currentCharacter.id
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    'Could not load main quest tracker:',
+                    error
+                );
+
+                return;
+            }
+
+
+            const mainQuestRows =
+                (data || [])
+                    .filter(
+                        row =>
+                            row.quests
+                                ?.is_main_quest ===
+                            true
+                    )
+                    .sort(
+                        (a, b) =>
+                            Number(
+                                a.quests
+                                    ?.main_quest_order ??
+                                0
+                            ) -
+                            Number(
+                                b.quests
+                                    ?.main_quest_order ??
+                                0
+                            )
+                    );
+
+
+            const activeMainQuest =
+                mainQuestRows[0] ||
+                null;
+
+
+            if (!activeMainQuest) {
+
+                tracker.classList.add(
+                    'hidden'
+                );
+
+                return;
+            }
+
+
+            const quest =
+                activeMainQuest.quests;
+
+
+            document.getElementById(
+                'mainQuestTrackerName'
+            ).textContent =
+                quest.name ||
+                'Main Quest';
+
+
+            document.getElementById(
+                'mainQuestTrackerChapter'
+            ).textContent =
+                quest.chapter ||
+                '';
+
+
+            document.getElementById(
+                'mainQuestTrackerProgress'
+            ).textContent =
+                `${Number(
+                    activeMainQuest
+                        .current_objective_count ??
+                    0
+                )} / ${Number(
+                    quest.objective_count ??
+                    0
+                )}`;
+
+
+            tracker.classList.remove(
+                'hidden'
+            );
+
+        }
+
+
         /* =========================================================
            LOAD ACTIVE QUEST IDS
            ========================================================= */
@@ -13168,7 +14823,12 @@
                         experience_reward,
                         level_requirement,
                         turn_in_npc,
-                        is_repeatable
+                        is_repeatable,
+                        choose_reward,
+                        is_main_quest,
+                        next_quest_id,
+                        chapter,
+                        main_quest_order
                     )
                 `)
                 .eq(
@@ -13228,6 +14888,9 @@
                         ]
                     )
                 );
+
+
+            await loadMainQuestTracker();
 
         }
 
@@ -13537,7 +15200,12 @@
 
 
             card.className =
-                'npc-quest-card';
+                `npc-quest-card${
+                    quest.is_main_quest ===
+                    true
+                        ? ' main-quest'
+                        : ''
+                }`;
 
 
             card.dataset.questId =
@@ -13602,6 +15270,17 @@
 
                     <h3>
                         ${escapeHtml(quest.name)}
+
+                        ${
+                            quest.is_main_quest ===
+                            true
+                                ? `
+                                    <span class="main-quest-badge">
+                                        Main Quest
+                                    </span>
+                                  `
+                                : ''
+                        }
                     </h3>
 
                     <span class="npc-quest-progress
@@ -13698,34 +15377,45 @@
                 alreadyActive
             ) {
 
-                const abandonButton =
-                    document.createElement(
-                        'button'
+                /*
+                 * Main quests cannot be abandoned.
+                 * For them, leave the action area empty.
+                 */
+                if (
+                    quest.is_main_quest !==
+                    true
+                ) {
+
+                    const abandonButton =
+                        document.createElement(
+                            'button'
+                        );
+
+
+                    abandonButton.className =
+                        'abandon-quest-btn';
+
+
+                    abandonButton.textContent =
+                        'Abandon Quest';
+
+
+                    abandonButton.addEventListener(
+                        'click',
+                        () =>
+                            abandonNpcQuest(
+                                quest,
+                                card,
+                                npcId
+                            )
                     );
 
 
-                abandonButton.className =
-                    'abandon-quest-btn';
+                    statusElement.appendChild(
+                        abandonButton
+                    );
 
-
-                abandonButton.textContent =
-                    'Abandon Quest';
-
-
-                abandonButton.addEventListener(
-                    'click',
-                    () =>
-                        abandonNpcQuest(
-                            quest,
-                            card,
-                            npcId
-                        )
-                );
-
-
-                statusElement.appendChild(
-                    abandonButton
-                );
+                }
 
             } else if (
                 !levelMet
@@ -13777,7 +15467,13 @@
                 card.querySelector(
                     '[data-quest-reward-items]'
                 ),
-                quest.id
+                quest.id,
+                quest.choose_reward === true,
+                Boolean(
+                    alreadyActive &&
+                    objectiveComplete &&
+                    correctTurnInNpc
+                )
             );
 
 
@@ -13866,8 +15562,15 @@
                 }
 
 
-                statusElement.textContent =
-                    errorMessage;
+                if (turnInButton) {
+                    turnInButton.disabled = false;
+                }
+
+
+                showWorldToast(
+                    errorMessage,
+                    'error'
+                );
 
                 return;
             }
@@ -14096,7 +15799,13 @@
                         gold_reward,
                         experience_reward,
                         objective_count,
-                        turn_in_npc
+                        turn_in_npc,
+                        choose_reward,
+                        is_repeatable,
+                        is_main_quest,
+                        next_quest_id,
+                        chapter,
+                        main_quest_order
                     )
                 `)
                 .eq('character_id', currentCharacter.id);
@@ -14211,7 +15920,12 @@
 
 
             card.className =
-                'npc-quest-card';
+                `npc-quest-card${
+                    quest.is_main_quest ===
+                    true
+                        ? ' main-quest'
+                        : ''
+                }`;
 
 
             card.innerHTML = `
@@ -14220,6 +15934,17 @@
 
                     <h3>
                         ${escapeHtml(quest.name)}
+
+                        ${
+                            quest.is_main_quest ===
+                            true
+                                ? `
+                                    <span class="main-quest-badge">
+                                        Main Quest
+                                    </span>
+                                  `
+                                : ''
+                        }
                     </h3>
 
                 </div>
@@ -14293,7 +16018,9 @@
                 card.querySelector(
                     '[data-quest-reward-items]'
                 ),
-                quest.id
+                quest.id,
+                quest.choose_reward === true,
+                true
             );
 
         }
@@ -14594,6 +16321,39 @@
             }
 
 
+            const chooseReward =
+                characterQuest?.quests
+                    ?.choose_reward ===
+                true;
+
+
+            const selectedRewardItemId =
+                card.dataset
+                    .selectedRewardItemId ||
+                null;
+
+
+            if (
+                chooseReward &&
+                !selectedRewardItemId
+            ) {
+
+                if (turnInButton) {
+                    turnInButton.disabled = false;
+                }
+
+
+                showWorldToast(
+                    'Choose one quest reward before turning in.',
+                    'error'
+                );
+
+
+                return;
+
+            }
+
+
             const {
                 data,
                 error
@@ -14605,7 +16365,12 @@
                             characterQuest.quest_id,
 
                         character_id:
-                            characterQuest.character_id
+                            characterQuest.character_id,
+
+                        selected_reward_item_id:
+                            chooseReward
+                                ? selectedRewardItemId
+                                : null
                     }
                 }
             );
@@ -14650,9 +16415,16 @@
 
             if (!data?.success) {
 
-                statusElement.textContent =
+                if (turnInButton) {
+                    turnInButton.disabled = false;
+                }
+
+
+                showWorldToast(
                     data?.error ||
-                    'Could not turn in quest.';
+                    'Could not turn in quest.',
+                    'error'
+                );
 
                 return;
             }
@@ -14775,6 +16547,70 @@
                     characterQuest.quest_id
                 )
             );
+
+
+            /*
+             * Keep quest-gated world content in sync immediately.
+             * The quest has just been recorded in
+             * character_completed_quests by the Edge Function.
+             */
+            completedQuestIds.add(
+                Number(
+                    characterQuest.quest_id
+                )
+            );
+
+
+            await refreshQuestRequirementState();
+
+
+            if (
+                data?.next_main_quest
+            ) {
+
+                const nextMainQuest =
+                    data.next_main_quest;
+
+
+                activeQuestIds.add(
+                    Number(
+                        nextMainQuest.id
+                    )
+                );
+
+
+                activeQuestProgressById.set(
+                    Number(
+                        nextMainQuest.id
+                    ),
+                    {
+                        quest_id:
+                            nextMainQuest.id,
+
+                        character_id:
+                            currentCharacter.id,
+
+                        current_objective_count:
+                            Number(
+                                nextMainQuest
+                                    .current_objective_count ??
+                                0
+                            ),
+
+                        quests:
+                            nextMainQuest
+                    }
+                );
+
+
+                showNewMainQuestToast(
+                    nextMainQuest
+                );
+
+            }
+
+
+            await loadMainQuestTracker();
 
 
             console.log(

@@ -6,6 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Character - Dark Fantasy RPG</title>
     <link rel="stylesheet" href="game-style.css">
+
+    <style>
+        /* Keep a larger class roster contained inside the creation card. */
+        .classes-container {
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            padding-right: 6px;
+
+            scrollbar-width: thin;
+            scrollbar-color:
+                rgba(212, 175, 55, 0.65)
+                rgba(10, 14, 39, 0.45);
+        }
+
+        .classes-container::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .classes-container::-webkit-scrollbar-track {
+            background: rgba(10, 14, 39, 0.45);
+            border-radius: 10px;
+        }
+
+        .classes-container::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.65);
+            border-radius: 10px;
+        }
+
+        .classes-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.85);
+        }
+    </style>
+
 </head>
 
 <body>
@@ -215,73 +250,97 @@
             selectedClassDescription.textContent = classItem.description;
         }
         async function createCharacter(name, classId) {
+
             const {
                 data: { user },
                 error: userError
             } = await supabaseClient.auth.getUser();
+
 
             if (userError || !user) {
                 window.location.href = 'login.html';
                 return null;
             }
 
-            // Fetch the selected class to get base stats
-            const { data: classData, error: classError } = await supabaseClient
-                .from('classes')
-                .select('base_health, base_mana, base_strength, base_intelligence, base_dexterity, base_defense, base_critical_chance')
-                .eq('id', classId)
-                .single();
 
-            if (classError) {
-                throw classError;
-            }
+            const {
+                data,
+                error
+            } = await supabaseClient.functions.invoke(
+                'create_character',
+                {
+                    body: {
+                        name,
+                        class_id: Number(classId)
+                    }
+                }
+            );
 
-            const maxHealth = classData?.base_health || 100;
-            const maxMana = classData?.base_mana || 100;
-            const baseStrength = classData?.base_strength || 10;
-            const baseIntelligence = classData?.base_intelligence || 10;
-            const baseDexterity = classData?.base_dexterity || 10;
-            const baseDefense = classData?.base_defense || 10;
-            const baseCriticalChance = classData?.base_critical_chance || 0.1;
-
-            const { data, error } = await supabaseClient
-                .from('characters')
-                .insert({
-                    user_id: user.id,
-                    name: name,
-                    class_id: classId,
-                    level: 1,
-                    experience: 0,
-                    gold: 100,
-                    current_health: maxHealth,
-                    max_health: maxHealth,
-                    current_mana: maxMana,
-                    max_mana: maxMana,
-                    strength: baseStrength,
-                    intelligence: baseIntelligence,
-                    dexterity: baseDexterity,
-                    defense: baseDefense,
-                    critical_chance: baseCriticalChance
-                });
 
             if (error) {
-                console.error('Create character error details:', error);
-                throw error;
+
+                let errorMessage =
+                    'Could not create your character. Please try again.';
+
+
+                if (error.context) {
+
+                    try {
+
+                        const response =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        console.error(
+                            'create_character response:',
+                            response
+                        );
+
+
+                        if (response?.error) {
+                            errorMessage =
+                                response.error;
+                        }
+
+                    } catch (parseError) {
+
+                        console.error(
+                            'Could not parse create_character error:',
+                            parseError
+                        );
+
+                    }
+
+                }
+
+
+                const wrappedError =
+                    new Error(errorMessage);
+
+
+                wrappedError.originalError =
+                    error;
+
+
+                throw wrappedError;
             }
 
-            // Now fetch the created character
-            const { data: createdCharacter, error: fetchError } = await supabaseClient
-                .from('characters')
-                .select('*')
-                .eq('user_id', user.id)
-                .maybeSingle();
 
-            if (fetchError) {
-                console.error('Fetch error:', fetchError);
-                throw fetchError;
+            if (!data?.success) {
+
+                throw new Error(
+                    data?.error ||
+                    'Could not create your character. Please try again.'
+                );
+
             }
 
-            return createdCharacter;
+
+            return data.character ||
+                null;
+
         }
 
         async function checkExistingCharacter() {
@@ -343,7 +402,13 @@
                 }, 1000);
             } catch (error) {
                 console.error('Create character error:', error);
-                showMessage(creationMessage, 'Could not create your character. Please try again.', true);
+
+                showMessage(
+                    creationMessage,
+                    error?.message ||
+                    'Could not create your character. Please try again.',
+                    true
+                );
             }
         });
 
