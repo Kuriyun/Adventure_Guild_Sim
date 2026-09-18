@@ -298,6 +298,78 @@
         }
 
 </style>
+
+    <style>
+        /* =========================================================
+           TWO-HANDED WEAPON OFFHAND DISPLAY
+           ========================================================= */
+
+        .equipment-slot.two-handed-blocked {
+            position: relative;
+
+            cursor: default !important;
+
+            border-color:
+                #59606c !important;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(42, 46, 56, 0.92),
+                    rgba(20, 23, 31, 0.96)
+                ) !important;
+
+            box-shadow:
+                inset 0 0 18px
+                    rgba(0, 0, 0, 0.55) !important;
+        }
+
+
+        .equipment-slot.two-handed-blocked::after {
+            content: 'Two-Handed';
+
+            position: absolute;
+            left: 50%;
+            bottom: 4px;
+
+            transform:
+                translateX(-50%);
+
+            padding:
+                2px 5px;
+
+            border-radius: 4px;
+
+            color:
+                rgba(225, 228, 235, 0.72);
+
+            background:
+                rgba(15, 18, 25, 0.78);
+
+            font-size: 8px;
+            line-height: 1;
+            letter-spacing: 0.04em;
+
+            pointer-events: none;
+        }
+
+
+        .equipment-slot.two-handed-blocked
+        .item-slot-image {
+            opacity: 0.42;
+
+            filter:
+                grayscale(0.45)
+                brightness(0.62);
+        }
+
+
+        .equipment-slot.two-handed-blocked
+        .item-image {
+            pointer-events: none;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -845,8 +917,8 @@
 
         <div class="right-panel">
 
-            <!-- Back to Hub -->
-            <a href="hub.html"
+            <!-- Back to World -->
+            <a href="world.html"
                style="text-decoration: none; margin-bottom: 10px;">
 
                 <button style="
@@ -862,7 +934,7 @@
                     font-family: 'Georgia', serif;
                     transition: all 0.3s ease;
                 ">
-                    ← Back to Hub
+                    ← Back to World
                 </button>
 
             </a>
@@ -957,21 +1029,40 @@
             <div class="tabs">
 
                 <button class="tab-btn active"
-                        data-tab="skills">
-                    Skills
+                        data-tab="quests">
+                    Quests
                 </button>
 
                 <button class="tab-btn"
-                        data-tab="quests">
-                    Quests
+                        data-tab="skills">
+                    Skills
                 </button>
 
             </div>
 
             <div class="tab-content">
 
+                <!-- Quests -->
+                <div id="quests"
+                     class="tab-pane active">
+
+                    <h2>Active Quests</h2>
+
+                    <div id="characterQuestList"
+                         class="character-quest-list">
+
+                        <div class="empty-quest-message"
+                             style="margin-top: 12px;">
+                            No Active Quests
+                        </div>
+
+                    </div>
+
+                </div>
+
+
                 <!-- Skills -->
-                <div id="skills" class="tab-pane active">
+                <div id="skills" class="tab-pane">
 
                     <div class="character-skills-header">
                         <h2>Skills</h2>
@@ -987,25 +1078,6 @@
                         <div class="empty-skill-message">
                             No Skills Equipped
                         </div>
-                    </div>
-
-                </div>
-
-
-                <!-- Quests -->
-                <div id="quests"
-                     class="tab-pane">
-
-                    <h2>Active Quests</h2>
-
-                    <div id="characterQuestList"
-                         class="character-quest-list">
-
-                        <div class="empty-quest-message"
-                             style="margin-top: 12px;">
-                            No Active Quests
-                        </div>
-
                     </div>
 
                 </div>
@@ -2909,6 +2981,174 @@
         }
 
 
+        function restoreEmptyEquipmentSlot(
+            slotElement,
+            equipmentSlotName
+        ) {
+
+            const emptyImage =
+                EMPTY_EQUIPMENT_IMAGES[
+                    equipmentSlotName
+                ] || '';
+
+
+            slotElement.innerHTML = `
+                <div class="item-slot-image">
+                    <img
+                        src="${emptyImage}"
+                        alt=""
+                        class="item-image"
+                    >
+                </div>
+                <div class="equipment-slot-name"></div>
+            `;
+
+
+            delete slotElement.dataset.item;
+
+
+            slotElement.removeAttribute(
+                'draggable'
+            );
+
+
+            slotElement.style.borderColor =
+                '';
+
+
+            slotElement.classList.remove(
+                'two-handed-blocked'
+            );
+
+        }
+
+
+        function syncTwoHandedOffhandDisplay() {
+
+            const mainHandSlot =
+                document.querySelector(
+                    '.equipment-grid .equipment-slot[data-equipment-type="main_weapon"]'
+                );
+
+
+            const offhandSlot =
+                document.querySelector(
+                    '.equipment-grid .equipment-slot[data-equipment-type="offhand"]'
+                );
+
+
+            if (
+                !mainHandSlot ||
+                !offhandSlot
+            ) {
+                return;
+            }
+
+
+            let mainHandData =
+                null;
+
+
+            if (
+                mainHandSlot.dataset.item
+            ) {
+
+                try {
+
+                    mainHandData =
+                        JSON.parse(
+                            mainHandSlot.dataset.item
+                        );
+
+                } catch {
+
+                    mainHandData =
+                        null;
+
+                }
+
+            }
+
+
+            const isTwoHanded =
+                mainHandData?.item?.item_type ===
+                    'weapons' &&
+                mainHandData?.details?.twohanded ===
+                    true;
+
+
+            if (
+                isTwoHanded
+            ) {
+
+                const item =
+                    mainHandData.item;
+
+
+                /*
+                 * This is intentionally only a VISUAL mirror.
+                 *
+                 * We do not set data-item and we do not make the
+                 * offhand draggable. In the database the weapon is
+                 * equipped only once, in main_weapon.
+                 */
+                offhandSlot.innerHTML = `
+                    <div class="item-slot-image">
+                        <img
+                            src="${item.icon_path}"
+                            alt="${item.name}"
+                            class="item-image"
+                        >
+                    </div>
+                    <div class="equipment-slot-name"></div>
+                `;
+
+
+                delete offhandSlot.dataset.item;
+
+
+                offhandSlot.removeAttribute(
+                    'draggable'
+                );
+
+
+                offhandSlot.style.borderColor =
+                    '#59606c';
+
+
+                offhandSlot.classList.add(
+                    'two-handed-blocked'
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * If the main hand is no longer two-handed, remove the
+             * visual lock only when there is no real offhand item.
+             */
+            offhandSlot.classList.remove(
+                'two-handed-blocked'
+            );
+
+
+            if (
+                !offhandSlot.dataset.item
+            ) {
+
+                restoreEmptyEquipmentSlot(
+                    offhandSlot,
+                    'offhand'
+                );
+
+            }
+
+        }
+
+
         async function loadEquipment(characterId) {
 
             const {
@@ -2963,31 +3203,10 @@
                     getEquipmentSlotName(slot);
 
 
-                const emptyImage =
-                    EMPTY_EQUIPMENT_IMAGES[
-                        equipmentSlot
-                    ] || '';
-
-
-                slot.innerHTML = `
-                    <div class="item-slot-image">
-                        <img
-                            src="${emptyImage}"
-                            alt=""
-                            class="item-image"
-                        >
-                    </div>
-                    <div class="equipment-slot-name"></div>
-                `;
-
-
-                delete slot.dataset.item;
-
-                slot.removeAttribute(
-                    'draggable'
+                restoreEmptyEquipmentSlot(
+                    slot,
+                    equipmentSlot
                 );
-
-                slot.style.borderColor = '';
 
             });
 
@@ -3146,6 +3365,9 @@
                 );
 
             });
+
+
+            syncTwoHandedOffhandDisplay();
 
 
             initializeEquipmentDragAndDrop();
@@ -3438,6 +3660,19 @@
                     hideItemTooltip();
 
 
+                    if (
+                        slot.classList.contains(
+                            'two-handed-blocked'
+                        )
+                    ) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+
                     if (!slot.dataset.item) {
 
                         event.preventDefault();
@@ -3513,6 +3748,20 @@
 
                 slot.ondragover = function (event) {
 
+                    if (
+                        slot.classList.contains(
+                            'two-handed-blocked'
+                        )
+                    ) {
+
+                        event.dataTransfer.dropEffect =
+                            'none';
+
+                        return;
+
+                    }
+
+
                     /*
                      * Equipment-to-equipment dragging is not
                      * implemented here. This handler accepts
@@ -3576,6 +3825,19 @@
                     event.preventDefault();
 
                     hideItemTooltip();
+
+
+                    if (
+                        slot.classList.contains(
+                            'two-handed-blocked'
+                        )
+                    ) {
+
+                        clearEquipmentDragHighlights();
+
+                        return;
+
+                    }
 
 
                     if (!draggedSlot) {
@@ -3695,6 +3957,9 @@
                             slot,
                             targetState
                         );
+
+
+                        syncTwoHandedOffhandDisplay();
 
 
                         return;
@@ -4042,6 +4307,9 @@
             sourceSlot.style.borderColor =
                 '';
 
+
+            syncTwoHandedOffhandDisplay();
+
         }
 
 
@@ -4140,6 +4408,9 @@
                 null
             );
 
+
+            syncTwoHandedOffhandDisplay();
+
         }
 
 
@@ -4208,6 +4479,9 @@
 
             equipmentSlot.style.borderColor =
                 '';
+
+
+            syncTwoHandedOffhandDisplay();
 
         }
 
@@ -5688,6 +5962,9 @@
                                 slot,
                                 targetState
                             );
+
+
+                            syncTwoHandedOffhandDisplay();
 
 
                             return;

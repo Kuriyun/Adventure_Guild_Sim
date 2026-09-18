@@ -4,402 +4,2646 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Legends of the Fallen - Hub</title>
+
     <link rel="stylesheet" href="game-style.css">
+
     <style>
-        .hub-container {
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            min-height: 100vh;
+        }
+
+
+        .hub-page {
+            width: min(1400px, calc(100% - 48px));
+            min-height: 100vh;
+
+            margin: 0 auto;
+            padding: 26px 0 32px;
+
             display: flex;
             flex-direction: column;
+        }
+
+
+        /* =========================================================
+           TOP BAR
+           ========================================================= */
+
+        .hub-topbar {
+            min-height: 86px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+
+            margin-bottom: 22px;
+            padding: 13px 18px;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.25);
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(17, 22, 47, 0.97),
+                    rgba(10, 14, 39, 0.97)
+                );
+
+            box-shadow:
+                0 10px 32px
+                rgba(0, 0, 0, 0.30);
+        }
+
+
+        .hub-character-header {
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+        }
+
+
+        .hub-class-icon-link {
+            flex: 0 0 58px;
+
+            display: block;
+
+            text-decoration: none;
+
+            border-radius: 50%;
+        }
+
+
+        .hub-class-icon-frame {
+            width: 58px;
+            height: 58px;
+
+            display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
 
-        .hub-header {
-            text-align: center;
-            margin-bottom: 60px;
-            animation: fadeInDown 0.8s ease;
-        }
-
-        .hub-header h1 {
-            font-size: 56px;
-            color: #d4af37;
-            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.6);
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .hub-header p {
-            font-size: 18px;
-            color: #b0b0b0;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-        }
-
-        .hub-subtitle {
-            font-size: 14px;
-            color: #8b8b8b;
-            margin-top: 8px;
-        }
-
-        .locations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            width: 100%;
-            margin-bottom: 40px;
-        }
-
-        .location-card {
-            background: linear-gradient(135deg, #1a1f3a 0%, #242b3d 100%);
-            border: 2px solid #3d4452;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            position: relative;
             overflow: hidden;
-            animation: fadeInUp 0.8s ease backwards;
-        }
 
-        .location-card:nth-child(1) { animation-delay: 0.1s; }
-        .location-card:nth-child(2) { animation-delay: 0.2s; }
-        .location-card:nth-child(3) { animation-delay: 0.3s; }
-        .location-card:nth-child(4) { animation-delay: 0.4s; }
-        .location-card:nth-child(5) { animation-delay: 0.5s; }
-        .location-card:nth-child(6) { animation-delay: 0.6s; }
-
-        .location-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-            transition: left 0.6s ease;
-        }
-
-        .location-card:hover::before {
-            left: 100%;
-        }
-
-        .location-card:hover {
-            border-color: #d4af37;
-            transform: translateY(-10px);
-            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
-        }
-
-        .location-icon {
-            font-size: 64px;
-            margin-bottom: 15px;
-            display: inline-block;
-            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
-        }
-
-        .location-name {
-            font-size: 22px;
-            color: #d4af37;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-        }
-
-        .location-desc {
-            font-size: 13px;
-            color: #b0b0b0;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .location-status {
-            display: inline-block;
-            padding: 6px 12px;
-            background: #2d3142;
-            border: 1px solid #3d4452;
-            border-radius: 6px;
-            font-size: 11px;
-            color: #8b8b8b;
-            margin-bottom: 15px;
-        }
-
-        .location-status.available {
-            background: #1a3a1a;
-            border-color: #00aa00;
-            color: #00dd00;
-        }
-
-        .enter-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #d4af37 0%, #f0d968 100%);
-            border: none;
-            color: #000;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            font-family: 'Georgia', serif;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .enter-btn:hover {
-            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.6);
-            transform: scale(1.05);
-        }
-
-        .enter-btn:active {
-            transform: scale(0.98);
-        }
-
-        .footer-info {
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-            margin-top: 40px;
-            animation: fadeIn 1.2s ease;
-        }
-
-        .character-preview {
-            background: linear-gradient(135deg, #1a1f3a 0%, #242b3d 100%);
-            border: 2px solid #3d4452;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-            animation: fadeIn 0.8s ease;
-        }
-
-        .preview-avatar {
-            font-size: 48px;
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, #2d3142 0%, #0f1219 100%);
             border: 2px solid #d4af37;
             border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #2d3142 0%,
+                    #0f1219 100%
+                );
+
+            box-shadow:
+                inset 0 0 13px
+                    rgba(0, 0, 0, 0.7),
+                0 0 12px
+                    rgba(212, 175, 55, 0.18);
+
+            transition:
+                transform 0.18s ease,
+                box-shadow 0.18s ease;
         }
 
-        .preview-avatar .avatar-image {
+
+        .hub-class-icon-link:hover
+        .hub-class-icon-frame {
+            transform: translateY(-1px);
+
+            box-shadow:
+                inset 0 0 13px
+                    rgba(0, 0, 0, 0.7),
+                0 0 17px
+                    rgba(212, 175, 55, 0.35);
+        }
+
+
+        .hub-class-icon {
             width: 100%;
             height: 100%;
+
+            display: block;
+
             object-fit: cover;
-            border-radius: 50%;
         }
 
-        .preview-info h3 {
-            color: #d4af37;
-            margin-bottom: 5px;
+
+        .hub-character-header-info {
+            width: min(430px, 42vw);
+            min-width: 230px;
         }
 
-        .preview-info p {
+
+        .hub-character-header-name-row {
+            display: flex;
+            align-items: baseline;
+
+            gap: 9px;
+
+            margin-bottom: 7px;
+
+            white-space: nowrap;
+        }
+
+
+        .hub-character-name {
+            overflow: hidden;
+
+            color: #f0e7c2;
+
+            font-size: 21px;
+            font-weight: 700;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .hub-character-class {
+            color: #b9b4a2;
+
             font-size: 12px;
-            color: #b0b0b0;
         }
 
-        /* Animations */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .hub-character-level {
+            color: #d4af37;
+
+            font-size: 12px;
+            font-weight: 700;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .hub-character-exp-row {
+            display: grid;
+
+            grid-template-columns:
+                minmax(120px, 1fr)
+                auto;
+
+            align-items: center;
+
+            gap: 9px;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+
+        .hub-character-exp-bar {
+            height: 12px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.5);
+
+            border-radius: 5px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0f1219 0%,
+                    #1a1f3a 100%
+                );
+
+            box-shadow:
+                inset 0 0 6px
+                    rgba(0, 0, 0, 0.55);
         }
 
-        @media (max-width: 768px) {
-            .hub-header h1 {
-                font-size: 36px;
+
+        .hub-character-exp-fill {
+            width: 0%;
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #9c7b19,
+                    #d4af37,
+                    #f0d968
+                );
+
+            box-shadow:
+                0 0 7px
+                rgba(212, 175, 55, 0.55);
+
+            transition:
+                width 0.28s ease;
+        }
+
+
+        .hub-character-exp-text {
+            color: #aeb3c0;
+
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+
+        .hub-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        .hub-world-button,
+        .hub-join-button {
+            min-height: 42px;
+
+            padding: 0 18px;
+
+            border-radius: 8px;
+
+            font-family: 'Georgia', serif;
+            font-size: 13px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.17s ease,
+                box-shadow 0.17s ease,
+                border-color 0.17s ease;
+        }
+
+
+        .hub-world-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            text-decoration: none;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.75);
+
+            color: #d4af37;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #303747,
+                    #202637
+                );
+        }
+
+
+        .hub-world-button:hover {
+            transform: translateY(-1px);
+
+            border-color: #d4af37;
+
+            box-shadow:
+                0 5px 16px
+                rgba(212, 175, 55, 0.18);
+        }
+
+
+        .hub-join-button {
+            min-width: 104px;
+
+            border: none;
+
+            color: #111;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #d4af37,
+                    #f0d968
+                );
+
+            box-shadow:
+                0 4px 14px
+                rgba(212, 175, 55, 0.22);
+        }
+
+
+        .hub-join-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 6px 20px
+                rgba(212, 175, 55, 0.34);
+        }
+
+
+        .hub-join-button.joined {
+            color: #aeb3c0;
+
+            border:
+                1px solid
+                #475064;
+
+            background:
+                #272d3c;
+
+            box-shadow: none;
+        }
+
+
+        /* =========================================================
+           HUB CONTENT
+           ========================================================= */
+
+        .hub-heading {
+            margin-bottom: 18px;
+        }
+
+
+        .hub-heading-label {
+            margin-bottom: 5px;
+
+            color: #d4af37;
+
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+
+        .hub-heading h1 {
+            margin: 0 0 6px;
+
+            color: #f0d968;
+
+            font-size: 31px;
+        }
+
+
+        .hub-heading p {
+            max-width: 720px;
+
+            margin: 0;
+
+            color: #959caa;
+
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+
+        .hub-layout {
+            flex: 1;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                290px;
+
+            gap: 18px;
+
+            min-height: 560px;
+        }
+
+
+        .hub-panel {
+            min-width: 0;
+
+            border:
+                1px solid
+                #343b4d;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(26, 31, 58, 0.96),
+                    rgba(14, 18, 39, 0.97)
+                );
+
+            box-shadow:
+                0 10px 30px
+                rgba(0, 0, 0, 0.28);
+        }
+
+
+        .hub-panel-header {
+            min-height: 58px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+
+            padding: 0 17px;
+
+            border-bottom:
+                1px solid
+                rgba(212, 175, 55, 0.16);
+        }
+
+
+        .hub-panel-title {
+            color: #e4dfcf;
+
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+
+        .hub-panel-subtitle {
+            color: #747d90;
+
+            font-size: 10px;
+        }
+
+
+        /* =========================================================
+           CHAT
+           ========================================================= */
+
+        .hub-chat-panel {
+            display: flex;
+            flex-direction: column;
+
+            min-height: 560px;
+        }
+
+
+        .hub-chat-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            color: #8d95a6;
+
+            font-size: 10px;
+        }
+
+
+        .hub-status-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #697184;
+        }
+
+
+        .hub-status-dot.online {
+            background: #58c477;
+
+            box-shadow:
+                0 0 8px
+                rgba(88, 196, 119, 0.55);
+        }
+
+
+        .hub-chat-messages {
+            position: relative;
+
+            flex: 1;
+
+            min-height: 0;
+
+            overflow-y: auto;
+
+            padding: 16px 17px;
+
+            scrollbar-width: thin;
+            scrollbar-color:
+                rgba(212, 175, 55, 0.45)
+                rgba(10, 14, 39, 0.4);
+        }
+
+
+        .hub-empty-chat {
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+
+            text-align: center;
+
+            color: #747d90;
+
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+
+        .hub-chat-locked {
+            overflow: hidden;
+        }
+
+
+        .hub-chat-locked::before {
+            content: '';
+
+            position: absolute;
+            inset: 0;
+
+            z-index: 2;
+
+            background:
+                rgba(8, 11, 26, 0.72);
+
+            backdrop-filter: grayscale(1) brightness(0.72);
+        }
+
+
+        .hub-chat-locked-overlay {
+            position: absolute;
+            inset: 0;
+
+            z-index: 3;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 24px;
+        }
+
+
+        .hub-chat-locked-card {
+            width: min(330px, 100%);
+
+            padding: 24px;
+
+            text-align: center;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.26);
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(20, 25, 48, 0.96),
+                    rgba(11, 15, 33, 0.96)
+                );
+
+            box-shadow:
+                0 12px 28px
+                rgba(0, 0, 0, 0.35);
+        }
+
+
+        .hub-chat-locked-title {
+            margin-bottom: 7px;
+
+            color: #ded9c9;
+
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+
+        .hub-chat-locked-text {
+            margin-bottom: 18px;
+
+            color: #8e96a7;
+
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+
+        .hub-chat-join-button {
+            min-width: 130px;
+        }
+
+
+        .hub-message {
+            display: grid;
+
+            grid-template-columns:
+                auto
+                minmax(0, 1fr);
+
+            column-gap: 9px;
+            row-gap: 2px;
+
+            padding: 8px 0;
+        }
+
+
+        .hub-message + .hub-message {
+            border-top:
+                1px solid
+                rgba(255, 255, 255, 0.035);
+        }
+
+
+        .hub-message-time {
+            grid-row: 1 / span 2;
+
+            padding-top: 2px;
+
+            color: #5f687a;
+
+            font-size: 9px;
+        }
+
+
+        .hub-message-name {
+            color: #d4af37;
+
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+
+        .hub-message-text {
+            min-width: 0;
+
+            color: #d0d3dc;
+
+            font-size: 12px;
+            line-height: 1.45;
+
+            overflow-wrap: anywhere;
+        }
+
+
+        .hub-chat-form {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                auto;
+
+            gap: 10px;
+
+            padding: 13px 15px;
+
+            border-top:
+                1px solid
+                rgba(212, 175, 55, 0.16);
+        }
+
+
+        .hub-chat-input {
+            min-width: 0;
+            height: 42px;
+
+            padding: 0 13px;
+
+            border:
+                1px solid
+                #3a4255;
+
+            border-radius: 8px;
+
+            outline: none;
+
+            color: #e0e0e0;
+
+            background:
+                rgba(8, 12, 31, 0.78);
+
+            font-family: 'Georgia', serif;
+            font-size: 12px;
+        }
+
+
+        .hub-chat-input:focus {
+            border-color:
+                rgba(212, 175, 55, 0.75);
+
+            box-shadow:
+                0 0 0 2px
+                rgba(212, 175, 55, 0.08);
+        }
+
+
+        .hub-chat-input:disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+
+        .hub-send-button {
+            min-width: 88px;
+
+            border: none;
+            border-radius: 8px;
+
+            color: #111;
+
+            background: #d4af37;
+
+            font-family: 'Georgia', serif;
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        .hub-send-button:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+
+
+        /* =========================================================
+           MEMBERS
+           ========================================================= */
+
+        .hub-members-panel {
+            display: flex;
+            flex-direction: column;
+
+            min-height: 560px;
+        }
+
+
+        .hub-member-count {
+            min-width: 27px;
+
+            padding: 3px 7px;
+
+            text-align: center;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.28);
+
+            border-radius: 999px;
+
+            color: #d4af37;
+
+            background:
+                rgba(212, 175, 55, 0.06);
+
+            font-size: 10px;
+        }
+
+
+        .hub-members-list {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 10px;
+        }
+
+
+        .hub-member {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 9px 8px;
+
+            border-radius: 8px;
+        }
+
+
+        .hub-member:hover {
+            background:
+                rgba(255, 255, 255, 0.025);
+        }
+
+
+        .hub-member-icon-frame {
+            width: 37px;
+            height: 37px;
+
+            flex: 0 0 37px;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(212, 175, 55, 0.50);
+
+            border-radius: 50%;
+
+            background: #11162a;
+        }
+
+
+        .hub-member-icon {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+        }
+
+
+        .hub-member-info {
+            min-width: 0;
+
+            flex: 1;
+        }
+
+
+        .hub-member-name {
+            overflow: hidden;
+
+            color: #ddd8c8;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+
+        .hub-member-meta {
+            margin-top: 2px;
+
+            color: #7e8799;
+
+            font-size: 9px;
+        }
+
+
+        .hub-member-online {
+            width: 7px;
+            height: 7px;
+
+            flex: 0 0 7px;
+
+            border-radius: 50%;
+
+            background: #58c477;
+
+            box-shadow:
+                0 0 7px
+                rgba(88, 196, 119, 0.48);
+        }
+
+
+        .hub-members-empty {
+            padding: 28px 14px;
+
+            text-align: center;
+
+            color: #727b8e;
+
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+
+        @media (max-width: 900px) {
+
+            .hub-page {
+                width:
+                    min(
+                        680px,
+                        calc(100% - 28px)
+                    );
             }
 
-            .locations-grid {
+
+            .hub-topbar {
+                align-items: flex-start;
+            }
+
+
+            .hub-layout {
                 grid-template-columns: 1fr;
-                gap: 20px;
             }
+
+
+            .hub-members-panel {
+                min-height: 260px;
+            }
+
+
+            .hub-character-header-info {
+                width: min(360px, 50vw);
+                min-width: 180px;
+            }
+
         }
+
+
+        @media (max-width: 620px) {
+
+            .hub-topbar {
+                flex-direction: column;
+            }
+
+
+            .hub-topbar-actions {
+                width: 100%;
+            }
+
+
+            .hub-world-button,
+            .hub-join-button {
+                flex: 1;
+            }
+
+
+            .hub-character-header-info {
+                width: calc(100vw - 130px);
+                min-width: 0;
+            }
+
+
+            .hub-character-header-name-row {
+                flex-wrap: wrap;
+            }
+
+
+            .hub-chat-form {
+                grid-template-columns: 1fr;
+            }
+
+
+            .hub-send-button {
+                min-height: 40px;
+            }
+
+        }
+
     </style>
 </head>
 
+
 <body>
 
-    <div class="hub-container">
+    <div class="hub-page">
 
-        <div class="hub-header">
-            <h1>Legends of the Fallen</h1>
-            <p></p>
-            <p class="hub-subtitle">The old legends are dead, but their shadows still haunt the world...</p>
-        </div>
+        <!-- =====================================================
+             CHARACTER / NAVIGATION HEADER
+             ===================================================== -->
 
-        <!-- Character Preview -->
-        <div class="character-preview hidden">
-            <div class="preview-avatar">
-                <img id="previewClassIcon" src="" alt="Class Icon" class="avatar-image">
-            </div>
-            <div class="preview-info">
-                <h3 id="previewCharacterName"></h3>
-                <p id="previewCharacterLevel"></p>
-                <p id="previewGold" style="margin-top: 5px; color: #d4af37;"></p>
-            </div>
-        </div>
+        <header class="hub-topbar">
 
-        <!-- Locations Grid -->
-        <div class="locations-grid">
+            <div class="hub-character-header">
 
-            <!-- Character Page -->
-            <div class="location-card">
-                <div class="location-icon">👤</div>
-                <div class="location-name">Character</div>
-                <div class="location-desc">View your stats, equipment, inventory, and progression.</div>
-                <a href="character.html" style="text-decoration: none;">
-                    <button class="enter-btn">Enter</button>
+                <a
+                    href="character.html"
+                    class="hub-class-icon-link"
+                    title="Open Character"
+                    aria-label="Open Character">
+
+                    <div class="hub-class-icon-frame">
+
+                        <img
+                            id="hubClassIcon"
+                            class="hub-class-icon hidden"
+                            src=""
+                            alt="Class icon">
+
+                    </div>
+
                 </a>
+
+
+                <div class="hub-character-header-info">
+
+                    <div class="hub-character-header-name-row">
+
+                        <span
+                            id="hubCharacterName"
+                            class="hub-character-name">
+                            Character
+                        </span>
+
+                        <span
+                            id="hubCharacterClass"
+                            class="hub-character-class">
+                        </span>
+
+                        <span
+                            id="hubCharacterLevel"
+                            class="hub-character-level">
+                            Level 1
+                        </span>
+
+                    </div>
+
+
+                    <div class="hub-character-exp-row">
+
+                        <div class="hub-character-exp-bar">
+                            <div
+                                id="hubCharacterExpFill"
+                                class="hub-character-exp-fill">
+                            </div>
+                        </div>
+
+                        <span
+                            id="hubCharacterExpText"
+                            class="hub-character-exp-text">
+                            0 / 0 EXP
+                        </span>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <!-- World -->
-            <div class="location-card">
-                <div class="location-icon">🗺️</div>
-                <div class="location-name">World</div>
-                <div class="location-desc">Explore the world and discover the lands.</div>
-                <button class="enter-btn" onclick="navigateTo('world')">Enter</button>
+
+            <div class="hub-topbar-actions">
+
+                <a
+                    href="world.html"
+                    class="hub-world-button">
+                    Enter World →
+                </a>
+
             </div>
 
-            <!-- Dungeon -->
-            <div class="location-card">
-                <div class="location-icon">🏰</div>
-                <div class="location-name">Dungeon</div>
-                <div class="location-desc">Venture into dark dungeons and battle fierce enemies.</div>
-                <div class="location-status">in progress...</div>
-                <button class="enter-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>in progress...</button>
+        </header>
+
+
+        <section class="hub-heading">
+
+            <div class="hub-heading-label">
+                Adventurers' Hall
             </div>
 
-        </div>
+            <h1>Guild Hub</h1>
 
-        <div class="footer-info">
-            <p>🌙 A world of forgotten legends 🌙</p>
-            <p>It's time to forge your own...</p>
-        </div>
+            <p>
+                Meet other adventurers before heading into the world.
+                Join the chat to appear in the member list and take part
+                in the live conversation.
+            </p>
+
+        </section>
+
+
+        <main class="hub-layout">
+
+            <!-- =================================================
+                 CHAT
+                 ================================================= -->
+
+            <section class="hub-panel hub-chat-panel">
+
+                <div class="hub-panel-header">
+
+                    <div>
+                        <div class="hub-panel-title">
+                            Adventurer Chat
+                        </div>
+
+                        <div class="hub-panel-subtitle">
+                            Messages from the current hub
+                        </div>
+                    </div>
+
+
+                    <div class="hub-chat-status">
+
+                        <span
+                            id="hubStatusDot"
+                            class="hub-status-dot">
+                        </span>
+
+                        <span id="hubStatusText">
+                            Chat inactive
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="hubChatMessages"
+                    class="hub-chat-messages hub-chat-locked">
+
+                    <div
+                        id="hubChatLockedOverlay"
+                        class="hub-chat-locked-overlay">
+
+                        <div class="hub-chat-locked-card">
+
+                            <div class="hub-chat-locked-title">
+                                Chat is inactive
+                            </div>
+
+                            <div
+                                id="hubChatLockedText"
+                                class="hub-chat-locked-text">
+                                Join the chat to see members and talk with other adventurers.
+                            </div>
+
+                            <button
+                                id="joinHubButton"
+                                class="hub-join-button hub-chat-join-button"
+                                type="button">
+                                Join Chat
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="hubChatForm"
+                    class="hub-chat-form">
+
+                    <input
+                        id="hubChatInput"
+                        class="hub-chat-input"
+                        type="text"
+                        maxlength="300"
+                        autocomplete="off"
+                        placeholder="Join the hub to chat..."
+                        disabled>
+
+                    <button
+                        id="hubSendButton"
+                        class="hub-send-button"
+                        type="submit"
+                        disabled>
+                        Send
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- =================================================
+                 MEMBERS
+                 ================================================= -->
+
+            <aside class="hub-panel hub-members-panel">
+
+                <div class="hub-panel-header">
+
+                    <div class="hub-panel-title">
+                        Members
+                    </div>
+
+                    <div
+                        id="hubMemberCount"
+                        class="hub-member-count">
+                        0
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="hubMembersList"
+                    class="hub-members-list">
+
+                    <div class="hub-members-empty">
+                        Join the chat to see who is here.
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </main>
 
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
+
     <script>
-        async function loadCharacterPreview() {
+
+        let currentCharacter =
+            null;
+
+
+        let currentClass =
+            null;
+
+
+        let hubChannel =
+            null;
+
+
+        let hubJoined =
+            false;
+
+
+        const HUB_MINIMUM_LEVEL =
+            5;
+
+
+        const joinHubButton =
+            document.getElementById(
+                'joinHubButton'
+            );
+
+
+        const hubStatusDot =
+            document.getElementById(
+                'hubStatusDot'
+            );
+
+
+        const hubStatusText =
+            document.getElementById(
+                'hubStatusText'
+            );
+
+
+        const hubChatMessages =
+            document.getElementById(
+                'hubChatMessages'
+            );
+
+
+        const hubChatForm =
+            document.getElementById(
+                'hubChatForm'
+            );
+
+
+        const hubChatInput =
+            document.getElementById(
+                'hubChatInput'
+            );
+
+
+        const hubSendButton =
+            document.getElementById(
+                'hubSendButton'
+            );
+
+
+        const hubMembersList =
+            document.getElementById(
+                'hubMembersList'
+            );
+
+
+        const hubMemberCount =
+            document.getElementById(
+                'hubMemberCount'
+            );
+
+
+        const hubChatLockedText =
+            document.getElementById(
+                'hubChatLockedText'
+            );
+
+
+        /* =========================================================
+           ESCAPE HTML
+           ========================================================= */
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ??
+                ''
+            )
+                .replaceAll(
+                    '&',
+                    '&amp;'
+                )
+                .replaceAll(
+                    '<',
+                    '&lt;'
+                )
+                .replaceAll(
+                    '>',
+                    '&gt;'
+                )
+                .replaceAll(
+                    '"',
+                    '&quot;'
+                )
+                .replaceAll(
+                    "'",
+                    '&#039;'
+                );
+
+        }
+
+
+        /* =========================================================
+           EXPERIENCE
+           ========================================================= */
+
+        async function getExperienceRequirementForLevel(
+            level
+        ) {
+
             const {
-                data: { user },
-                error: userError
-            } = await supabaseClient.auth.getUser();
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        'level_experience'
+                    )
+                    .select(
+                        'exp_to_reach_level'
+                    )
+                    .eq(
+                        'level',
+                        Number(
+                            level
+                        )
+                    )
+                    .maybeSingle();
 
-            if (userError || !user) {
-                window.location.href = 'login.html';
-                return;
+
+            if (
+                error
+            ) {
+
+                console.error(
+                    'Could not load level experience:',
+                    error
+                );
+
+
+                return 0;
+
             }
+
+
+            return Number(
+                data?.exp_to_reach_level ??
+                0
+            );
+
+        }
+
+
+        /* =========================================================
+           LOAD CHARACTER HEADER
+           ========================================================= */
+
+        async function loadHubCharacter() {
 
             const {
-                data: character,
-                error: characterError
-            } = await supabaseClient
-                .from('characters')
-                .select('*')
-                .eq('user_id', user.id)
-                .maybeSingle();
+                data: {
+                    user
+                },
 
-            if (characterError) {
-                console.error('Error loading character:', characterError);
-                return;
+                error:
+                    userError
+            } =
+                await supabaseClient
+                    .auth
+                    .getUser();
+
+
+            if (
+                userError ||
+                !user
+            ) {
+
+                window.location.href =
+                    'login.html';
+
+                return false;
+
             }
 
-            if (!character) {
-                window.location.href = 'character-creation.html';
-                return;
+
+            const {
+                data:
+                    character,
+
+                error:
+                    characterError
+            } =
+                await supabaseClient
+                    .from(
+                        'characters'
+                    )
+                    .select('*')
+                    .eq(
+                        'user_id',
+                        user.id
+                    )
+                    .maybeSingle();
+
+
+            if (
+                characterError
+            ) {
+
+                console.error(
+                    'Could not load character:',
+                    characterError
+                );
+
+
+                return false;
+
             }
 
-            // Update character preview
-            const name = character.name || 'Adventurer';
-            const level = Number(character.level || 1);
-            const gold = Number(character.gold || 0);
 
-            console.log('Character loaded:', { name, level, gold, class_id: character.class_id });
+            if (
+                !character
+            ) {
 
-            document.getElementById('previewCharacterName').textContent = name;
-            document.getElementById('previewCharacterLevel').textContent = `Level ${level}`;
-            document.getElementById('previewGold').textContent = `💰 ${gold} Gold`;
+                window.location.href =
+                    'character-creation.html';
 
-            // Fetch and display class icon
-            if (character.class_id) {
-                const { data: classData, error: classError } = await supabaseClient
-                    .from('classes')
-                    .select('name')
-                    .eq('id', character.class_id)
-                    .single();
+                return false;
 
-                console.log('Class data:', { classData, classError });
+            }
 
-                if (!classError && classData) {
-                    const classIcon = document.getElementById('previewClassIcon');
-                    const iconPath = `classes/${classData.name}/ClassIcon/${classData.name}.png`;
-                    console.log('Setting icon path:', iconPath);
-                    classIcon.src = iconPath;
-                } else {
-                    console.error('Error loading class:', classError);
+
+            const {
+                data:
+                    classData,
+
+                error:
+                    classError
+            } =
+                await supabaseClient
+                    .from(
+                        'classes'
+                    )
+                    .select(
+                        'id, name'
+                    )
+                    .eq(
+                        'id',
+                        character.class_id
+                    )
+                    .maybeSingle();
+
+
+            if (
+                classError
+            ) {
+
+                console.error(
+                    'Could not load class:',
+                    classError
+                );
+
+            }
+
+
+            currentCharacter =
+                character;
+
+
+            currentClass =
+                classData ||
+                {
+                    id:
+                        character.class_id,
+
+                    name:
+                        'Adventurer'
+                };
+
+
+            const characterName =
+                character.name ||
+                'Adventurer';
+
+
+            const className =
+                currentClass.name ||
+                'Adventurer';
+
+
+            const level =
+                Number(
+                    character.level ??
+                    1
+                );
+
+
+            const experience =
+                Number(
+                    character.experience ??
+                    0
+                );
+
+
+            const requiredExperience =
+                await getExperienceRequirementForLevel(
+                    level + 1
+                );
+
+
+            const percentage =
+                requiredExperience >
+                    0
+                    ? Math.min(
+                        100,
+                        Math.max(
+                            0,
+                            experience /
+                                requiredExperience *
+                                100
+                        )
+                    )
+                    : 100;
+
+
+            document
+                .getElementById(
+                    'hubCharacterName'
+                )
+                .textContent =
+                    characterName;
+
+
+            document
+                .getElementById(
+                    'hubCharacterClass'
+                )
+                .textContent =
+                    className;
+
+
+            document
+                .getElementById(
+                    'hubCharacterLevel'
+                )
+                .textContent =
+                    `Level ${level}`;
+
+
+            document
+                .getElementById(
+                    'hubCharacterExpFill'
+                )
+                .style.width =
+                    `${percentage}%`;
+
+
+            document
+                .getElementById(
+                    'hubCharacterExpText'
+                )
+                .textContent =
+                    requiredExperience >
+                        0
+                        ? `${experience} / ${requiredExperience} EXP`
+                        : `${experience} EXP`;
+
+
+            const classIcon =
+                document.getElementById(
+                    'hubClassIcon'
+                );
+
+
+            classIcon.src =
+                `classes/${encodeURIComponent(className)}/ClassIcon/${encodeURIComponent(className)}.png`;
+
+
+            classIcon.classList.remove(
+                'hidden'
+            );
+
+
+            const canJoinChat =
+                level >=
+                HUB_MINIMUM_LEVEL;
+
+
+            joinHubButton.disabled =
+                !canJoinChat;
+
+
+            if (
+                canJoinChat
+            ) {
+
+                joinHubButton.textContent =
+                    'Join Chat';
+
+
+                if (
+                    hubChatLockedText
+                ) {
+
+                    hubChatLockedText.textContent =
+                        'Join the chat to see members and talk with other adventurers.';
+
                 }
+
+            } else {
+
+                joinHubButton.textContent =
+                    `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
+
+                if (
+                    hubChatLockedText
+                ) {
+
+                    hubChatLockedText.textContent =
+                        `The Adventurer Chat unlocks at Level ${HUB_MINIMUM_LEVEL}. Your current level is ${level}.`;
+
+                }
+
+
+                hubStatusText.textContent =
+                    `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
             }
 
-            // Show the character preview now that data is loaded
-            document.querySelector('.character-preview').classList.remove('hidden');
+
+            return true;
+
         }
 
-        function navigateTo(location) {
 
-            if (location === 'world') {
-                window.location.href = 'world.html';
-            } else if(location === 'achievements') {
-                window.location.href = 'game.html?tab=achievements';
+        /* =========================================================
+           CURRENT SESSION CHAT
+           ========================================================= */
+
+        /*
+         * Chat history is intentionally not loaded from the database.
+         * The player only sees messages received through Realtime
+         * after joining the chat during this page session.
+         */
+
+        function appendHubMessage(
+            message,
+            scroll = true
+        ) {
+
+            if (
+                !message
+            ) {
+                return;
             }
+
+
+            const emptyMessage =
+                hubChatMessages
+                    .querySelector(
+                        '.hub-empty-chat'
+                    );
+
+
+            if (
+                emptyMessage
+            ) {
+
+                emptyMessage
+                    .remove();
+
+            }
+
+
+            const date =
+                new Date(
+                    message.created_at
+                );
+
+
+            const time =
+                Number.isNaN(
+                    date.getTime()
+                )
+                    ? ''
+                    : date
+                        .toLocaleTimeString(
+                            [],
+                            {
+                                hour:
+                                    '2-digit',
+
+                                minute:
+                                    '2-digit'
+                            }
+                        );
+
+
+            const element =
+                document.createElement(
+                    'div'
+                );
+
+
+            element.className =
+                'hub-message';
+
+
+            element.dataset.messageId =
+                message.id;
+
+
+            element.innerHTML =
+                `
+                    <div class="hub-message-time">
+                        ${escapeHtml(time)}
+                    </div>
+
+                    <div class="hub-message-name">
+                        ${escapeHtml(
+                            message.character_name ||
+                            'Adventurer'
+                        )}
+                    </div>
+
+                    <div class="hub-message-text">
+                        ${escapeHtml(
+                            message.message
+                        )}
+                    </div>
+                `;
+
+
+            hubChatMessages
+                .appendChild(
+                    element
+                );
+
+
+            if (
+                scroll
+            ) {
+
+                hubChatMessages
+                    .scrollTop =
+                        hubChatMessages
+                            .scrollHeight;
+
+            }
+
         }
 
-        // Add some dynamic effects
-        document.querySelectorAll('.location-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.zIndex = '10';
-            });
-        });
 
-        // Load character preview on page load
-        loadCharacterPreview();
+        /* =========================================================
+           PRESENCE / MEMBERS
+           ========================================================= */
+
+        function renderHubMembers() {
+
+            if (
+                !hubChannel ||
+                !hubJoined
+            ) {
+
+                hubMemberCount
+                    .textContent =
+                        '0';
+
+
+                hubMembersList
+                    .innerHTML =
+                        `
+                            <div class="hub-members-empty">
+                                Join the chat to see who is here.
+                            </div>
+                        `;
+
+
+                return;
+
+            }
+
+
+            const state =
+                hubChannel
+                    .presenceState();
+
+
+            const membersByCharacterId =
+                new Map();
+
+
+            for (
+                const presences
+                of
+                Object.values(
+                    state
+                )
+            ) {
+
+                for (
+                    const presence
+                    of
+                    presences ||
+                    []
+                ) {
+
+                    const characterId =
+                        String(
+                            presence.character_id ??
+                            ''
+                        );
+
+
+                    if (
+                        !characterId
+                    ) {
+                        continue;
+                    }
+
+
+                    membersByCharacterId
+                        .set(
+                            characterId,
+                            presence
+                        );
+
+                }
+
+            }
+
+
+            const members =
+                [
+                    ...membersByCharacterId
+                        .values()
+                ]
+                    .sort(
+                        (
+                            a,
+                            b
+                        ) =>
+                            String(
+                                a.name ||
+                                ''
+                            )
+                                .localeCompare(
+                                    String(
+                                        b.name ||
+                                        ''
+                                    )
+                                )
+                    );
+
+
+            hubMemberCount
+                .textContent =
+                    String(
+                        members.length
+                    );
+
+
+            hubMembersList
+                .innerHTML =
+                    '';
+
+
+            if (
+                members.length ===
+                0
+            ) {
+
+                hubMembersList
+                    .innerHTML =
+                        `
+                            <div class="hub-members-empty">
+                                No adventurers are currently visible.
+                            </div>
+                        `;
+
+
+                return;
+
+            }
+
+
+            for (
+                const member
+                of
+                members
+            ) {
+
+                const className =
+                    member.class_name ||
+                    'Adventurer';
+
+
+                const item =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                item.className =
+                    'hub-member';
+
+
+                item.innerHTML =
+                    `
+                        <div class="hub-member-icon-frame">
+
+                            <img
+                                class="hub-member-icon"
+                                src="classes/${encodeURIComponent(className)}/ClassIcon/${encodeURIComponent(className)}.png"
+                                alt="">
+
+                        </div>
+
+                        <div class="hub-member-info">
+
+                            <div class="hub-member-name">
+                                ${escapeHtml(
+                                    member.name ||
+                                    'Adventurer'
+                                )}
+                            </div>
+
+                            <div class="hub-member-meta">
+                                ${escapeHtml(className)}
+                                · Level
+                                ${escapeHtml(
+                                    member.level ??
+                                    1
+                                )}
+                            </div>
+
+                        </div>
+
+                        <div class="hub-member-online"></div>
+                    `;
+
+
+                hubMembersList
+                    .appendChild(
+                        item
+                    );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           JOIN HUB
+           ========================================================= */
+
+        async function joinHub() {
+
+            if (
+                hubJoined ||
+                !currentCharacter ||
+                !currentClass
+            ) {
+                return;
+            }
+
+
+            const currentLevel =
+                Number(
+                    currentCharacter.level ??
+                    1
+                );
+
+
+            if (
+                currentLevel <
+                HUB_MINIMUM_LEVEL
+            ) {
+
+                joinHubButton.disabled =
+                    true;
+
+
+                joinHubButton.textContent =
+                    `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
+
+                hubStatusText.textContent =
+                    `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
+
+                return;
+
+            }
+
+
+            joinHubButton.disabled =
+                true;
+
+
+            joinHubButton.textContent =
+                'Joining...';
+
+
+            hubChannel =
+                supabaseClient
+                    .channel(
+                        'guild-hub',
+                        {
+                            config: {
+                                presence: {
+                                    key:
+                                        String(
+                                            currentCharacter.id
+                                        )
+                                }
+                            }
+                        }
+                    );
+
+
+            hubChannel
+                .on(
+                    'presence',
+                    {
+                        event:
+                            'sync'
+                    },
+                    renderHubMembers
+                )
+                .on(
+                    'presence',
+                    {
+                        event:
+                            'join'
+                    },
+                    renderHubMembers
+                )
+                .on(
+                    'presence',
+                    {
+                        event:
+                            'leave'
+                    },
+                    renderHubMembers
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event:
+                            'INSERT',
+
+                        schema:
+                            'public',
+
+                        table:
+                            'hub_messages'
+                    },
+                    payload => {
+
+                        const message =
+                            payload.new;
+
+
+                        if (
+                            document.querySelector(
+                                `[data-message-id="${CSS.escape(
+                                    String(
+                                        message.id
+                                    )
+                                )}"]`
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        appendHubMessage(
+                            message
+                        );
+
+                    }
+                );
+
+
+            await new Promise(
+                (
+                    resolve,
+                    reject
+                ) => {
+
+                    let settled =
+                        false;
+
+
+                    const timeout =
+                        setTimeout(
+                            () => {
+
+                                if (
+                                    settled
+                                ) {
+                                    return;
+                                }
+
+
+                                settled =
+                                    true;
+
+
+                                reject(
+                                    new Error(
+                                        'Hub connection timed out.'
+                                    )
+                                );
+
+                            },
+                            8000
+                        );
+
+
+                    hubChannel
+                        .subscribe(
+                            async status => {
+
+                                if (
+                                    status ===
+                                    'SUBSCRIBED'
+                                ) {
+
+                                    if (
+                                        settled
+                                    ) {
+                                        return;
+                                    }
+
+
+                                    try {
+
+                                        await hubChannel
+                                            .track({
+                                                character_id:
+                                                    currentCharacter.id,
+
+                                                name:
+                                                    currentCharacter.name ||
+                                                    'Adventurer',
+
+                                                class_name:
+                                                    currentClass.name ||
+                                                    'Adventurer',
+
+                                                level:
+                                                    Number(
+                                                        currentCharacter.level ??
+                                                        1
+                                                    ),
+
+                                                joined_at:
+                                                    new Date()
+                                                        .toISOString()
+                                            });
+
+
+                                        settled =
+                                            true;
+
+
+                                        clearTimeout(
+                                            timeout
+                                        );
+
+
+                                        resolve();
+
+                                    } catch (
+                                        error
+                                    ) {
+
+                                        settled =
+                                            true;
+
+
+                                        clearTimeout(
+                                            timeout
+                                        );
+
+
+                                        reject(
+                                            error
+                                        );
+
+                                    }
+
+                                }
+
+
+                                if (
+                                    status ===
+                                        'CHANNEL_ERROR' ||
+                                    status ===
+                                        'TIMED_OUT'
+                                ) {
+
+                                    if (
+                                        settled
+                                    ) {
+                                        return;
+                                    }
+
+
+                                    settled =
+                                        true;
+
+
+                                    clearTimeout(
+                                        timeout
+                                    );
+
+
+                                    reject(
+                                        new Error(
+                                            'Could not connect to the hub.'
+                                        )
+                                    );
+
+                                }
+
+                            }
+                        );
+
+                }
+            );
+
+
+            hubJoined =
+                true;
+
+
+            joinHubButton.disabled =
+                false;
+
+
+            joinHubButton.textContent =
+                'Joined';
+
+
+            joinHubButton.classList.add(
+                'joined'
+            );
+
+
+            hubStatusDot.classList.add(
+                'online'
+            );
+
+
+            hubStatusText.textContent =
+                'Connected';
+
+
+            hubChatInput.disabled =
+                false;
+
+
+            hubSendButton.disabled =
+                false;
+
+
+            hubChatInput.placeholder =
+                'Write a message...';
+
+
+            hubChatMessages.classList.remove(
+                'hub-chat-locked'
+            );
+
+
+            const lockedOverlay =
+                document.getElementById(
+                    'hubChatLockedOverlay'
+                );
+
+
+            if (
+                lockedOverlay
+            ) {
+
+                lockedOverlay.remove();
+
+            }
+
+
+            hubChatMessages.innerHTML =
+                `
+                    <div class="hub-empty-chat">
+                        No messages have been sent during this chat session yet.
+                    </div>
+                `;
+
+
+            renderHubMembers();
+
+
+            hubChatInput.focus();
+
+        }
+
+
+        /* =========================================================
+           LEAVE HUB
+           ========================================================= */
+
+        async function leaveHub() {
+
+            if (
+                !hubChannel
+            ) {
+                return;
+            }
+
+
+            const channel =
+                hubChannel;
+
+
+            hubChannel =
+                null;
+
+
+            hubJoined =
+                false;
+
+
+            try {
+
+                await channel
+                    .untrack();
+
+            } catch {
+                // Page may already be unloading.
+            }
+
+
+            try {
+
+                await supabaseClient
+                    .removeChannel(
+                        channel
+                    );
+
+            } catch {
+                // Page may already be unloading.
+            }
+
+        }
+
+
+        /* =========================================================
+           SEND MESSAGE
+           ========================================================= */
+
+        async function sendHubMessage(
+            message
+        ) {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .functions
+                    .invoke(
+                        'send_hub_message',
+                        {
+                            body: {
+                                message
+                            }
+                        }
+                    );
+
+
+            if (
+                error
+            ) {
+
+                let errorMessage =
+                    'Could not send message.';
+
+
+                if (
+                    error.context
+                ) {
+
+                    try {
+
+                        const body =
+                            await error.context
+                                .clone()
+                                .json();
+
+
+                        if (
+                            body?.error
+                        ) {
+
+                            errorMessage =
+                                body.error;
+
+                        }
+
+                    } catch {
+                        // Keep fallback.
+                    }
+
+                }
+
+
+                throw new Error(
+                    errorMessage
+                );
+
+            }
+
+
+            if (
+                !data?.success
+            ) {
+
+                throw new Error(
+                    data?.error ||
+                    'Could not send message.'
+                );
+
+            }
+
+
+            return data.message;
+
+        }
+
+
+        /* =========================================================
+           EVENTS
+           ========================================================= */
+
+        joinHubButton
+            .addEventListener(
+                'click',
+                async () => {
+
+                    try {
+
+                        await joinHub();
+
+                    } catch (
+                        error
+                    ) {
+
+                        console.error(
+                            'Could not join hub:',
+                            error
+                        );
+
+
+                        const currentLevel =
+                            Number(
+                                currentCharacter?.level ??
+                                1
+                            );
+
+
+                        const canJoinChat =
+                            currentLevel >=
+                            HUB_MINIMUM_LEVEL;
+
+
+                        joinHubButton.disabled =
+                            !canJoinChat;
+
+
+                        joinHubButton.textContent =
+                            canJoinChat
+                                ? 'Join Chat'
+                                : `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
+
+                        hubStatusText.textContent =
+                            canJoinChat
+                                ? 'Could not connect'
+                                : `Requires Level ${HUB_MINIMUM_LEVEL}`;
+
+                    }
+
+                }
+            );
+
+
+        hubChatForm
+            .addEventListener(
+                'submit',
+                async event => {
+
+                    event.preventDefault();
+
+
+                    if (
+                        !hubJoined
+                    ) {
+                        return;
+                    }
+
+
+                    const message =
+                        hubChatInput
+                            .value
+                            .trim();
+
+
+                    if (
+                        !message
+                    ) {
+                        return;
+                    }
+
+
+                    hubSendButton.disabled =
+                        true;
+
+
+                    try {
+
+                        await sendHubMessage(
+                            message
+                        );
+
+
+                        hubChatInput.value =
+                            '';
+
+                    } catch (
+                        error
+                    ) {
+
+                        console.error(
+                            'Could not send hub message:',
+                            error
+                        );
+
+
+                        alert(
+                            error?.message ||
+                            'Could not send message.'
+                        );
+
+                    } finally {
+
+                        if (
+                            hubJoined
+                        ) {
+
+                            hubSendButton.disabled =
+                                false;
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+        /*
+         * Presence also disappears automatically when the realtime
+         * WebSocket disconnects. Calling leaveHub here simply lets
+         * Supabase remove it immediately when navigation is clean.
+         */
+        window.addEventListener(
+            'pagehide',
+            () => {
+
+                leaveHub();
+
+            }
+        );
+
+
+        /* =========================================================
+           INITIAL LOAD
+           ========================================================= */
+
+        async function initializeHub() {
+
+            await loadHubCharacter();
+
+        }
+
+
+        initializeHub();
+
     </script>
 
 </body>
